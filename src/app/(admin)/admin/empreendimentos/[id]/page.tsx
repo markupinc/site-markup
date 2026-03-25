@@ -278,11 +278,11 @@ export default function EditEmpreendimentoPage() {
   };
 
   // ─── Galeria helpers ───────────────────────────────────────────────
-  const addImagem = async (url: string) => {
+  const addImagem = async (url: string, categoria: string = "interior") => {
     const ordem = imagens.length;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error: err } = await (supabase.from("empreendimento_imagens") as any)
-      .insert({ empreendimento_id: id, url, ordem })
+      .insert({ empreendimento_id: id, url, ordem, categoria })
       .select()
       .single();
     if (!err && data) setImagens((prev) => [...prev, data]);
@@ -469,10 +469,10 @@ export default function EditEmpreendimentoPage() {
           <div style={gridFour}>
             <div>
               <label style={labelStyle}>Status</label>
-              <select {...register("status")} style={inputStyle}>
-                <option value="lancamento">Lancamento</option>
-                <option value="em_obras">Em Obras</option>
-                <option value="entregue">Entregue</option>
+              <select {...register("status")} style={{ ...inputStyle, backgroundColor: "#1a1a1a" }}>
+                <option value="lancamento" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Lançamento</option>
+                <option value="em_obras" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Em Obras</option>
+                <option value="entregue" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Entregue</option>
               </select>
             </div>
             <div>
@@ -618,65 +618,80 @@ export default function EditEmpreendimentoPage() {
           </div>
         </div>
 
-        {/* ─── Galeria de Imagens ─────────────────────────────────── */}
-        <div style={cardStyle}>
-          <h2 style={sectionTitle}>Galeria de Imagens</h2>
+        {/* ─── Galeria de Imagens (por categoria) ─────────────────── */}
+        {[
+          { key: "interior", label: "Fotos Internas", path: "internas" },
+          { key: "area_comum", label: "Áreas Comuns", path: "areas-comuns" },
+          { key: "fachada", label: "Fachada / Externas", path: "fachada" },
+          { key: "planta", label: "Plantas Baixas (imagens)", path: "plantas" },
+        ].map((cat) => {
+          const catImagens = imagens.filter((i) => i.categoria === cat.key);
+          return (
+            <div key={cat.key} style={cardStyle}>
+              <h2 style={sectionTitle}>
+                {cat.label}
+                <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginLeft: "8px", fontWeight: 400 }}>
+                  ({catImagens.length})
+                </span>
+              </h2>
 
-          {imagens.length > 0 && (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(4, 1fr)",
-                gap: "12px",
-                marginBottom: "16px",
-              }}
-            >
-              {imagens.map((img) => (
-                <div key={img.id} style={{ position: "relative" }}>
-                  <img
-                    src={img.url}
-                    alt={img.alt_text || ""}
-                    style={{
-                      width: "100%",
-                      height: "100px",
-                      objectFit: "cover",
-                      borderRadius: "8px",
-                      border: "1px solid rgba(255,255,255,0.1)",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImagem(img.id)}
-                    style={{
-                      position: "absolute",
-                      top: "4px",
-                      right: "4px",
-                      width: "22px",
-                      height: "22px",
-                      borderRadius: "50%",
-                      backgroundColor: "rgba(0,0,0,0.7)",
-                      color: "#fff",
-                      border: "none",
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    x
-                  </button>
+              {catImagens.length > 0 && (
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4, 1fr)",
+                    gap: "12px",
+                    marginBottom: "16px",
+                  }}
+                >
+                  {catImagens.map((img) => (
+                    <div key={img.id} style={{ position: "relative" }}>
+                      <img
+                        src={img.url}
+                        alt={img.alt_text || ""}
+                        style={{
+                          width: "100%",
+                          height: "100px",
+                          objectFit: "cover",
+                          borderRadius: "8px",
+                          border: "1px solid rgba(255,255,255,0.1)",
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeImagem(img.id)}
+                        style={{
+                          position: "absolute",
+                          top: "4px",
+                          right: "4px",
+                          width: "22px",
+                          height: "22px",
+                          borderRadius: "50%",
+                          backgroundColor: "rgba(0,0,0,0.7)",
+                          color: "#fff",
+                          border: "none",
+                          cursor: "pointer",
+                          fontSize: "12px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
+              )}
 
-          <ImageUpload
-            bucket="empreendimentos"
-            path={`galeria/${id}`}
-            onUpload={(url) => { if (url) addImagem(url); }}
-          />
-        </div>
+              <ImageUpload
+                bucket="empreendimentos"
+                path={`${cat.path}/${id}`}
+                onUpload={(url) => { if (url) addImagem(url, cat.key); }}
+              />
+            </div>
+          );
+        })}
 
         {/* ─── Plantas ────────────────────────────────────────────── */}
         <div style={cardStyle}>

@@ -270,10 +270,10 @@ export default function NovoEmpreendimentoPage() {
           <div style={gridFour}>
             <div>
               <label style={labelStyle}>Status</label>
-              <select {...register("status")} style={inputStyle}>
-                <option value="lancamento">Lancamento</option>
-                <option value="em_obras">Em Obras</option>
-                <option value="entregue">Entregue</option>
+              <select {...register("status")} style={{ ...inputStyle, backgroundColor: "#1a1a1a" }}>
+                <option value="lancamento" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Lançamento</option>
+                <option value="em_obras" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Em Obras</option>
+                <option value="entregue" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Entregue</option>
               </select>
             </div>
             <div>
@@ -373,12 +373,16 @@ export default function NovoEmpreendimentoPage() {
           </div>
         </div>
 
-        {/* Midia */}
+        {/* Mídia */}
         <div style={cardStyle}>
-          <h2 style={sectionTitle}>Midia</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <h2 style={sectionTitle}>Mídia</h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+            {/* Imagem de Destaque */}
             <div>
               <label style={labelStyle}>Imagem de Destaque</label>
+              <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginBottom: "8px" }}>
+                Imagem principal exibida na listagem e no topo da página.
+              </p>
               <ImageUpload
                 bucket="empreendimentos"
                 path="destaques"
@@ -387,9 +391,17 @@ export default function NovoEmpreendimentoPage() {
               />
               <input type="hidden" {...register("imagem_destaque_url")} />
             </div>
+
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "16px" }}>
+              <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.5)", marginBottom: "8px" }}>
+                As galerias de fotos (internas, áreas comuns) e plantas baixas são gerenciadas na página de edição, após criar o empreendimento.
+              </p>
+            </div>
+
+            {/* Vídeo e Tour */}
             <div style={gridTwo}>
               <div>
-                <label style={labelStyle}>URL do Video</label>
+                <label style={labelStyle}>URL do Vídeo</label>
                 <input {...register("video_url")} style={inputStyle} placeholder="https://youtube.com/..." />
               </div>
               <div>
