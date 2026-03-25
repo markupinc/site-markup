@@ -19,7 +19,6 @@ const categories = [
   { key: "interior", label: "Internas" },
   { key: "area_comum", label: "Áreas Comuns" },
   { key: "fachada", label: "Fachada" },
-  { key: "planta", label: "Plantas" },
 ];
 
 export default function GalleryTabs({ images, empNome }: GalleryTabsProps) {

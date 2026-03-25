@@ -7,6 +7,7 @@ import WhatsAppButton from "@/components/public/WhatsAppButton";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
 import LeadForm from "@/components/public/LeadForm";
 import GalleryTabs from "@/components/public/GalleryTabs";
+import PlantasSection from "@/components/public/PlantasSection";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -61,8 +62,11 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
     .from("empreendimento_imagens").select("*").eq("empreendimento_id", emp.id).order("ordem")) as any;
   const { data: diferenciais } = (await supabase
     .from("empreendimento_diferenciais").select("*").eq("empreendimento_id", emp.id).order("ordem")) as any;
+  const { data: plantasData } = (await supabase
+    .from("empreendimento_plantas").select("*").eq("empreendimento_id", emp.id).order("ordem")) as any;
 
-  const gallery = imagens ?? [];
+  const gallery = (imagens ?? []).filter((img: any) => img.categoria !== "planta");
+  const plantas = plantasData ?? [];
   const features = diferenciais ?? [];
   const location = [emp.bairro, emp.cidade, emp.estado].filter(Boolean).join(", ");
 
@@ -273,6 +277,31 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
               Explore cada ambiente
             </h2>
             <GalleryTabs images={gallery} empNome={emp.nome} />
+          </section>
+        </FadeInOnScroll>
+      )}
+
+      {/* ═══ PLANTAS / TIPOLOGIAS ═══ */}
+      {plantas.length > 0 && (
+        <FadeInOnScroll>
+          <section style={{ backgroundColor: "#f5ebe1", padding: "100px 60px" }}>
+            <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+              <div style={{
+                display: "flex", alignItems: "baseline", gap: "48px",
+                marginBottom: "48px",
+              }}>
+                <h2 style={{
+                  fontFamily: "var(--font-playfair), serif", fontSize: "32px",
+                  fontWeight: 400, color: "#1a1a1a", flexShrink: 0,
+                }}>
+                  Plantas
+                </h2>
+                <div style={{
+                  flex: 1, height: "1px", backgroundColor: "rgba(26,26,26,0.1)",
+                }} />
+              </div>
+              <PlantasSection plantas={plantas} />
+            </div>
           </section>
         </FadeInOnScroll>
       )}
