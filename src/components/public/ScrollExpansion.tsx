@@ -47,25 +47,19 @@ export default function ScrollExpansion({
     };
   }, []);
 
-  // Media grows from 300x400 to full viewport
-  const p = progress;
-  const isFullScreen = p >= 0.95;
+  // Continuous expansion: 20vw/50vh at p=0 → 100vw/100vh at p=1
+  // No jump, no clamp — pure linear interpolation in viewport units
+  const startW = isMobile ? 60 : 20; // vw
+  const startH = 50; // vh
+  const w = startW + progress * (100 - startW);
+  const h = startH + progress * (100 - startH);
 
-  const mediaWidth = isFullScreen
-    ? "100vw"
-    : `${300 + p * (isMobile ? 650 : 1250)}px`;
-  const mediaHeight = isFullScreen
-    ? "100vh"
-    : `${400 + p * (isMobile ? 200 : 400)}px`;
-  const maxWidth = isFullScreen ? "100vw" : "95vw";
-  const maxHeight = isFullScreen ? "100vh" : "85vh";
-
-  const borderRadius = 16 * (1 - Math.min(p / 0.95, 1));
-  const overlayOpacity = Math.max(0.4 - p * 0.4, 0);
+  const borderRadius = 16 * (1 - progress);
+  const overlayOpacity = Math.max(0.4 - progress * 0.4, 0);
 
   // Titles split apart
-  const textX = p * (isMobile ? 180 : 150);
-  const titleOpacity = Math.max(1 - p * 2.5, 0);
+  const textX = progress * (isMobile ? 180 : 150);
+  const titleOpacity = Math.max(1 - progress * 2.5, 0);
 
   return (
     <div
@@ -78,26 +72,27 @@ export default function ScrollExpansion({
       }}
     >
       <div
-        className="sticky top-0 flex items-center justify-center overflow-hidden"
+        className="sticky top-0 overflow-hidden"
         style={{
           height: "100vh",
           backgroundColor: "#1a1a1a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {/* Image container */}
+        {/* Image container — always uses vw/vh for smooth continuous growth */}
         <div
           style={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: mediaWidth,
-            height: mediaHeight,
-            maxWidth,
-            maxHeight,
+            width: `${w}vw`,
+            height: `${h}vh`,
             borderRadius: `${borderRadius}px`,
             overflow: "hidden",
-            boxShadow: "0 0 50px rgba(0,0,0,0.3)",
+            boxShadow: progress < 0.98 ? "0 0 50px rgba(0,0,0,0.3)" : "none",
             zIndex: 1,
           }}
         >
@@ -116,7 +111,6 @@ export default function ScrollExpansion({
               position: "absolute",
               inset: 0,
               background: `rgba(0,0,0,${overlayOpacity})`,
-              borderRadius: `${borderRadius}px`,
             }}
           />
         </div>
