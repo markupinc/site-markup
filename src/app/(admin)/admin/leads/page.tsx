@@ -59,6 +59,9 @@ export default function LeadsPage() {
   const [sortColumn, setSortColumn] = useState<string>("created_at");
   const [sortAsc, setSortAsc] = useState(false);
 
+  // View mode
+  const [viewMode, setViewMode] = useState<"table" | "kanban">("table");
+
   // Expanded row
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -269,21 +272,28 @@ export default function LeadsPage() {
             {totalCount} lead{totalCount !== 1 ? "s" : ""} encontrado{totalCount !== 1 ? "s" : ""}
           </p>
         </div>
-        <button
-          disabled
-          style={{
-            padding: "10px 24px",
-            backgroundColor: "rgba(255,255,255,0.06)",
-            color: "rgba(255,255,255,0.3)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "8px",
-            fontSize: "13px",
-            fontWeight: 500,
-            cursor: "not-allowed",
-          }}
-        >
-          Exportar CSV
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {(["table", "kanban"] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode)}
+              style={{
+                padding: "10px 20px",
+                backgroundColor: viewMode === mode ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.04)",
+                color: viewMode === mode ? "#fff" : "rgba(255,255,255,0.4)",
+                border: viewMode === mode ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontWeight: 500,
+                cursor: "pointer",
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+              }}
+            >
+              {mode === "table" ? "Tabela" : "Kanban"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Filters */}
@@ -301,11 +311,11 @@ export default function LeadsPage() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+            style={{ ...inputStyle, cursor: "pointer", appearance: "auto", backgroundColor: "#1a1a1a" }}
           >
-            <option value="all">Todos</option>
+            <option value="all" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Todos</option>
             {Object.entries(STATUS_CONFIG).map(([key, { label }]) => (
-              <option key={key} value={key}>
+              <option key={key} value={key} style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>
                 {label}
               </option>
             ))}
@@ -317,11 +327,11 @@ export default function LeadsPage() {
           <select
             value={empreendimentoFilter}
             onChange={(e) => setEmpreendimentoFilter(e.target.value)}
-            style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}
+            style={{ ...inputStyle, cursor: "pointer", appearance: "auto", backgroundColor: "#1a1a1a" }}
           >
-            <option value="all">Todos</option>
+            <option value="all" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Todos</option>
             {empreendimentos.map((emp) => (
-              <option key={emp.id} value={emp.id}>
+              <option key={emp.id} value={emp.id} style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>
                 {emp.nome}
               </option>
             ))}
@@ -340,7 +350,8 @@ export default function LeadsPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table View */}
+      {viewMode === "table" && (<>
       <div
         style={{
           background: "rgba(255,255,255,0.04)",
@@ -703,6 +714,162 @@ export default function LeadsPage() {
               Próximo
             </button>
           </div>
+        </div>
+      )}
+      </>)}
+
+      {/* Kanban View */}
+      {viewMode === "kanban" && (
+        <div style={{ display: "flex", gap: "16px", overflowX: "auto", paddingBottom: "16px" }}>
+          {(Object.entries(STATUS_CONFIG) as [LeadStatus, { label: string; color: string }][]).map(
+            ([statusKey, { label, color }]) => {
+              const columnLeads = leads.filter((l) => l.status === statusKey);
+              return (
+                <div
+                  key={statusKey}
+                  style={{
+                    minWidth: "280px",
+                    flex: 1,
+                    backgroundColor: "rgba(255,255,255,0.03)",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(255,255,255,0.06)",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Column header */}
+                  <div
+                    style={{
+                      padding: "16px 20px",
+                      borderBottom: `2px solid ${color}`,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span style={{ fontSize: "13px", fontWeight: 600, color: "#fff" }}>
+                      {label}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 600,
+                        color,
+                        backgroundColor: `${color}22`,
+                        padding: "2px 10px",
+                        borderRadius: "10px",
+                      }}
+                    >
+                      {columnLeads.length}
+                    </span>
+                  </div>
+
+                  {/* Cards */}
+                  <div
+                    style={{
+                      padding: "12px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "8px",
+                      overflowY: "auto",
+                      maxHeight: "65vh",
+                    }}
+                  >
+                    {columnLeads.length === 0 && (
+                      <p style={{ fontSize: "12px", color: "rgba(255,255,255,0.2)", textAlign: "center", padding: "20px 0" }}>
+                        Nenhum lead
+                      </p>
+                    )}
+                    {columnLeads.map((lead) => (
+                      <div
+                        key={lead.id}
+                        style={{
+                          backgroundColor: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          borderRadius: "8px",
+                          padding: "14px 16px",
+                          cursor: "pointer",
+                          transition: "border-color 0.2s",
+                        }}
+                        onMouseOver={(e) => { e.currentTarget.style.borderColor = color; }}
+                        onMouseOut={(e) => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                        onClick={() => setExpandedId(expandedId === lead.id ? null : lead.id)}
+                      >
+                        <p style={{ fontSize: "13px", fontWeight: 600, color: "#fff", marginBottom: "4px" }}>
+                          {lead.nome}
+                        </p>
+                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", marginBottom: "2px" }}>
+                          {lead.telefone}
+                        </p>
+                        {lead.empreendimentos?.nome && (
+                          <p style={{ fontSize: "10px", color, marginTop: "8px" }}>
+                            {lead.empreendimentos.nome}
+                          </p>
+                        )}
+                        <p style={{ fontSize: "10px", color: "rgba(255,255,255,0.25)", marginTop: "6px" }}>
+                          {new Date(lead.created_at).toLocaleDateString("pt-BR")}
+                        </p>
+
+                        {/* Expanded detail */}
+                        {expandedId === lead.id && (
+                          <div
+                            style={{
+                              marginTop: "12px",
+                              paddingTop: "12px",
+                              borderTop: "1px solid rgba(255,255,255,0.08)",
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {lead.email && (
+                              <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", marginBottom: "4px" }}>
+                                {lead.email}
+                              </p>
+                            )}
+                            {lead.mensagem && (
+                              <p style={{
+                                fontSize: "11px", color: "rgba(255,255,255,0.4)",
+                                marginBottom: "8px", fontStyle: "italic", lineHeight: 1.5,
+                              }}>
+                                &ldquo;{lead.mensagem}&rdquo;
+                              </p>
+                            )}
+
+                            {/* Quick status change */}
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginTop: "8px" }}>
+                              {(Object.entries(STATUS_CONFIG) as [LeadStatus, { label: string; color: string }][])
+                                .filter(([k]) => k !== statusKey)
+                                .map(([k, v]) => (
+                                  <button
+                                    key={k}
+                                    onClick={async () => {
+                                      await (supabase.from("leads") as any).update({ status: k }).eq("id", lead.id);
+                                      setLeads((prev) => prev.map((l) => l.id === lead.id ? { ...l, status: k as LeadStatus } : l));
+                                      setExpandedId(null);
+                                    }}
+                                    style={{
+                                      padding: "4px 10px",
+                                      fontSize: "10px",
+                                      fontWeight: 500,
+                                      color: v.color,
+                                      backgroundColor: `${v.color}15`,
+                                      border: `1px solid ${v.color}30`,
+                                      borderRadius: "4px",
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    → {v.label}
+                                  </button>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+          )}
         </div>
       )}
     </div>
