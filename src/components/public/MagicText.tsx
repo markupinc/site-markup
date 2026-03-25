@@ -51,7 +51,7 @@ export default function MagicText({ lines }: MagicTextProps) {
   return (
     <div
       ref={wrapperRef}
-      style={{ height: "144vh", position: "relative", marginBottom: 0 }}
+      style={{ height: "160vh", position: "relative", marginBottom: 0 }}
     >
       <div
         className="sticky top-0 flex items-center justify-center"
