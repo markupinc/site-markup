@@ -180,28 +180,77 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
         </section>
       )}
 
-      {/* ═══ ABOUT ═══ */}
-      {emp.descricao && (
+      {/* ═══ ABOUT + DIFERENCIAIS (side by side) ═══ */}
+      {(emp.descricao || features.length > 0) && (
         <FadeInOnScroll>
           <section style={{ backgroundColor: "#f5ebe1", padding: "100px 60px" }}>
-            <div style={{ maxWidth: "720px", margin: "0 auto", textAlign: "center" }}>
-              <p style={{
-                fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-                textTransform: "uppercase", color: "#b8945f", marginBottom: "20px",
-              }}>
-                Sobre o empreendimento
-              </p>
-              <h2 style={{
-                fontFamily: "var(--font-playfair), serif", fontSize: "32px",
-                fontWeight: 400, color: "#1a1a1a", marginBottom: "32px", lineHeight: 1.3,
-              }}>
-                {emp.descricao_curta || "Conheça cada detalhe"}
-              </h2>
-              <p style={{
-                fontSize: "15px", lineHeight: 1.9, color: "#8a7d72", whiteSpace: "pre-line",
-              }}>
-                {emp.descricao}
-              </p>
+            <div className="about-diff-grid" style={{
+              maxWidth: "1200px", margin: "0 auto",
+              display: "grid", gridTemplateColumns: features.length > 0 && emp.descricao ? "1fr 1fr" : "1fr",
+              gap: "80px", alignItems: "start",
+            }}>
+              {/* Left — Sobre */}
+              {emp.descricao && (
+                <div>
+                  <p style={{
+                    fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
+                    textTransform: "uppercase", color: "#b8945f", marginBottom: "20px",
+                  }}>
+                    Sobre o empreendimento
+                  </p>
+                  <h2 style={{
+                    fontFamily: "var(--font-playfair), serif", fontSize: "32px",
+                    fontWeight: 400, color: "#1a1a1a", marginBottom: "28px", lineHeight: 1.3,
+                  }}>
+                    {emp.descricao_curta || "Conheça cada detalhe"}
+                  </h2>
+                  <p style={{
+                    fontSize: "15px", lineHeight: 1.9, color: "#8a7d72", whiteSpace: "pre-line",
+                  }}>
+                    {emp.descricao}
+                  </p>
+                </div>
+              )}
+
+              {/* Right — Diferenciais */}
+              {features.length > 0 && (
+                <div>
+                  <p style={{
+                    fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
+                    textTransform: "uppercase", color: "#b8945f", marginBottom: "20px",
+                  }}>
+                    Diferenciais
+                  </p>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+                    {features.map((dif: any) => (
+                      <div key={dif.id} style={{
+                        padding: "20px 0",
+                        borderBottom: "1px solid rgba(26,26,26,0.1)",
+                        display: "flex", alignItems: "flex-start", gap: "16px",
+                      }}>
+                        {dif.icone && (
+                          <span style={{ fontSize: "20px", flexShrink: 0, marginTop: "2px" }}>
+                            {dif.icone}
+                          </span>
+                        )}
+                        <div>
+                          <h3 style={{
+                            fontSize: "14px", fontWeight: 600, color: "#1a1a1a",
+                            marginBottom: dif.descricao ? "6px" : "0",
+                          }}>
+                            {dif.titulo}
+                          </h3>
+                          {dif.descricao && (
+                            <p style={{ fontSize: "13px", lineHeight: 1.6, color: "#8a7d72" }}>
+                              {dif.descricao}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </section>
         </FadeInOnScroll>
@@ -224,54 +273,6 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
               Explore cada ambiente
             </h2>
             <GalleryTabs images={gallery} empNome={emp.nome} />
-          </section>
-        </FadeInOnScroll>
-      )}
-
-      {/* ═══ DIFERENCIAIS ═══ */}
-      {features.length > 0 && (
-        <FadeInOnScroll>
-          <section style={{ backgroundColor: "#f5ebe1", padding: "100px 60px" }}>
-            <p style={{
-              fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-              textTransform: "uppercase", color: "#b8945f", textAlign: "center", marginBottom: "12px",
-            }}>
-              Diferenciais
-            </p>
-            <h2 style={{
-              fontFamily: "var(--font-playfair), serif", fontSize: "32px",
-              fontWeight: 400, color: "#1a1a1a", textAlign: "center", marginBottom: "56px",
-            }}>
-              O que torna este empreendimento único
-            </h2>
-            <div style={{
-              display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "24px",
-              maxWidth: "1000px", margin: "0 auto",
-            }}>
-              {features.map((dif: any) => (
-                <div key={dif.id} style={{
-                  padding: "36px 28px", textAlign: "center",
-                  borderBottom: "2px solid #b8945f",
-                }}>
-                  {dif.icone && (
-                    <span style={{ fontSize: "32px", display: "block", marginBottom: "16px" }}>
-                      {dif.icone}
-                    </span>
-                  )}
-                  <h3 style={{
-                    fontSize: "14px", fontWeight: 600, color: "#1a1a1a",
-                    letterSpacing: "0.5px", marginBottom: "10px",
-                  }}>
-                    {dif.titulo}
-                  </h3>
-                  {dif.descricao && (
-                    <p style={{ fontSize: "13px", lineHeight: 1.7, color: "#8a7d72" }}>
-                      {dif.descricao}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
           </section>
         </FadeInOnScroll>
       )}
@@ -345,6 +346,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 768px) {
           section > div[style*="repeat(3"] { grid-template-columns: 1fr !important; }
+          .about-diff-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
           section > div[style*="display: flex"][style*="justify-content: center"] {
             flex-direction: column !important; align-items: center !important;
           }
