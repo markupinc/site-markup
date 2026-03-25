@@ -104,78 +104,87 @@ export default function StatsCounter({
         padding: "80px 60px",
       }}
     >
-      <div
-        className="flex flex-wrap justify-between items-start gap-16"
-        style={{ maxWidth: "1200px", margin: "0 auto" }}
-      >
-        {/* Left column: title, subtitle, CTA */}
-        <div style={{ maxWidth: "440px" }}>
-          <h2
-            style={{
-              fontFamily: "var(--font-playfair), serif",
-              fontSize: "36px",
-              fontWeight: 400,
-              color: "#fff",
-              margin: "0 0 20px 0",
-            }}
-          >
-            {title}
-          </h2>
-          <p
-            style={{
-              fontSize: "12px",
-              lineHeight: 1.6,
-              color: "rgba(255,255,255,0.6)",
-              maxWidth: "440px",
-              margin: "0 0 24px 0",
-            }}
-          >
-            {subtitle}
-          </p>
-          <a
-            href={ctaHref}
-            style={{
-              color: "#fff",
-              fontSize: "14px",
-              textDecoration: "none",
-              borderBottom: "1px solid #fff",
-              paddingBottom: "4px",
-              display: "inline-block",
-            }}
-          >
-            {ctaText}
-          </a>
-        </div>
-
-        {/* Right column: stats grid */}
-        <div
-          className="grid"
+      {/* Title, subtitle, CTA — top */}
+      <div style={{ marginBottom: "80px" }}>
+        <h2
           style={{
-            gridTemplateColumns: "repeat(2, 1fr)",
-            gap: "60px",
+            fontFamily: "var(--font-playfair), serif",
+            fontSize: "36px",
+            fontWeight: 400,
+            color: "#fff",
+            lineHeight: 1.3,
+            margin: "0 0 24px 0",
           }}
         >
-          {stats.map((stat, index) => (
-            <div key={index} className="relative" style={{ paddingLeft: "20px" }}>
-              {/* Decorative slash */}
+          {title}
+        </h2>
+        <p
+          style={{
+            fontSize: "12px",
+            lineHeight: 1.6,
+            color: "rgba(255,255,255,0.6)",
+            maxWidth: "440px",
+            margin: "0 0 32px 0",
+          }}
+        >
+          {subtitle}
+        </p>
+        <a
+          href={ctaHref}
+          target="_blank"
+          rel="noopener"
+          style={{
+            color: "#fff",
+            fontSize: "14px",
+            textDecoration: "none",
+            borderBottom: "1px solid #fff",
+            paddingBottom: "4px",
+            display: "inline-block",
+          }}
+        >
+          {ctaText} <span>&rarr;</span>
+        </a>
+      </div>
+
+      {/* Stats grid — bottom */}
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: "repeat(2, 1fr)",
+          gap: "60px",
+        }}
+      >
+        {stats.map((stat, index) => (
+          <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
+            {/* Decorative slash */}
+            <div
+              style={{
+                width: "60px",
+                height: "80px",
+                position: "relative",
+                flexShrink: 0,
+              }}
+            >
               <div
-                className="absolute"
                 style={{
-                  left: "0",
-                  top: "8px",
+                  position: "absolute",
+                  top: 0,
+                  left: "20px",
                   width: "2px",
-                  height: "40px",
-                  backgroundColor: "rgba(255,255,255,0.3)",
-                  transform: "rotate(15deg)",
+                  height: "80px",
+                  background: "rgba(255,255,255,0.25)",
+                  transform: "rotate(-30deg)",
+                  transformOrigin: "top center",
                 }}
               />
+            </div>
+            <div>
               <div
                 style={{
                   fontSize: "48px",
                   fontWeight: 300,
                   color: "#fff",
-                  lineHeight: 1.2,
-                  marginBottom: "8px",
+                  lineHeight: 1,
                 }}
               >
                 <AnimatedNumber
@@ -189,13 +198,15 @@ export default function StatsCounter({
                   fontSize: "18px",
                   fontWeight: 300,
                   color: "rgba(255,255,255,0.8)",
+                  marginTop: "4px",
+                  lineHeight: 1.3,
                 }}
               >
                 {stat.label}
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </section>
   );
