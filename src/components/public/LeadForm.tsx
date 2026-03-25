@@ -96,7 +96,7 @@ export default function LeadForm({
           style={{
             fontSize: "18px",
             fontWeight: 500,
-            color: "#b8945f",
+            color: "#1CB8E8",
             marginBottom: "8px",
           }}
         >
@@ -147,7 +147,7 @@ export default function LeadForm({
         {/* Nome */}
         <div>
           <label style={labelStyle}>
-            Nome <span style={{ color: "#b8945f" }}>*</span>
+            Nome <span style={{ color: "#1CB8E8" }}>*</span>
           </label>
           <input
             {...register("nome", { required: "Informe seu nome" })}
@@ -160,7 +160,7 @@ export default function LeadForm({
         {/* Telefone */}
         <div>
           <label style={labelStyle}>
-            Telefone <span style={{ color: "#b8945f" }}>*</span>
+            Telefone <span style={{ color: "#1CB8E8" }}>*</span>
           </label>
           <input
             {...register("telefone", {
@@ -222,7 +222,7 @@ export default function LeadForm({
             fontWeight: 600,
             letterSpacing: "0.5px",
             color: "#ffffff",
-            backgroundColor: status === "loading" ? "#9a7a4f" : "#b8945f",
+            backgroundColor: status === "loading" ? "#159bc2" : "#1CB8E8",
             border: "none",
             borderRadius: "6px",
             cursor: status === "loading" ? "not-allowed" : "pointer",

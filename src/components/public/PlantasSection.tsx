@@ -53,7 +53,7 @@ export default function PlantasSection({ plantas }: PlantasSectionProps) {
                 border: "none",
                 borderBottom: "1px solid rgba(26,26,26,0.06)",
                 backgroundColor: isActive ? "rgba(184,148,95,0.08)" : "transparent",
-                borderLeft: isActive ? "3px solid #b8945f" : "3px solid transparent",
+                borderLeft: isActive ? "3px solid #1CB8E8" : "3px solid transparent",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
@@ -73,7 +73,7 @@ export default function PlantasSection({ plantas }: PlantasSectionProps) {
                 <p
                   style={{
                     fontSize: "11px",
-                    color: isActive ? "#b8945f" : "rgba(138,125,114,0.6)",
+                    color: isActive ? "#1CB8E8" : "rgba(138,125,114,0.6)",
                     transition: "color 0.2s",
                   }}
                 >

@@ -120,7 +120,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
             <span style={{
               display: "inline-block", padding: "6px 20px", fontSize: "10px", fontWeight: 600,
               letterSpacing: "2px", textTransform: "uppercase",
-              color: "#fff", backgroundColor: "#b8945f", marginBottom: "20px",
+              color: "#fff", backgroundColor: "#1CB8E8", marginBottom: "20px",
             }}>
               {statusLabels[emp.status] ?? emp.status}
             </span>
@@ -139,7 +139,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
           <a
             href="#interesse"
             style={{
-              padding: "16px 40px", backgroundColor: "#b8945f", color: "#fff",
+              padding: "16px 40px", backgroundColor: "#1CB8E8", color: "#fff",
               fontSize: "12px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase",
               textDecoration: "none", transition: "background 0.3s",
               flexShrink: 0,
@@ -174,7 +174,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
                 </p>
                 <p style={{
                   fontSize: "10px", fontWeight: 500, letterSpacing: "2px",
-                  textTransform: "uppercase", color: "#b8945f",
+                  textTransform: "uppercase", color: "#1CB8E8",
                 }}>
                   {spec.label}
                 </p>
@@ -187,7 +187,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       {/* ═══ ABOUT + DIFERENCIAIS (side by side) ═══ */}
       {(emp.descricao || features.length > 0) && (
         <FadeInOnScroll>
-          <section style={{ backgroundColor: "#f5ebe1", padding: "100px 60px" }}>
+          <section style={{ backgroundColor: "#f8f8f8", padding: "100px 60px" }}>
             <div className="about-diff-grid" style={{
               maxWidth: "1200px", margin: "0 auto",
               display: "grid", gridTemplateColumns: features.length > 0 && emp.descricao ? "1fr 1fr" : "1fr",
@@ -198,7 +198,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
                 <div>
                   <p style={{
                     fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-                    textTransform: "uppercase", color: "#b8945f", marginBottom: "20px",
+                    textTransform: "uppercase", color: "#1CB8E8", marginBottom: "20px",
                   }}>
                     Sobre o empreendimento
                   </p>
@@ -221,7 +221,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
                 <div>
                   <p style={{
                     fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-                    textTransform: "uppercase", color: "#b8945f", marginBottom: "20px",
+                    textTransform: "uppercase", color: "#1CB8E8", marginBottom: "20px",
                   }}>
                     Diferenciais
                   </p>
@@ -266,7 +266,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
           <section style={{ backgroundColor: "#1a1a1a", padding: "100px 60px" }}>
             <p style={{
               fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-              textTransform: "uppercase", color: "#b8945f", textAlign: "center", marginBottom: "12px",
+              textTransform: "uppercase", color: "#1CB8E8", textAlign: "center", marginBottom: "12px",
             }}>
               Galeria
             </p>
@@ -284,7 +284,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       {/* ═══ PLANTAS / TIPOLOGIAS ═══ */}
       {plantas.length > 0 && (
         <FadeInOnScroll>
-          <section style={{ backgroundColor: "#f5ebe1", padding: "100px 60px" }}>
+          <section style={{ backgroundColor: "#f8f8f8", padding: "100px 60px" }}>
             <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
               <div style={{
                 display: "flex", alignItems: "baseline", gap: "48px",
@@ -329,7 +329,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
           <div style={{ maxWidth: "560px", margin: "0 auto" }}>
             <p style={{
               fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
-              textTransform: "uppercase", color: "#b8945f", textAlign: "center", marginBottom: "12px",
+              textTransform: "uppercase", color: "#1CB8E8", textAlign: "center", marginBottom: "12px",
             }}>
               Exclusividade
             </p>
@@ -345,7 +345,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
             }}>
               Fale com um consultor ou preencha o formulário abaixo.{" "}
               <a href={whatsappLink} target="_blank" rel="noopener"
-                style={{ color: "#b8945f", textDecoration: "none", borderBottom: "1px solid #b8945f" }}>
+                style={{ color: "#1CB8E8", textDecoration: "none", borderBottom: "1px solid #1CB8E8" }}>
                 WhatsApp direto →
               </a>
             </p>
@@ -357,7 +357,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       {/* ═══ ENTREGA INFO (if available) ═══ */}
       {emp.previsao_entrega && (
         <section style={{
-          backgroundColor: "#b8945f", padding: "40px 60px",
+          backgroundColor: "#1CB8E8", padding: "40px 60px",
           display: "flex", justifyContent: "center", alignItems: "center", gap: "40px",
         }}>
           <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,0.8)" }}>
