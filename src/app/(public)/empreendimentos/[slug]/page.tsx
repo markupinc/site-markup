@@ -48,6 +48,90 @@ const statusLabels: Record<string, string> = {
   entregue: "Entregue",
 };
 
+const galleryCategories = [
+  { key: "interior", label: "Fotos Internas" },
+  { key: "area_comum", label: "Áreas Comuns" },
+  { key: "fachada", label: "Fachada" },
+  { key: "planta", label: "Plantas" },
+];
+
+function GallerySections({ gallery, empNome }: { gallery: any[]; empNome: string }) {
+  if (!gallery || gallery.length === 0) return null;
+
+  const uncategorized = gallery.filter(
+    (img) => !img.categoria || !galleryCategories.some((c) => c.key === img.categoria)
+  );
+  const sections = [
+    ...galleryCategories.map((c) => ({
+      ...c,
+      images: gallery.filter((img) => img.categoria === c.key),
+    })),
+    ...(uncategorized.length > 0
+      ? [{ key: "outros", label: "Galeria", images: uncategorized }]
+      : []),
+  ].filter((s) => s.images.length > 0);
+
+  if (sections.length === 0) return null;
+
+  return (
+    <>
+      {sections.map((section, idx) => (
+        <FadeInOnScroll key={section.key}>
+          <section
+            style={{
+              backgroundColor: idx % 2 === 0 ? "#f5ebe1" : "#fff",
+              padding: "80px 60px",
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "var(--font-playfair), serif",
+                fontSize: "28px",
+                fontWeight: 400,
+                color: "#1a1a1a",
+                textAlign: "center",
+                marginBottom: "48px",
+              }}
+            >
+              {section.label}
+            </h2>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "16px",
+                maxWidth: "1200px",
+                margin: "0 auto",
+              }}
+            >
+              {section.images.map((img: any) => (
+                <div
+                  key={img.id}
+                  style={{
+                    borderRadius: "6px",
+                    overflow: "hidden",
+                    aspectRatio: "4/3",
+                  }}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.alt_text ?? empNome}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+          </section>
+        </FadeInOnScroll>
+      ))}
+    </>
+  );
+}
+
 function formatRange(min: number | null, max: number | null, suffix = "") {
   if (min != null && max != null && min !== max)
     return `${min} a ${max}${suffix}`;
@@ -349,60 +433,8 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
         </FadeInOnScroll>
       )}
 
-      {/* Gallery */}
-      {gallery.length > 0 && (
-        <FadeInOnScroll>
-          <section
-            style={{
-              backgroundColor: "#f5ebe1",
-              padding: "80px 60px",
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: "var(--font-playfair), serif",
-                fontSize: "28px",
-                fontWeight: 400,
-                color: "#1a1a1a",
-                textAlign: "center",
-                marginBottom: "48px",
-              }}
-            >
-              Galeria
-            </h2>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "16px",
-                maxWidth: "1200px",
-                margin: "0 auto",
-              }}
-            >
-              {gallery.map((img: any) => (
-                <div
-                  key={img.id}
-                  style={{
-                    borderRadius: "6px",
-                    overflow: "hidden",
-                    aspectRatio: "4/3",
-                  }}
-                >
-                  <img
-                    src={img.url}
-                    alt={img.alt_text ?? emp.nome}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
-          </section>
-        </FadeInOnScroll>
-      )}
+      {/* Gallery by category */}
+      <GallerySections gallery={gallery} empNome={emp.nome} />
 
       {/* Diferenciais */}
       {features.length > 0 && (
