@@ -1,0 +1,80 @@
+"use client";
+
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation } from "swiper/modules";
+import "swiper/css";
+import "swiper/css/navigation";
+
+interface Slide {
+  type: "video" | "image";
+  src: string;
+  label: string;
+}
+
+interface HeroSliderProps {
+  slides: Slide[];
+}
+
+export default function HeroSlider({ slides }: HeroSliderProps) {
+  return (
+    <div className="relative w-full" style={{ height: "85vh" }}>
+      <Swiper
+        modules={[Navigation]}
+        navigation
+        loop
+        className="w-full h-full"
+        style={
+          {
+            "--swiper-navigation-color": "#fff",
+            "--swiper-navigation-size": "24px",
+          } as React.CSSProperties
+        }
+      >
+        {slides.map((slide, index) => (
+          <SwiperSlide key={index} className="relative w-full h-full">
+            {/* Media */}
+            {slide.type === "video" ? (
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+              >
+                <source src={slide.src} type="video/mp4" />
+              </video>
+            ) : (
+              <div
+                className="absolute inset-0 w-full h-full bg-cover bg-center"
+                style={{ backgroundImage: `url(${slide.src})` }}
+              />
+            )}
+
+            {/* Gradient overlay */}
+            <div
+              className="absolute inset-0 z-10"
+              style={{
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.5) 100%)",
+              }}
+            />
+
+            {/* Label */}
+            <div
+              className="absolute z-20"
+              style={{
+                bottom: "80px",
+                right: "60px",
+                color: "#fff",
+                fontSize: "14px",
+                letterSpacing: "1px",
+              }}
+            >
+              {slide.label}
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+}
