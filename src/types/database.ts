@@ -1,0 +1,316 @@
+export type Database = {
+  public: {
+    Tables: {
+      admin_profiles: {
+        Row: {
+          id: string;
+          nome: string;
+          email: string;
+          role: "admin" | "editor";
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          nome: string;
+          email: string;
+          role?: "admin" | "editor";
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          nome?: string;
+          email?: string;
+          role?: "admin" | "editor";
+          created_at?: string;
+        };
+      };
+      empreendimentos: {
+        Row: {
+          id: string;
+          nome: string;
+          slug: string;
+          descricao: string | null;
+          descricao_curta: string | null;
+          status: "lancamento" | "em_obras" | "entregue";
+          endereco: string | null;
+          cidade: string | null;
+          estado: string | null;
+          bairro: string | null;
+          latitude: number | null;
+          longitude: number | null;
+          area_min: number | null;
+          area_max: number | null;
+          quartos_min: number | null;
+          quartos_max: number | null;
+          suites_min: number | null;
+          suites_max: number | null;
+          vagas_min: number | null;
+          vagas_max: number | null;
+          andares: number | null;
+          unidades_por_andar: number | null;
+          total_unidades: number | null;
+          previsao_entrega: string | null;
+          imagem_destaque_url: string | null;
+          video_url: string | null;
+          tour_virtual_url: string | null;
+          meta_title: string | null;
+          meta_description: string | null;
+          og_image_url: string | null;
+          destaque: boolean;
+          ordem: number;
+          ativo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          slug: string;
+          descricao?: string | null;
+          descricao_curta?: string | null;
+          status?: "lancamento" | "em_obras" | "entregue";
+          endereco?: string | null;
+          cidade?: string | null;
+          estado?: string | null;
+          bairro?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          area_min?: number | null;
+          area_max?: number | null;
+          quartos_min?: number | null;
+          quartos_max?: number | null;
+          suites_min?: number | null;
+          suites_max?: number | null;
+          vagas_min?: number | null;
+          vagas_max?: number | null;
+          andares?: number | null;
+          unidades_por_andar?: number | null;
+          total_unidades?: number | null;
+          previsao_entrega?: string | null;
+          imagem_destaque_url?: string | null;
+          video_url?: string | null;
+          tour_virtual_url?: string | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          og_image_url?: string | null;
+          destaque?: boolean;
+          ordem?: number;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["empreendimentos"]["Insert"]>;
+      };
+      empreendimento_imagens: {
+        Row: {
+          id: string;
+          empreendimento_id: string;
+          url: string;
+          alt_text: string | null;
+          categoria: string | null;
+          ordem: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          empreendimento_id: string;
+          url: string;
+          alt_text?: string | null;
+          categoria?: string | null;
+          ordem?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["empreendimento_imagens"]["Insert"]>;
+      };
+      empreendimento_plantas: {
+        Row: {
+          id: string;
+          empreendimento_id: string;
+          nome: string;
+          url: string;
+          area: number | null;
+          quartos: number | null;
+          suites: number | null;
+          ordem: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          empreendimento_id: string;
+          nome: string;
+          url: string;
+          area?: number | null;
+          quartos?: number | null;
+          suites?: number | null;
+          ordem?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["empreendimento_plantas"]["Insert"]>;
+      };
+      empreendimento_diferenciais: {
+        Row: {
+          id: string;
+          empreendimento_id: string;
+          titulo: string;
+          descricao: string | null;
+          icone: string | null;
+          ordem: number;
+        };
+        Insert: {
+          id?: string;
+          empreendimento_id: string;
+          titulo: string;
+          descricao?: string | null;
+          icone?: string | null;
+          ordem?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["empreendimento_diferenciais"]["Insert"]>;
+      };
+      blog_posts: {
+        Row: {
+          id: string;
+          titulo: string;
+          slug: string;
+          conteudo: string;
+          resumo: string | null;
+          imagem_destaque_url: string | null;
+          categoria: string | null;
+          tags: string[] | null;
+          meta_title: string | null;
+          meta_description: string | null;
+          og_image_url: string | null;
+          publicado: boolean;
+          data_publicacao: string | null;
+          autor_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          titulo: string;
+          slug: string;
+          conteudo: string;
+          resumo?: string | null;
+          imagem_destaque_url?: string | null;
+          categoria?: string | null;
+          tags?: string[] | null;
+          meta_title?: string | null;
+          meta_description?: string | null;
+          og_image_url?: string | null;
+          publicado?: boolean;
+          data_publicacao?: string | null;
+          autor_id?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["blog_posts"]["Insert"]>;
+      };
+      blog_categorias: {
+        Row: {
+          id: string;
+          nome: string;
+          slug: string;
+          descricao: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          slug: string;
+          descricao?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["blog_categorias"]["Insert"]>;
+      };
+      leads: {
+        Row: {
+          id: string;
+          nome: string;
+          email: string | null;
+          telefone: string;
+          mensagem: string | null;
+          empreendimento_id: string | null;
+          origem: string | null;
+          pagina_origem: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          status: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
+          notas: string | null;
+          atendente: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          email?: string | null;
+          telefone: string;
+          mensagem?: string | null;
+          empreendimento_id?: string | null;
+          origem?: string | null;
+          pagina_origem?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          status?: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
+          notas?: string | null;
+          atendente?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["leads"]["Insert"]>;
+      };
+      midia: {
+        Row: {
+          id: string;
+          fonte: string;
+          titulo: string;
+          url: string;
+          data_publicacao: string | null;
+          thumbnail_url: string | null;
+          ativo: boolean;
+          ordem: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          fonte: string;
+          titulo: string;
+          url: string;
+          data_publicacao?: string | null;
+          thumbnail_url?: string | null;
+          ativo?: boolean;
+          ordem?: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["midia"]["Insert"]>;
+      };
+      newsletter: {
+        Row: {
+          id: string;
+          email: string;
+          ativo: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          email: string;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["newsletter"]["Insert"]>;
+      };
+      configuracoes: {
+        Row: {
+          chave: string;
+          valor: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          chave: string;
+          valor?: string | null;
+        };
+        Update: {
+          chave?: string;
+          valor?: string | null;
+        };
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: {
+      empreendimento_status: "lancamento" | "em_obras" | "entregue";
+      lead_status: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
+    };
+  };
+};

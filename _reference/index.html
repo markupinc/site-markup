@@ -1,0 +1,1256 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markup Incorporações</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <style>
+    :root {
+      --bg-cream: #f5ebe1;
+      --dark: #1a1a1a;
+      --text-muted: #8a7d72;
+      --accent-gold: #b8945f;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-cream);
+      color: var(--dark);
+      overflow-x: hidden;
+      line-height: 1;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 20px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background-color 0.3s, padding 0.3s;
+    }
+    .navbar.scrolled {
+      background: rgba(26,26,26,0.95);
+      padding: 12px 60px;
+      backdrop-filter: blur(10px);
+    }
+    .navbar .logo img {
+      height: 40px;
+      filter: brightness(0) invert(1);
+    }
+    .navbar nav {
+      display: flex;
+      align-items: center;
+    }
+    .navbar nav a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      margin-left: 40px;
+      transition: opacity 0.3s;
+    }
+    .navbar nav a:hover { opacity: 0.7; }
+    .navbar .social-icons {
+      display: flex;
+      align-items: center;
+    }
+    .navbar .social-icons a {
+      color: #fff;
+      margin-left: 16px;
+      font-size: 14px;
+      transition: opacity 0.3s;
+      display: inline-flex;
+    }
+    .navbar .social-icons a:hover { opacity: 0.7; }
+
+    /* Hero Slider */
+    .hero-section {
+      width: 100%;
+      height: 85vh;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-slide {
+      width: 100%;
+      height: 85vh;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .hero-slide::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.5) 100%);
+    }
+    .hero-content {
+      position: absolute;
+      bottom: 80px;
+      right: 60px;
+      z-index: 2;
+      text-align: right;
+    }
+    .hero-content .label {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+      letter-spacing: 1px;
+    }
+    .swiper-button-next, .swiper-button-prev {
+      color: #fff !important;
+    }
+
+    /* Welcome Text — Sticky Magic Text Effect */
+    .welcome-wrapper {
+      /* Extra height to create scroll runway for the sticky effect */
+      height: 180vh;
+      position: relative;
+    }
+    .welcome-section {
+      background: var(--dark);
+      padding: 0 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+    }
+    .magic-text {
+      max-width: 800px;
+      padding: 16px;
+      text-align: center;
+    }
+    .magic-line {
+      display: block;
+    }
+    .magic-word {
+      font-family: 'Inter', sans-serif;
+      font-size: 26px;
+      font-weight: 500;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.2);
+      transition: color 0.15s ease;
+    }
+    .magic-word.revealed {
+      color: #fff;
+    }
+
+    /* Scroll Expansion Section */
+    .expansion-wrapper {
+      height: 300vh;
+      position: relative;
+      background: var(--dark);
+    }
+    .expansion-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      background: var(--dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .expansion-media {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      height: 400px;
+      max-width: 95vw;
+      max-height: 85vh;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 50px rgba(0,0,0,0.3);
+      z-index: 1;
+    }
+    .expansion-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .expansion-media .overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      border-radius: 16px;
+    }
+    .expansion-titles {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      pointer-events: none;
+    }
+    .expansion-titles h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 300;
+      color: #fff;
+      white-space: nowrap;
+      letter-spacing: -0.5px;
+    }
+    .expansion-hint {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      text-align: center;
+    }
+    .expansion-hint p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+    .expansion-hint .arrow {
+      width: 24px;
+      height: 24px;
+      border-left: 2px solid rgba(255,255,255,0.5);
+      border-bottom: 2px solid rgba(255,255,255,0.5);
+      transform: rotate(-45deg);
+      margin: 0 auto;
+      animation: bounceArrow 1.5s infinite;
+    }
+    @keyframes bounceArrow {
+      0%, 100% { transform: rotate(-45deg) translateY(0); }
+      50% { transform: rotate(-45deg) translateY(8px); }
+    }
+
+    /* Launches / Projects */
+    .launches-section {
+      background: #fff;
+      padding: 80px 60px 60px;
+    }
+    .launches-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin-bottom: 24px;
+      color: var(--dark);
+    }
+    .launches-section .subtitle {
+      font-size: 12px;
+      line-height: 1.6;
+      color: #555;
+      max-width: 440px;
+      margin-bottom: 48px;
+    }
+    .project-card {
+      margin-bottom: 40px;
+      display: block;
+      text-decoration: none;
+      color: var(--dark);
+    }
+    .project-card {
+      overflow: hidden;
+    }
+    .project-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+    .project-card:hover img {
+      transform: scale(1.03);
+    }
+    .project-card .card-info {
+      padding-top: 16px;
+    }
+    .project-card .card-info .name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    .project-card .card-info .location {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-left: 8px;
+      font-weight: 300;
+    }
+    .project-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+    .cta-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--dark);
+      text-decoration: none;
+      border-bottom: 1px solid var(--dark);
+      padding-bottom: 4px;
+      margin-top: 40px;
+      transition: opacity 0.3s;
+    }
+    .cta-link:hover { opacity: 0.7; }
+
+    /* Stats Section */
+    .stats-section {
+      background: var(--dark);
+      padding: 80px 60px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+    }
+    .stat-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+    .stat-item .slash {
+      width: 60px;
+      height: 80px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    .stat-item .slash::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 20px;
+      width: 2px;
+      height: 80px;
+      background: rgba(255,255,255,0.25);
+      transform: rotate(-30deg);
+      transform-origin: top center;
+    }
+    .stat-item .stat-content .number {
+      font-size: 48px;
+      font-weight: 300;
+      color: #fff;
+      line-height: 1;
+    }
+    .stat-item .stat-content .label {
+      font-size: 18px;
+      color: rgba(255,255,255,0.8);
+      font-weight: 300;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    .stats-text {
+      margin-bottom: 80px;
+    }
+    .stats-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 24px;
+    }
+    .stats-text p {
+      font-size: 12px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.6);
+      max-width: 440px;
+      margin-bottom: 32px;
+    }
+    .stats-text .cta-link {
+      color: #fff;
+      border-color: #fff;
+    }
+
+    /* About Section (replacing Media) */
+    .about-section {
+      background: #fff;
+      padding: 80px 60px;
+    }
+    .about-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin-bottom: 40px;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    .about-text {
+      font-size: 13px;
+      line-height: 1.8;
+      color: #555;
+    }
+    .about-card {
+      border: 1px solid #e0d6cc;
+      padding: 32px;
+      margin-top: 32px;
+    }
+    .about-card h3 {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: var(--dark);
+    }
+    .about-card p {
+      font-size: 12px;
+      line-height: 1.7;
+      color: #666;
+    }
+    .about-image {
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+      object-fit: cover;
+    }
+
+    /* Media Section */
+    .media-section {
+      background: #fff;
+      padding: 80px 60px;
+    }
+    .media-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin-bottom: 48px;
+    }
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      text-align: center;
+    }
+    .media-card {
+      text-decoration: none;
+      color: var(--dark);
+      display: block;
+    }
+    .media-card .media-source {
+      font-size: 11px;
+      color: var(--accent-gold);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+    .media-card .media-headline {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--dark);
+    }
+    .media-card:hover .media-headline {
+      color: var(--accent-gold);
+      transition: color 0.3s;
+    }
+    .media-divider {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 48px;
+    }
+    .media-divider span {
+      width: 40px;
+      height: 3px;
+      background: var(--dark);
+      border-radius: 2px;
+    }
+    .media-divider span.inactive {
+      background: #ccc;
+    }
+
+    /* Blog / News */
+    .blog-section {
+      background: var(--bg-cream);
+      padding: 80px 60px;
+    }
+    .blog-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 30px;
+      font-weight: 400;
+      margin-bottom: 40px;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+    .blog-card {
+      text-decoration: none;
+      color: var(--dark);
+      display: block;
+    }
+    .blog-card img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      margin-bottom: 16px;
+      transition: transform 0.5s ease;
+    }
+    .blog-card:hover img {
+      transform: scale(1.03);
+    }
+    .blog-card .blog-category {
+      font-size: 10px;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+    .blog-card .blog-title {
+      font-size: 15px;
+      line-height: 1.5;
+      color: var(--dark);
+      font-weight: 400;
+    }
+    .blog-card .blog-date {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+    .blog-card .blog-overflow {
+      overflow: hidden;
+    }
+
+    /* Contact Section */
+    .contact-section {
+      background: var(--dark);
+      padding: 80px 60px;
+    }
+    .contact-section .label-top {
+      font-size: 12px;
+      letter-spacing: 2px;
+      color: var(--accent-gold);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .contact-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 400;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 16px;
+    }
+    .contact-section .contact-subtitle {
+      font-size: 13px;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.5);
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+    .contact-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 40px;
+      max-width: 600px;
+    }
+    .contact-card h3 {
+      font-size: 16px;
+      color: var(--accent-gold);
+      margin-bottom: 32px;
+      font-weight: 500;
+    }
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .contact-item .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(184,148,95,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .contact-item .icon svg {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-gold);
+    }
+    .contact-item .info-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 4px;
+    }
+    .contact-item .info-value {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.5;
+    }
+    .contact-item a {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+    }
+    .contact-item a:hover {
+      color: var(--accent-gold);
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--dark);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 60px 60px 30px;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+    .footer-logo img {
+      height: 60px;
+      filter: brightness(0) invert(1);
+      margin-bottom: 16px;
+    }
+    .footer-col h4 {
+      font-size: 13px;
+      color: #fff;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      margin-bottom: 10px;
+      transition: color 0.3s;
+    }
+    .footer-col a:hover { color: #fff; }
+
+    .footer-middle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      padding: 60px 0;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-address h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .footer-address p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.6;
+    }
+    .footer-address .phone {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 400;
+      color: #fff;
+      margin-top: 32px;
+      display: block;
+      text-decoration: none;
+    }
+    .footer-newsletter h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+    .footer-newsletter p {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .newsletter-form {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      padding-bottom: 8px;
+    }
+    .newsletter-form input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 14px;
+      outline: none;
+    }
+    .newsletter-form input::placeholder { color: rgba(255,255,255,0.4); }
+    .newsletter-form button {
+      background: transparent;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      font-size: 20px;
+    }
+    .consent-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 16px;
+      line-height: 1.5;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .consent-text input[type="checkbox"] {
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .consent-text a {
+      color: rgba(255,255,255,0.6);
+      text-decoration: underline;
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 30px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-social a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 12px;
+      margin-right: 24px;
+      transition: color 0.3s;
+    }
+    .footer-social a:hover { color: #fff; }
+    .footer-copyright {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    /* Counter animation */
+    .counter { display: inline-block; }
+
+    /* Scroll animations — elements start visible, animate on scroll */
+    .fade-in {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .fade-in.hidden {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar" id="navbar">
+    <a href="#" class="logo">
+      <img src="assets/73b28903-5414-4f9c-88a8-b9c30a7ab370.png" alt="Markup Incorporações">
+    </a>
+    <nav>
+      <a href="#empreendimentos">Empreendimentos</a>
+      <a href="#about-section">Empresa</a>
+      <a href="#novidades">Novidades</a>
+      <a href="#contato">Contato</a>
+    </nav>
+    <div class="social-icons">
+      <a href="https://www.instagram.com/markup_inc/" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+      </a>
+      <a href="https://www.facebook.com/profile.php?id=61575200364485" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      </a>
+      <a href="https://www.youtube.com/@MarkupIncorporacoes" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.13C5.12 19.56 12 19.56 12 19.56s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+      </a>
+      <a href="https://wa.me/5582982294001/" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+      </a>
+    </div>
+  </header>
+
+  <!-- HERO SLIDER -->
+  <section class="hero-section">
+    <div class="swiper heroSwiper">
+      <div class="swiper-wrapper">
+        <div class="swiper-slide">
+          <div class="hero-slide" style="background: #000;">
+            <video autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+              <source src="assets/video-horizon.mov" type="video/quicktime">
+              <source src="assets/video-horizon.mov" type="video/mp4">
+            </video>
+            <div style="position:absolute;inset:0;background:linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.5) 100%);"></div>
+            <div class="hero-content">
+              <span class="label">Em breve...</span>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="hero-slide" style="background-image: url('assets/up-fachada-01-nova.jpg');">
+            <div class="hero-content">
+              <span class="label">Lançamento Up! Studios</span>
+            </div>
+          </div>
+        </div>
+        <div class="swiper-slide">
+          <div class="hero-slide" style="background-image: url('assets/0838f2e5-6279-4244-be7e-1fc37440125d.png');">
+            <div class="hero-content">
+              <span class="label">Salsa Home Resort</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="swiper-button-prev"></div>
+      <div class="swiper-button-next"></div>
+    </div>
+  </section>
+
+  <!-- WELCOME TEXT -->
+  <div class="welcome-wrapper" id="welcomeWrapper">
+    <section class="welcome-section">
+      <p class="magic-text" id="magicText">
+        <span class="magic-line" data-text="Seu investimento merece mais do que promessas."></span>
+        <span class="magic-line" data-text="Merece solidez. Merece retorno."></span>
+        <span class="magic-line" data-text="Cada empreendimento carrega o nosso compromisso com quem escolheu investir no que importa."></span>
+      </p>
+    </section>
+  </div>
+
+  <!-- SCROLL EXPANSION REVEAL -->
+  <div class="expansion-wrapper" id="expansionWrapper">
+    <div class="expansion-sticky">
+      <div class="expansion-media" id="expansionMedia">
+        <img src="assets/APT TIPO_TERMI 02_VARANDA 2 - Copia.png" alt="Up! Studios">
+        <div class="overlay" id="expansionOverlay"></div>
+      </div>
+      <div class="expansion-titles" id="expansionTitles">
+        <h2 id="titleTop">Você investe,</h2>
+        <h2 id="titleBottom">o retorno vem.</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAUNCHES / PROJECTS -->
+  <section class="launches-section" id="empreendimentos">
+    <h2 class="fade-in">Lançamentos Markup</h2>
+    <p class="subtitle fade-in">Descubra nossa coleção de empreendimentos de alto padrão, projetados para oferecer o máximo em conforto, segurança e sofisticação.</p>
+
+    <!-- Featured large project -->
+    <a href="https://markupincorporacoes.com.br/empreendimentos/up" class="project-card fade-in">
+      <img src="assets/up-fachada-01-nova.jpg" alt="Up! Studios" style="max-height: 500px; object-fit: cover;">
+      <div class="card-info">
+        <span class="name">Up! Studios</span>
+        <span class="location">Maceió / Alagoas</span>
+      </div>
+    </a>
+
+    <!-- 2-column row -->
+    <div class="project-grid-2">
+      <a href="https://markupincorporacoes.com.br/empreendimentos/salsa" class="project-card fade-in">
+        <img src="assets/0838f2e5-6279-4244-be7e-1fc37440125d.png" alt="Salsa Home Resort" style="height: 320px; object-fit: cover;">
+        <div class="card-info">
+          <span class="name">Salsa Home Resort</span>
+          <span class="location">Maceió / Alagoas</span>
+        </div>
+      </a>
+      <a href="https://markupincorporacoes.com.br/empreendimentos/up" class="project-card fade-in">
+        <img src="assets/up-fachada-01-nova.jpg" alt="Up! Studios" style="height: 320px; object-fit: cover;">
+        <div class="card-info">
+          <span class="name">Up! Studios</span>
+          <span class="location">Maceió / Alagoas</span>
+        </div>
+      </a>
+    </div>
+
+    <a href="https://markupincorporacoes.com.br/empreendimentos" class="cta-link fade-in">
+      Veja mais empreendimentos <span>&rarr;</span>
+    </a>
+  </section>
+
+  <!-- STATS SECTION -->
+  <section class="stats-section">
+    <div class="stats-text fade-in">
+      <h2>Somos obcecados<br>por excelência</h2>
+      <p>Com 15 anos de experiência em desenvolvimento imobiliário através de parcerias estratégicas, a Markup Incorporações direciona toda a sua expertise para oferecer produtos arrojados, de alto padrão e com alta rentabilidade.</p>
+      <a href="https://www.instagram.com/markup_inc/" class="cta-link" target="_blank" rel="noopener">Conheça nosso portfólio <span>&rarr;</span></a>
+    </div>
+
+    <div class="stats-grid fade-in">
+      <div class="stat-item">
+        <div class="slash">/</div>
+        <div class="stat-content">
+          <div class="number"><span class="counter" data-target="15">0</span></div>
+          <div class="label">anos de experiência</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="slash">/</div>
+        <div class="stat-content">
+          <div class="number"><span class="counter" data-target="200">0</span>+</div>
+          <div class="label">investidores</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="slash">/</div>
+        <div class="stat-content">
+          <div class="number"><span class="counter" data-target="2">0</span></div>
+          <div class="label">empreendimentos</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="slash">/</div>
+        <div class="stat-content">
+          <div class="number"><span class="counter" data-target="200">0</span>+</div>
+          <div class="label">unid. em desenvolvimento</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARKUP NA MÍDIA -->
+  <section class="media-section">
+    <h2 class="fade-in">Markup na mídia.</h2>
+    <div class="media-grid fade-in" style="grid-template-columns: 1fr 1fr;">
+      <a href="https://www.smag.al/2025/03/markup-incorporacoes-lanca-salsa-home-resort-sucesso-de-vendas-a-beira-mar-de-guaxuma/" target="_blank" rel="noopener" class="media-card">
+        <div class="media-source">S.Mag</div>
+        <div class="media-headline">Markup Incorporações lança Salsa Home Resort, sucesso de vendas à beira-mar de Guaxuma</div>
+      </a>
+      <a href="https://creci-al.gov.br/portal/encontro-com-construtor-do-creci-tem-apresentacao-do-salsa-home-resort/" target="_blank" rel="noopener" class="media-card">
+        <div class="media-source">CRECI-AL</div>
+        <div class="media-headline">Encontro com Construtor do CRECI tem apresentação do Salsa Home Resort</div>
+      </a>
+    </div>
+    <div class="media-divider fade-in">
+      <span></span>
+      <span class="inactive"></span>
+    </div>
+  </section>
+
+  <!-- BLOG MARKUP -->
+  <section class="blog-section" id="novidades">
+    <h2 class="fade-in">Blog Markup</h2>
+    <div class="blog-grid">
+      <a href="#" class="blog-card fade-in">
+        <div class="blog-overflow">
+          <img src="assets/up-fachada-01-nova.jpg" alt="UP! Studios - Oportunidade de investimento">
+        </div>
+        <div class="blog-category">Investimentos</div>
+        <p class="blog-title">Por que investir em studios compactos é a grande tendência do mercado imobiliário em 2025</p>
+        <div class="blog-date">18 de março de 2025</div>
+      </a>
+      <a href="#" class="blog-card fade-in">
+        <div class="blog-overflow">
+          <img src="assets/0838f2e5-6279-4244-be7e-1fc37440125d.png" alt="Salsa Home Resort">
+        </div>
+        <div class="blog-category">Lifestyle</div>
+        <p class="blog-title">Maceió como destino de moradia: qualidade de vida e valorização imobiliária na capital alagoana</p>
+        <div class="blog-date">10 de março de 2025</div>
+      </a>
+      <a href="#" class="blog-card fade-in">
+        <div class="blog-overflow">
+          <img src="assets/a3b97bf8-8e2e-4a74-ab62-577743c0aca8.png" alt="Markup Incorporações" style="object-position: top;">
+        </div>
+        <div class="blog-category">Empresa</div>
+        <p class="blog-title">15 anos de experiência: como a Markup se consolidou no mercado de incorporações de alto padrão</p>
+        <div class="blog-date">28 de fevereiro de 2025</div>
+      </a>
+    </div>
+    <a href="#" class="cta-link fade-in" style="margin-top: 48px; display: inline-flex;">
+      Veja mais artigos <span>&rarr;</span>
+    </a>
+  </section>
+
+  <!-- CONTACT SECTION -->
+  <section class="contact-section" id="contato">
+    <p class="label-top fade-in">EXCLUSIVIDADE E ATENDIMENTO PREMIUM</p>
+    <h2 class="fade-in">Entre em contato com a<br>Markup Incorporações.</h2>
+    <p class="contact-subtitle fade-in">Nossa equipe de consultores está pronta para oferecer um atendimento exclusivo e personalizado, guiando você pelo processo de escolha do seu próximo lar de luxo.</p>
+
+    <div class="contact-card fade-in">
+      <h3>Atendimento Exclusivo</h3>
+
+      <div class="contact-item">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="info-label">Escritório Corporativo</div>
+          <div class="info-value">Empresarial Ocean Tower - Tv. Dr. Antônio Gouveia, 61 - Pajuçara, Maceió - AL, 57030-170, Sala 307</div>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <div>
+          <div class="info-label">Central de Relacionamento</div>
+          <div class="info-value"><a href="tel:+5582982294001">+55 82 98229-4001</a></div>
+        </div>
+      </div>
+
+      <div class="contact-item">
+        <div class="icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <div>
+          <div class="info-label">E-mail Comercial</div>
+          <div class="info-value"><a href="mailto:comercial@markupinc.com.br">comercial@markupinc.com.br</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-logo">
+        <img src="assets/73b28903-5414-4f9c-88a8-b9c30a7ab370.png" alt="Markup Incorporações">
+      </div>
+      <div class="footer-col">
+        <h4>Mapa do site</h4>
+        <a href="#empreendimentos">Empreendimentos</a>
+        <a href="#about-section">Sobre nós</a>
+        <a href="#contato">Contato</a>
+      </div>
+      <div class="footer-col">
+        <h4>Empreendimentos</h4>
+        <a href="https://markupincorporacoes.com.br/empreendimentos/up">Up! Studios</a>
+        <a href="https://markupincorporacoes.com.br/empreendimentos/salsa">Salsa Home Resort</a>
+      </div>
+      <div class="footer-col">
+        <h4>Contato</h4>
+        <a href="https://wa.me/5582982294001/">WhatsApp</a>
+        <a href="mailto:markupempreendimentos@gmail.com">E-mail</a>
+        <a href="https://www.instagram.com/markup_inc/" target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </div>
+
+    <div class="footer-middle">
+      <div class="footer-address">
+        <h3>Sede Markup</h3>
+        <p>Empresarial Ocean Tower<br>Tv. Dr. Antônio Gouveia, 61<br>Pajuçara, Maceió - AL</p>
+        <a href="tel:+5582982294001" class="phone">(82) 98229-4001</a>
+      </div>
+      <div class="footer-newsletter">
+        <h3>Inscreva-se</h3>
+        <p>Deseja estar por dentro do que acontece na Markup?<br>deixe seu e-mail abaixo e receba novidades.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Seu e-mail aqui">
+          <button type="button">&rarr;</button>
+        </div>
+        <label class="consent-text">
+          <input type="checkbox">
+          <span>Eu concordo em receber comunicações. Ao informar meus dados, eu concordo com a <a href="#">Política de Privacidade</a> e <a href="#">Termos de Uso</a>.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div class="footer-social">
+        <a href="https://www.facebook.com/profile.php?id=61575200364485" target="_blank" rel="noopener">Facebook</a>
+        <a href="https://www.instagram.com/markup_inc/" target="_blank" rel="noopener">Instagram</a>
+        <a href="https://www.youtube.com/@MarkupIncorporacoes" target="_blank" rel="noopener">Youtube</a>
+        <a href="https://wa.me/5582982294001/" target="_blank" rel="noopener">WhatsApp</a>
+      </div>
+      <div class="footer-copyright">&copy; Markup Incorporações 2025</div>
+    </div>
+  </footer>
+
+  <!-- WhatsApp Floating Button -->
+  <a href="https://wa.me/5582982294001/" target="_blank" rel="noopener" style="position:fixed;bottom:24px;right:24px;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:999;transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/></svg>
+  </a>
+
+  <!-- SCRIPTS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+  <script>
+    // Swiper Hero
+    const heroSwiper = new Swiper('.heroSwiper', {
+      loop: true,
+      navigation: {
+        nextEl: '.swiper-button-next',
+        prevEl: '.swiper-button-prev',
+      },
+    });
+
+    // Magic Text — sticky section, word-by-word color change on scroll
+    (function initMagicText() {
+      const container = document.getElementById('magicText');
+      const wrapper = document.getElementById('welcomeWrapper');
+      if (!container || !wrapper) return;
+
+      // Build words from each magic-line
+      const lines = container.querySelectorAll('.magic-line');
+      const allWords = [];
+
+      lines.forEach((line) => {
+        const text = line.dataset.text;
+        const words = text.split(' ');
+        words.forEach((word) => {
+          const span = document.createElement('span');
+          span.className = 'magic-word';
+          span.textContent = word + ' ';
+          line.appendChild(span);
+          allWords.push(span);
+        });
+      });
+
+      function update() {
+        const wrapperRect = wrapper.getBoundingClientRect();
+        const wrapperH = wrapper.offsetHeight;
+        const viewH = window.innerHeight;
+        const scrolled = -wrapperRect.top;
+        const scrollRunway = wrapperH - viewH;
+        const progress = Math.min(Math.max(scrolled / scrollRunway, 0), 1);
+
+        const total = allWords.length;
+        allWords.forEach((el, i) => {
+          const wordStart = i / total;
+          const wordEnd = wordStart + 1 / total;
+          const wordProgress = (progress - wordStart) / (wordEnd - wordStart);
+
+          if (wordProgress >= 1) {
+            el.classList.add('revealed');
+          } else {
+            el.classList.remove('revealed');
+          }
+        });
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+
+    // Scroll Expansion — media box grows from small to full viewport on scroll
+    (function initExpansion() {
+      const wrapper = document.getElementById('expansionWrapper');
+      const media = document.getElementById('expansionMedia');
+      const overlay = document.getElementById('expansionOverlay');
+      const titles = document.getElementById('expansionTitles');
+      const titleTop = document.getElementById('titleTop');
+      const titleBottom = document.getElementById('titleBottom');
+      const hint = document.getElementById('expansionHint');
+      if (!wrapper || !media) return;
+
+      const isMobile = window.innerWidth < 768;
+
+      function update() {
+        const rect = wrapper.getBoundingClientRect();
+        const wrapperH = wrapper.offsetHeight;
+        const viewH = window.innerHeight;
+        const scrolled = -rect.top;
+        const runway = wrapperH - viewH;
+        const p = Math.min(Math.max(scrolled / runway, 0), 1);
+
+        // Media grows from 300x400 to full viewport
+        if (p >= 0.95) {
+          media.style.width = '100vw';
+          media.style.height = '100vh';
+          media.style.maxWidth = '100vw';
+          media.style.maxHeight = '100vh';
+        } else {
+          const w = 300 + p * (isMobile ? 650 : 1250);
+          const h = 400 + p * (isMobile ? 200 : 400);
+          media.style.width = w + 'px';
+          media.style.height = h + 'px';
+          media.style.maxWidth = '95vw';
+          media.style.maxHeight = '85vh';
+        }
+
+        // Border radius shrinks
+        media.style.borderRadius = (16 * (1 - p)) + 'px';
+
+        // Overlay fades out
+        overlay.style.opacity = Math.max(0.4 - p * 0.4, 0);
+
+        // Titles split apart
+        const textX = p * (isMobile ? 180 : 150);
+        titleTop.style.transform = 'translateX(-' + textX + 'vw)';
+        titleBottom.style.transform = 'translateX(' + textX + 'vw)';
+        titles.style.opacity = Math.max(1 - p * 2.5, 0);
+
+        // Hint fades fast
+        hint.style.opacity = Math.max(1 - p * 5, 0);
+      }
+
+      window.addEventListener('scroll', update, { passive: true });
+      update();
+    })();
+
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Counter animation
+    function animateCounters() {
+      document.querySelectorAll('.counter').forEach(counter => {
+        const target = +counter.getAttribute('data-target');
+        const duration = 2000;
+        const start = performance.now();
+        function update(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          counter.textContent = Math.floor(eased * target);
+          if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+      });
+    }
+
+    // Intersection Observer for fade-in + counters
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.remove('hidden');
+          entry.target.classList.add('visible');
+          if (entry.target.querySelector('.counter')) {
+            animateCounters();
+          }
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+    // Dedicated observer for counters with lower threshold
+    const statsGrid = document.querySelector('.stats-grid');
+    if (statsGrid) {
+      const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            animateCounters();
+            counterObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.05 });
+      counterObserver.observe(statsGrid);
+    }
+  </script>
+
+</body>
+</html>
