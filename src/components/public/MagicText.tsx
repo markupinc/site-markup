@@ -18,8 +18,6 @@ export default function MagicText({ lines }: MagicTextProps) {
       const wrapperHeight = wrapperRef.current.offsetHeight;
       const viewportHeight = window.innerHeight;
 
-      // Progress: 0 when top of wrapper hits top of viewport,
-      // 1 when bottom of wrapper reaches bottom of viewport
       const scrolled = -rect.top;
       const totalScrollable = wrapperHeight - viewportHeight;
       const p = Math.max(0, Math.min(1, scrolled / totalScrollable));
@@ -51,7 +49,10 @@ export default function MagicText({ lines }: MagicTextProps) {
   let wordIndex = 0;
 
   return (
-    <div ref={wrapperRef} style={{ height: "180vh" }}>
+    <div
+      ref={wrapperRef}
+      style={{ height: "180vh", position: "relative", marginBottom: 0 }}
+    >
       <div
         className="sticky top-0 flex items-center justify-center"
         style={{
@@ -85,7 +86,7 @@ export default function MagicText({ lines }: MagicTextProps) {
                   fontSize: "26px",
                   fontWeight: 500,
                   lineHeight: 1.6,
-                  color: isRevealed ? "#fff" : "rgba(255,255,255,0.2)",
+                  color: isRevealed ? "#fff" : "rgba(255,255,255,0.12)",
                   transition: "color 0.15s ease",
                   marginRight: "8px",
                   display: "inline-block",

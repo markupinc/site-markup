@@ -15,10 +15,10 @@ export default function ScrollExpansion({
 }: ScrollExpansionProps) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
-  const [viewportSize, setViewportSize] = useState({ w: 1440, h: 900 });
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    setViewportSize({ w: window.innerWidth, h: window.innerHeight });
+    setIsMobile(window.innerWidth < 768);
 
     const handleScroll = () => {
       if (!wrapperRef.current) return;
@@ -34,7 +34,7 @@ export default function ScrollExpansion({
     };
 
     const handleResize = () => {
-      setViewportSize({ w: window.innerWidth, h: window.innerHeight });
+      setIsMobile(window.innerWidth < 768);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -47,90 +47,119 @@ export default function ScrollExpansion({
     };
   }, []);
 
-  // Image dimensions: starts at 300x400, grows to full viewport
-  const expansionProgress = Math.min(progress / 0.95, 1);
-  const imgWidth = 300 + expansionProgress * (viewportSize.w - 300);
-  const imgHeight = 400 + expansionProgress * (viewportSize.h - 400);
-  const isFullScreen = progress >= 0.95;
-  const borderRadius = 16 * (1 - expansionProgress);
-  const overlayOpacity = 0.4 * (1 - expansionProgress);
+  // Media grows from 300x400 to full viewport
+  const p = progress;
+  const isFullScreen = p >= 0.95;
 
-  // Title animations
-  const titleOpacity = Math.max(0, 1 - progress * 2.5);
-  const titleSpread = progress * 25; // vw units
+  const mediaWidth = isFullScreen
+    ? "100vw"
+    : `${300 + p * (isMobile ? 650 : 1250)}px`;
+  const mediaHeight = isFullScreen
+    ? "100vh"
+    : `${400 + p * (isMobile ? 200 : 400)}px`;
+  const maxWidth = isFullScreen ? "100vw" : "95vw";
+  const maxHeight = isFullScreen ? "100vh" : "85vh";
+
+  const borderRadius = 16 * (1 - Math.min(p / 0.95, 1));
+  const overlayOpacity = Math.max(0.4 - p * 0.4, 0);
+
+  // Titles split apart
+  const textX = p * (isMobile ? 180 : 150);
+  const titleOpacity = Math.max(1 - p * 2.5, 0);
 
   return (
     <div
       ref={wrapperRef}
-      style={{ height: "300vh", backgroundColor: "#1a1a1a" }}
+      style={{
+        height: "300vh",
+        position: "relative",
+        backgroundColor: "#1a1a1a",
+        marginTop: 0,
+      }}
     >
       <div
         className="sticky top-0 flex items-center justify-center overflow-hidden"
-        style={{ height: "100vh" }}
+        style={{
+          height: "100vh",
+          backgroundColor: "#1a1a1a",
+        }}
       >
         {/* Image container */}
         <div
-          className="relative overflow-hidden"
           style={{
-            width: isFullScreen ? "100vw" : `${imgWidth}px`,
-            height: isFullScreen ? "100vh" : `${imgHeight}px`,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: mediaWidth,
+            height: mediaHeight,
+            maxWidth,
+            maxHeight,
             borderRadius: `${borderRadius}px`,
-            transition: "border-radius 0.1s ease",
+            overflow: "hidden",
+            boxShadow: "0 0 50px rgba(0,0,0,0.3)",
+            zIndex: 1,
           }}
         >
-          {/* Image */}
-          <div
-            className="absolute inset-0 bg-cover bg-center"
+          <img
+            src={imageSrc}
+            alt=""
             style={{
-              backgroundImage: `url(${imageSrc})`,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
             }}
           />
-
-          {/* Dark overlay */}
           <div
-            className="absolute inset-0"
             style={{
-              backgroundColor: `rgba(0,0,0,${overlayOpacity})`,
+              position: "absolute",
+              inset: 0,
+              background: `rgba(0,0,0,${overlayOpacity})`,
+              borderRadius: `${borderRadius}px`,
             }}
           />
         </div>
 
         {/* Title lines */}
         <div
-          className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
-          style={{ opacity: titleOpacity }}
+          style={{
+            position: "relative",
+            zIndex: 2,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "12px",
+            pointerEvents: "none",
+            opacity: titleOpacity,
+          }}
         >
-          {/* Top line — moves left */}
-          <span
+          <h2
             style={{
               fontFamily: "var(--font-inter), sans-serif",
               fontSize: "clamp(36px, 5vw, 64px)",
               fontWeight: 300,
               color: "#fff",
-              letterSpacing: "-0.5px",
-              transform: `translateX(-${titleSpread}vw)`,
-              transition: "transform 0.05s linear",
               whiteSpace: "nowrap",
+              letterSpacing: "-0.5px",
+              transform: `translateX(-${textX}vw)`,
             }}
           >
             {titleTop}
-          </span>
-
-          {/* Bottom line — moves right */}
-          <span
+          </h2>
+          <h2
             style={{
               fontFamily: "var(--font-inter), sans-serif",
               fontSize: "clamp(36px, 5vw, 64px)",
               fontWeight: 300,
               color: "#fff",
-              letterSpacing: "-0.5px",
-              transform: `translateX(${titleSpread}vw)`,
-              transition: "transform 0.05s linear",
               whiteSpace: "nowrap",
+              letterSpacing: "-0.5px",
+              transform: `translateX(${textX}vw)`,
             }}
           >
             {titleBottom}
-          </span>
+          </h2>
         </div>
       </div>
     </div>
