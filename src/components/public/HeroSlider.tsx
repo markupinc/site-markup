@@ -9,6 +9,7 @@ interface Slide {
   type: "video" | "image";
   src: string;
   label: string;
+  href?: string;
 }
 
 interface HeroSliderProps {
@@ -32,6 +33,11 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
       >
         {slides.map((slide, index) => (
           <SwiperSlide key={index} className="relative w-full h-full">
+            <a
+              href={slide.href || "#"}
+              className="absolute inset-0 z-30 block w-full h-full"
+              style={{ cursor: "pointer" }}
+            />
             {/* Media */}
             {slide.type === "video" ? (
               <video
