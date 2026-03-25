@@ -43,9 +43,9 @@ const stats = [
 
 export default function Home() {
   return (
-    <main className="overflow-x-hidden">
+    <main>
       <Navbar logoSrc="/assets/logo.png" />
-      <div style={{ backgroundColor: "#1a1a1a", fontSize: 0, lineHeight: 0 }}>
+      <div style={{ backgroundColor: "#1a1a1a" }}>
         <HeroSlider slides={heroSlides} />
         <MagicText lines={magicLines} />
         <ScrollExpansion
