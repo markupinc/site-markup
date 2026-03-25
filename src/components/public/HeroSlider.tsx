@@ -17,7 +17,7 @@ interface HeroSliderProps {
 
 export default function HeroSlider({ slides }: HeroSliderProps) {
   return (
-    <div className="relative w-full" style={{ height: "85vh" }}>
+    <div className="relative w-full" style={{ height: "100vh" }}>
       <Swiper
         modules={[Navigation]}
         navigation
