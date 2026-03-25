@@ -687,6 +687,7 @@ export default function EditEmpreendimentoPage() {
               <ImageUpload
                 bucket="empreendimentos"
                 path={`${cat.path}/${id}`}
+                multiple
                 onUpload={(url) => { if (url) addImagem(url, cat.key); }}
               />
             </div>

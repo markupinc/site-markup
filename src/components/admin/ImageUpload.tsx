@@ -8,69 +8,84 @@ interface ImageUploadProps {
   path: string;
   onUpload: (url: string) => void;
   currentUrl?: string;
+  multiple?: boolean;
 }
 
-export default function ImageUpload({ bucket, path, onUpload, currentUrl }: ImageUploadProps) {
+export default function ImageUpload({
+  bucket,
+  path,
+  onUpload,
+  currentUrl,
+  multiple = false,
+}: ImageUploadProps) {
   const supabase = createClient();
   const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [preview, setPreview] = useState<string | null>(currentUrl || null);
+  const [uploadCount, setUploadCount] = useState({ done: 0, total: 0 });
+  const [preview, setPreview] = useState<string | null>(
+    !multiple && currentUrl ? currentUrl : null
+  );
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const uploadFile = useCallback(
     async (file: File) => {
-      setUploading(true);
-      setProgress(0);
-
       const fileExt = file.name.split(".").pop();
-      const fileName = `${path}/${Date.now()}.${fileExt}`;
-
-      // Simulate progress since Supabase JS doesn't expose upload progress
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => Math.min(prev + 15, 90));
-      }, 200);
+      const fileName = `${path}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
 
       const { error } = await supabase.storage.from(bucket).upload(fileName, file, {
         cacheControl: "3600",
         upsert: false,
       });
 
-      clearInterval(progressInterval);
-
       if (error) {
         console.error("Upload error:", error);
-        setUploading(false);
-        setProgress(0);
-        alert("Erro ao fazer upload: " + error.message);
-        return;
+        return null;
       }
 
       const { data: publicUrlData } = supabase.storage.from(bucket).getPublicUrl(fileName);
-      const publicUrl = publicUrlData.publicUrl;
+      return publicUrlData.publicUrl;
+    },
+    [bucket, path, supabase]
+  );
 
-      setProgress(100);
-      setPreview(publicUrl);
-      onUpload(publicUrl);
+  const handleFiles = useCallback(
+    async (files: FileList) => {
+      const imageFiles = Array.from(files).filter((f) => f.type.startsWith("image/"));
+      if (imageFiles.length === 0) return;
+
+      setUploading(true);
+      setUploadCount({ done: 0, total: imageFiles.length });
+
+      for (let i = 0; i < imageFiles.length; i++) {
+        const url = await uploadFile(imageFiles[i]);
+        if (url) {
+          onUpload(url);
+          if (!multiple) setPreview(url);
+        }
+        setUploadCount({ done: i + 1, total: imageFiles.length });
+      }
 
       setTimeout(() => {
         setUploading(false);
-        setProgress(0);
+        setUploadCount({ done: 0, total: 0 });
       }, 500);
     },
-    [bucket, path, onUpload, supabase]
+    [uploadFile, onUpload, multiple]
   );
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadFile(file);
+    if (e.target.files && e.target.files.length > 0) {
+      handleFiles(e.target.files);
+      e.target.value = "";
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) uploadFile(file);
+    if (e.dataTransfer.files?.length > 0) {
+      handleFiles(e.dataTransfer.files);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -82,7 +97,8 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
 
   return (
     <div>
-      {preview && (
+      {/* Single image preview (only for non-multiple mode) */}
+      {!multiple && preview && (
         <div style={{ marginBottom: "12px", position: "relative" }}>
           <img
             src={preview}
@@ -118,13 +134,14 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
               justifyContent: "center",
             }}
           >
-            x
+            ×
           </button>
         </div>
       )}
 
+      {/* Drop zone */}
       <div
-        onClick={() => inputRef.current?.click()}
+        onClick={() => !uploading && inputRef.current?.click()}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -141,7 +158,7 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
         {uploading ? (
           <div>
             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", marginBottom: "8px" }}>
-              Enviando...
+              Enviando {uploadCount.done}/{uploadCount.total}...
             </p>
             <div
               style={{
@@ -154,7 +171,7 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
               <div
                 style={{
                   height: "100%",
-                  width: `${progress}%`,
+                  width: `${uploadCount.total > 0 ? (uploadCount.done / uploadCount.total) * 100 : 0}%`,
                   backgroundColor: "#b8945f",
                   borderRadius: "2px",
                   transition: "width 0.3s ease",
@@ -165,7 +182,9 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
         ) : (
           <div>
             <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.5)", marginBottom: "4px" }}>
-              Arraste uma imagem ou clique para selecionar
+              {multiple
+                ? "Arraste imagens ou clique para selecionar (múltiplas)"
+                : "Arraste uma imagem ou clique para selecionar"}
             </p>
             <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)" }}>
               PNG, JPG ou WebP
@@ -178,6 +197,7 @@ export default function ImageUpload({ bucket, path, onUpload, currentUrl }: Imag
         ref={inputRef}
         type="file"
         accept="image/*"
+        multiple={multiple}
         onChange={handleFileChange}
         style={{ display: "none" }}
       />
