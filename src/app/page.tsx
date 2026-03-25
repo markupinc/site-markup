@@ -45,13 +45,15 @@ export default function Home() {
   return (
     <main className="overflow-x-hidden">
       <Navbar logoSrc="/assets/logo.png" />
-      <HeroSlider slides={heroSlides} />
-      <MagicText lines={magicLines} />
-      <ScrollExpansion
-        imageSrc="/assets/apt-varanda.png"
-        titleTop="Você investe,"
-        titleBottom="o retorno vem."
-      />
+      <div style={{ backgroundColor: "#1a1a1a", fontSize: 0, lineHeight: 0 }}>
+        <HeroSlider slides={heroSlides} />
+        <MagicText lines={magicLines} />
+        <ScrollExpansion
+          imageSrc="/assets/apt-varanda.png"
+          titleTop="Você investe,"
+          titleBottom="o retorno vem."
+        />
+      </div>
       <LaunchesSection />
       <StatsCounter
         title="Somos obcecados por excelência"
