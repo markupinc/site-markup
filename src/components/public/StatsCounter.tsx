@@ -99,11 +99,16 @@ export default function StatsCounter({
   return (
     <section
       ref={sectionRef}
-      style={{
-        backgroundColor: "#1a1a1a",
-        padding: "80px 60px",
-      }}
+      className="stats-counter-section"
     >
+      <style dangerouslySetInnerHTML={{ __html: `
+        .stats-counter-section { background-color: #1a1a1a; padding: 80px 60px; }
+        .stats-counter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 60px; }
+        @media (max-width: 768px) {
+          .stats-counter-section { padding: 60px 24px; }
+          .stats-counter-grid { grid-template-columns: 1fr; gap: 40px; }
+        }
+      `}} />
       {/* Title, subtitle, CTA — top */}
       <div style={{ marginBottom: "80px" }}>
         <h2
@@ -147,13 +152,7 @@ export default function StatsCounter({
       </div>
 
       {/* Stats grid — bottom */}
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "60px",
-        }}
-      >
+      <div className="stats-counter-grid">
         {stats.map((stat, index) => (
           <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
             {/* Decorative slash */}
