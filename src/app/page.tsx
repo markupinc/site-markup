@@ -9,6 +9,7 @@ import BlogSection from "@/components/public/BlogSection";
 import ContactSection from "@/components/public/ContactSection";
 import Footer from "@/components/public/Footer";
 import WhatsAppButton from "@/components/public/WhatsAppButton";
+import { createClient } from "@/lib/supabase/server";
 
 const heroSlides = [
   {
@@ -41,7 +42,15 @@ const stats = [
   { target: 200, suffix: "+", label: "unid. em desenvolvimento" },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+
+  const { data: midia } = await (supabase
+    .from("midia" as any)
+    .select("fonte, titulo, url")
+    .eq("ativo", true)
+    .order("ordem") as any);
+
   return (
     <main>
       <Navbar logoSrc="/assets/logo.png" />
@@ -62,7 +71,7 @@ export default function Home() {
         ctaText="Conheça nosso portfólio"
         ctaHref="https://www.instagram.com/markup_inc/"
       />
-      <MediaSection />
+      <MediaSection midia={midia ?? []} />
       <BlogSection />
       <ContactSection />
       <Footer logoSrc="/assets/logo.png" />

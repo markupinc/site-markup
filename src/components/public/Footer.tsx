@@ -1,4 +1,4 @@
-import { ArrowRight } from "lucide-react";
+import NewsletterForm from "./NewsletterForm";
 
 interface FooterProps {
   logoSrc: string;
@@ -232,73 +232,7 @@ export default function Footer({ logoSrc }: FooterProps) {
             lançamentos exclusivos e oportunidades de investimento.
           </p>
 
-          {/* Email input with arrow button */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              borderBottom: "1px solid rgba(255,255,255,0.3)",
-              paddingBottom: "8px",
-              marginBottom: "16px",
-            }}
-          >
-            <input
-              type="email"
-              placeholder="Seu melhor e-mail"
-              style={{
-                flex: 1,
-                backgroundColor: "transparent",
-                border: "none",
-                outline: "none",
-                color: "#ffffff",
-                fontSize: "13px",
-                padding: "4px 0",
-              }}
-            />
-            <button
-              type="button"
-              aria-label="Enviar"
-              style={{
-                backgroundColor: "transparent",
-                border: "none",
-                cursor: "pointer",
-                color: "rgba(255,255,255,0.5)",
-                padding: "4px",
-                transition: "color 0.3s ease",
-              }}
-              className="hover:text-white"
-            >
-              <ArrowRight size={18} />
-            </button>
-          </div>
-
-          {/* Consent checkbox */}
-          <label
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "8px",
-              cursor: "pointer",
-            }}
-          >
-            <input
-              type="checkbox"
-              style={{
-                marginTop: "2px",
-                accentColor: "#b8945f",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "11px",
-                lineHeight: 1.5,
-                color: "rgba(255,255,255,0.4)",
-              }}
-            >
-              Concordo em receber comunicações da Markup Incorporações e aceito a
-              política de privacidade.
-            </span>
-          </label>
+          <NewsletterForm />
         </div>
       </div>
 

@@ -1,27 +1,17 @@
 import FadeInOnScroll from "./FadeInOnScroll";
 
-interface MediaMention {
-  source: string;
-  headline: string;
+interface MidiaItem {
+  fonte: string;
+  titulo: string;
   url: string;
 }
 
-const mediaMentions: MediaMention[] = [
-  {
-    source: "S.Mag",
-    headline:
-      "Markup Incorporações lança Salsa Home Resort, sucesso de vendas à beira-mar de Guaxuma",
-    url: "https://www.smag.al/2025/03/markup-incorporacoes-lanca-salsa-home-resort-sucesso-de-vendas-a-beira-mar-de-guaxuma/",
-  },
-  {
-    source: "CRECI-AL",
-    headline:
-      "Encontro com Construtor do CRECI tem apresentação do Salsa Home Resort",
-    url: "https://creci-al.gov.br/portal/encontro-com-construtor-do-creci-tem-apresentacao-do-salsa-home-resort/",
-  },
-];
+interface MediaSectionProps {
+  midia: MidiaItem[];
+}
 
-export default function MediaSection() {
+export default function MediaSection({ midia }: MediaSectionProps) {
+  if (midia.length === 0) return null;
   return (
     <section
       style={{
@@ -51,10 +41,10 @@ export default function MediaSection() {
           textAlign: "center",
         }}
       >
-        {mediaMentions.map((mention) => (
-          <FadeInOnScroll key={mention.url}>
+        {midia.map((item) => (
+          <FadeInOnScroll key={item.url}>
             <a
-              href={mention.url}
+              href={item.url}
               target="_blank"
               rel="noopener noreferrer"
               className="group block"
@@ -70,7 +60,7 @@ export default function MediaSection() {
                   marginBottom: "12px",
                 }}
               >
-                {mention.source}
+                {item.fonte}
               </p>
               <p
                 className="group-hover:text-accent-gold"
@@ -81,7 +71,7 @@ export default function MediaSection() {
                   transition: "color 0.3s ease",
                 }}
               >
-                {mention.headline}
+                {item.titulo}
               </p>
             </a>
           </FadeInOnScroll>
