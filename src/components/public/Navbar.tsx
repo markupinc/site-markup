@@ -12,7 +12,7 @@ const navLinks = [
   { label: "O Padrão Markup", href: "/padrao-markup" },
   { label: "Sustentabilidade", href: "/sustentabilidade" },
   { label: "Blog", href: "/blog" },
-  { label: "Contato", href: "#contato" },
+  { label: "Contato", href: "/contato" },
 ];
 
 const socialLinks = [
