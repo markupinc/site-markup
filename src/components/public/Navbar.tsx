@@ -7,9 +7,11 @@ interface NavbarProps {
 }
 
 const navLinks = [
-  { label: "Empreendimentos", href: "#empreendimentos" },
-  { label: "Empresa", href: "#about" },
-  { label: "Novidades", href: "#novidades" },
+  { label: "Empreendimentos", href: "/empreendimentos" },
+  { label: "Empresa", href: "/sobre" },
+  { label: "O Padrão Markup", href: "/padrao-markup" },
+  { label: "Sustentabilidade", href: "/sustentabilidade" },
+  { label: "Blog", href: "/blog" },
   { label: "Contato", href: "#contato" },
 ];
 
@@ -74,7 +76,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
         backdropFilter: scrolled ? "blur(10px)" : "none",
       }}
     >
-      <a href="#">
+      <a href="/">
         <img
           src={logoSrc}
           alt="Markup Incorporações"
