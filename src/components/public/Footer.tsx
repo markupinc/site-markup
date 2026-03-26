@@ -6,8 +6,10 @@ interface FooterProps {
 
 const sitemapLinks = [
   { label: "Empreendimentos", href: "#empreendimentos" },
-  { label: "Sobre nós", href: "#about" },
+  { label: "Sobre a Markup", href: "/sobre" },
   { label: "Contato", href: "#contato" },
+  { label: "Política de Privacidade", href: "/privacidade" },
+  { label: "Termos de Uso", href: "/termos" },
 ];
 
 const projectLinks = [
