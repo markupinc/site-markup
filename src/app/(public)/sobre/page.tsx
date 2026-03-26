@@ -23,7 +23,7 @@ const valores = [
   },
   {
     titulo: "Inovação",
-    descricao: "Projetos arrojados que antecipam tendências do mercado",
+    descricao: "Projetos arrojados que antecipam e criam tendências do mercado",
   },
   {
     titulo: "Compromisso",
@@ -41,6 +41,11 @@ const numeros = [
 export default function SobrePage() {
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media (max-width: 640px) {
+          .valores-grid { grid-template-columns: 1fr !important; }
+        }
+      `}} />
       <Navbar logoSrc={LOGO_SRC} />
 
       {/* Hero */}
@@ -163,9 +168,10 @@ export default function SobrePage() {
           </h2>
 
           <div
+            className="valores-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+              gridTemplateColumns: "repeat(2, 1fr)",
               gap: "32px",
               maxWidth: "1000px",
               margin: "0 auto",
