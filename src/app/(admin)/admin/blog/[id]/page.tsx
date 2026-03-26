@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import ImageUpload from "@/components/admin/ImageUpload";
+import RichTextEditor from "@/components/admin/RichTextEditor";
 
 interface BlogFormData {
   titulo: string;
@@ -381,18 +382,11 @@ export default function EditBlogPostPage() {
               {errors.resumo && <p style={errorStyle}>{errors.resumo.message}</p>}
             </div>
             <div>
-              <label style={labelStyle}>Conteudo (HTML)</label>
-              <textarea
-                {...register("conteudo")}
-                rows={16}
-                style={{
-                  ...inputStyle,
-                  resize: "vertical",
-                  fontFamily: "'Courier New', Courier, monospace",
-                  minHeight: "400px",
-                  lineHeight: "1.6",
-                }}
-                placeholder="<h2>Subtitulo</h2>&#10;<p>Paragrafo...</p>"
+              <label style={labelStyle}>Conteúdo</label>
+              <RichTextEditor
+                content={watch("conteudo") || ""}
+                onChange={(html) => setValue("conteudo", html)}
+                placeholder="Comece a escrever o conteúdo do post..."
               />
             </div>
           </div>
