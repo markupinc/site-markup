@@ -8,6 +8,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import TextAlign from "@tiptap/extension-text-align";
 import Underline from "@tiptap/extension-underline";
 import { useEffect, useCallback } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 interface RichTextEditorProps {
   content: string;
@@ -112,12 +113,38 @@ export default function RichTextEditor({
     }
   }, [editor]);
 
-  const addImage = useCallback(() => {
+  const addImageUrl = useCallback(() => {
     if (!editor) return;
     const url = window.prompt("URL da imagem:");
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
+  }, [editor]);
+
+  const addImageUpload = useCallback(() => {
+    if (!editor) return;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const supabase = createClient();
+      const ext = file.name.split(".").pop();
+      const path = `blog/editor/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("blog")
+        .upload(path, file, { upsert: true });
+      if (error) {
+        alert("Erro no upload: " + error.message);
+        return;
+      }
+      const { data: urlData } = supabase.storage
+        .from("blog")
+        .getPublicUrl(path);
+      editor.chain().focus().setImage({ src: urlData.publicUrl }).run();
+    };
+    input.click();
   }, [editor]);
 
   if (!editor) return null;
@@ -299,8 +326,11 @@ export default function RichTextEditor({
             ✕
           </MenuButton>
         )}
-        <MenuButton onClick={addImage} title="Imagem">
-          🖼 Imagem
+        <MenuButton onClick={addImageUpload} title="Upload de imagem">
+          📤 Upload
+        </MenuButton>
+        <MenuButton onClick={addImageUrl} title="Imagem por URL">
+          🖼 URL
         </MenuButton>
       </div>
 
