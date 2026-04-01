@@ -384,6 +384,27 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
         </FadeInOnScroll>
       </section>
 
+      {/* ═══ MAPS ═══ */}
+      {(emp.endereco || location) && (
+        <section style={{ width: "100%", height: "500px", backgroundColor: "#f0f0f0" }}>
+          <iframe
+            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyAKjEzJ5P8LJ9B9w_pA_RLN5RZpDi_u8f8&q=${encodeURIComponent(
+              emp.endereco || location
+            )}`}
+            style={{
+              width: "100%",
+              height: "100%",
+              border: "none",
+              display: "block",
+            }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={`Localização de ${emp.nome}`}
+          />
+        </section>
+      )}
+
       <Footer logoSrc="/assets/logo.png" />
 
       <style dangerouslySetInnerHTML={{ __html: `
