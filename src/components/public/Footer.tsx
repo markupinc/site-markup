@@ -46,11 +46,14 @@ const socialLinks = [
 
 const linkStyle: React.CSSProperties = {
   fontSize: "12px",
-  color: "rgba(255,255,255,0.5)",
+  color: "rgba(255,255,255,0.75)",
   textDecoration: "none",
   transition: "color 0.3s ease",
   display: "block",
-  marginBottom: "10px",
+  padding: "8px 0",
+  minHeight: "44px",
+  display: "flex",
+  alignItems: "center",
 };
 
 export default function Footer({ logoSrc }: FooterProps) {
@@ -102,6 +105,7 @@ export default function Footer({ logoSrc }: FooterProps) {
               href={link.href}
               className="hover:text-white"
               style={linkStyle}
+              aria-label={link.label === "Empreendimentos" ? "Ir para seção Empreendimentos" : undefined}
             >
               {link.label}
             </a>
@@ -187,7 +191,7 @@ export default function Footer({ logoSrc }: FooterProps) {
             style={{
               fontSize: "12px",
               lineHeight: 1.7,
-              color: "rgba(255,255,255,0.5)",
+              color: "rgba(255,255,255,0.75)",
               marginBottom: "20px",
             }}
           >

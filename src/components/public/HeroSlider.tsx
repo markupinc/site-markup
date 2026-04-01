@@ -38,6 +38,7 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
               href={slide.href || "#"}
               className="absolute inset-0 z-30 block w-full h-full"
               style={{ cursor: "pointer" }}
+              aria-label={`Acessar: ${slide.label}`}
             />
             {/* Media */}
             {slide.type === "video" ? (
