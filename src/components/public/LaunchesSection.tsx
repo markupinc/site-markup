@@ -3,32 +3,14 @@ import FadeInOnScroll from "./FadeInOnScroll";
 
 interface Project {
   name: string;
-  location: string;
-  image: string;
-  href: string;
+  bairro?: string;
+  imagem_destaque_url?: string;
+  slug: string;
 }
 
-const featuredProject: Project = {
-  name: "Up! Studios",
-  location: "Maceió/Alagoas",
-  image: "/assets/up-fachada-01-nova.jpg",
-  href: "/empreendimentos/up",
-};
-
-const gridProjects: Project[] = [
-  {
-    name: "Salsa Home Resort",
-    location: "Maceió/Alagoas",
-    image: "/assets/salsa.png",
-    href: "/empreendimentos/salsa",
-  },
-  {
-    name: "Up! Studios",
-    location: "Maceió/Alagoas",
-    image: "/assets/up-fachada-01-nova.jpg",
-    href: "/empreendimentos/up",
-  },
-];
+interface LaunchesSectionProps {
+  projects?: Project[];
+}
 
 function ProjectCard({
   project,
@@ -38,10 +20,10 @@ function ProjectCard({
   imageHeight: string;
 }) {
   return (
-    <Link href={project.href} className="group block">
+    <Link href={`/empreendimentos/${project.slug}`} className="group block">
       <div className="overflow-hidden">
         <img
-          src={project.image}
+          src={project.imagem_destaque_url || "/assets/up-fachada-01-nova.jpg"}
           alt={project.name}
           style={{
             width: "100%",
@@ -70,14 +52,25 @@ function ProjectCard({
             marginLeft: "8px",
           }}
         >
-          {project.location}
+          {project.bairro || "Maceió/Alagoas"}
         </span>
       </div>
     </Link>
   );
 }
 
-export default function LaunchesSection() {
+export default function LaunchesSection({ projects = [] }: LaunchesSectionProps) {
+  // Se não houver projetos, não renderiza
+  if (!projects || projects.length === 0) {
+    return null;
+  }
+
+  // Primeiro projeto como destaque
+  const featuredProject = projects[0];
+
+  // Resto dos projetos no grid
+  const gridProjects = projects.slice(1);
+
   return (
     <section
       id="empreendimentos"
@@ -124,19 +117,21 @@ export default function LaunchesSection() {
       </FadeInOnScroll>
 
       {/* 2-column grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "40px",
-        }}
-      >
-        {gridProjects.map((project) => (
-          <FadeInOnScroll key={project.href + project.name}>
-            <ProjectCard project={project} imageHeight="320px" />
-          </FadeInOnScroll>
-        ))}
-      </div>
+      {gridProjects.length > 0 && (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "40px",
+          }}
+        >
+          {gridProjects.map((project) => (
+            <FadeInOnScroll key={project.slug}>
+              <ProjectCard project={project} imageHeight="320px" />
+            </FadeInOnScroll>
+          ))}
+        </div>
+      )}
 
       {/* CTA */}
       <FadeInOnScroll>

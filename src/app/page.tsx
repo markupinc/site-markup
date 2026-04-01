@@ -45,6 +45,12 @@ const stats = [
 export default async function Home() {
   const supabase = await createClient();
 
+  const { data: empreendimentos } = await (supabase
+    .from("empreendimentos" as any)
+    .select("nome, slug, bairro, imagem_destaque_url")
+    .eq("ativo", true)
+    .order("ordem") as any);
+
   const { data: midia } = await (supabase
     .from("midia" as any)
     .select("fonte, titulo, url")
@@ -63,7 +69,7 @@ export default async function Home() {
           titleBottom="o retorno vem."
         />
       </div>
-      <LaunchesSection />
+      <LaunchesSection projects={empreendimentos ?? []} />
       <StatsCounter
         title="Somos obcecados por excelência"
         subtitle="Com 15 anos de experiência em desenvolvimento imobiliário através de parcerias estratégicas, a Markup Incorporações direciona toda a sua expertise para oferecer produtos arrojados, de alto padrão e com alta rentabilidade."
