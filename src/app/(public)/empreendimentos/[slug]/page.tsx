@@ -388,9 +388,9 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       {(emp.endereco || location) && (
         <section style={{ width: "100%", height: "500px", backgroundColor: "#f0f0f0" }}>
           <iframe
-            src={`https://www.google.com/maps/embed/v1/place?key=AIzaSyAKjEzJ5P8LJ9B9w_pA_RLN5RZpDi_u8f8&q=${encodeURIComponent(
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(
               emp.endereco || location
-            )}`}
+            )}&t=m&z=15&output=embed`}
             style={{
               width: "100%",
               height: "100%",
