@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 };
 
 const POSTS_PER_PAGE = 9;
-const LOGO_SRC = "/logo-markup.png";
+const LOGO_SRC = "/assets/logo.png";
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString("pt-BR", {

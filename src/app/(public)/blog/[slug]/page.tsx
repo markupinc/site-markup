@@ -6,7 +6,7 @@ import WhatsAppButton from "@/components/public/WhatsAppButton";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
 import type { Metadata } from "next";
 
-const LOGO_SRC = "/logo-markup.png";
+const LOGO_SRC = "/assets/logo.png";
 const BASE_URL = "https://markupincorporacoes.com.br";
 
 type BlogPost = {
