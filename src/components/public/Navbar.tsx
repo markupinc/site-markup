@@ -97,11 +97,19 @@ export default function Navbar({ logoSrc }: NavbarProps) {
     <header
       className="fixed top-0 left-0 w-full z-[100] flex items-center justify-between transition-all duration-300"
       style={{
-        padding: scrolled ? "12px 20px md:12px md:60px" : "20px 20px md:20px md:60px",
+        padding: `${scrolled ? "12px" : "20px"} 24px`,
         backgroundColor: scrolled ? "rgba(26,26,26,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(10px)" : "none",
       }}
     >
+      <style>{`
+        @media (min-width: 768px) {
+          header {
+            padding-left: 60px !important;
+            padding-right: 60px !important;
+          }
+        }
+      `}</style>
       <a href="/">
         <img
           src={logoSrc}
