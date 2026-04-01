@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 interface ScrollExpansionProps {
@@ -96,12 +97,15 @@ export default function ScrollExpansion({
             zIndex: 1,
           }}
         >
-          <img
+          <Image
             src={imageSrc}
-            alt=""
+            alt="Conteúdo visual do empreendimento - Scroll para expandir"
+            fill
+            quality={85}
+            priority={false}
+            loading="lazy"
+            sizes="100vw"
             style={{
-              width: "100%",
-              height: "100%",
               objectFit: "cover",
               display: "block",
             }}

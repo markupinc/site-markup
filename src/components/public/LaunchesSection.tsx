@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import FadeInOnScroll from "./FadeInOnScroll";
 
 interface Project {
@@ -15,16 +16,26 @@ interface LaunchesSectionProps {
 function ProjectCard({
   project,
   imageHeight,
+  isFeatured = false,
 }: {
   project: Project;
   imageHeight: string;
+  isFeatured?: boolean;
 }) {
+  const [width, height] = imageHeight === "500px" ? [1200, 500] : [600, 320];
+
   return (
     <Link href={`/empreendimentos/${project.slug}`} className="group block">
       <div className="overflow-hidden">
-        <img
+        <Image
           src={project.imagem_destaque_url || "/assets/up-fachada-01-nova.jpg"}
-          alt={project.nome}
+          alt={`${project.nome} - Empreendimento Markup Incorporações`}
+          width={width}
+          height={height}
+          quality={85}
+          priority={isFeatured}
+          loading={isFeatured ? "eager" : "lazy"}
+          sizes={isFeatured ? "100vw" : "(max-width: 768px) 100vw, 50vw"}
           style={{
             width: "100%",
             height: imageHeight,
@@ -113,6 +124,7 @@ export default function LaunchesSection({ projects = [] }: LaunchesSectionProps)
           <ProjectCard
             project={featuredProject}
             imageHeight="500px"
+            isFeatured
           />
         </div>
       </FadeInOnScroll>

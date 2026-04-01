@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
@@ -129,12 +130,14 @@ export default async function BlogPage({
               >
                 <div style={{ position: "relative", height: "400px" }}>
                   {featuredPost.imagem_destaque_url ? (
-                    <img
+                    <Image
                       src={featuredPost.imagem_destaque_url}
-                      alt={featuredPost.titulo}
+                      alt={`${featuredPost.titulo} - Post em destaque`}
+                      fill
+                      quality={85}
+                      priority
+                      sizes="1200px"
                       style={{
-                        width: "100%",
-                        height: "100%",
                         objectFit: "cover",
                         opacity: 0.6,
                       }}
@@ -230,19 +233,21 @@ export default async function BlogPage({
                       style={{
                         height: "220px",
                         overflow: "hidden",
+                        position: "relative",
                       }}
                     >
                       {post.imagem_destaque_url ? (
-                        <img
+                        <Image
                           src={post.imagem_destaque_url}
-                          alt={post.titulo}
+                          alt={`${post.titulo} - Imagem do artigo`}
+                          fill
+                          quality={80}
+                          loading="lazy"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           style={{
-                            width: "100%",
-                            height: "100%",
                             objectFit: "cover",
                             transition: "transform 0.4s ease",
                           }}
-                          onMouseEnter={undefined}
                         />
                       ) : (
                         <div

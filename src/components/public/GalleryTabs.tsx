@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import { Carousel } from "@ark-ui/react/carousel";
 
 interface GalleryImage {
@@ -127,15 +128,18 @@ export default function GalleryTabs({ images, empNome }: GalleryTabsProps) {
               style={{
                 flexShrink: 0, width: "400px", height: "300px",
                 overflow: "hidden", cursor: "pointer", scrollSnapAlign: "start",
+                position: "relative",
               }}
             >
-              <img
+              <Image
                 src={img.url}
-                alt={img.alt_text ?? empNome}
+                alt={img.alt_text ?? `${empNome} - Galeria ${idx + 1}`}
+                fill
+                quality={85}
                 loading="lazy"
-                decoding="async"
+                sizes="400px"
                 style={{
-                  width: "100%", height: "100%", objectFit: "cover",
+                  objectFit: "cover",
                   transition: "transform 0.6s ease",
                 }}
                 onMouseOver={(e) => { e.currentTarget.style.transform = "scale(1.05)"; }}
@@ -185,12 +189,15 @@ export default function GalleryTabs({ images, empNome }: GalleryTabsProps) {
               }}
             >
               {filtered.map((img, index) => (
-                <Carousel.Item key={img.id} index={index}>
-                  <img
+                <Carousel.Item key={img.id} index={index} style={{ position: "relative", width: "100%", height: "65vh" }}>
+                  <Image
                     src={img.url}
-                    alt={img.alt_text ?? empNome}
+                    alt={img.alt_text ?? `${empNome} - Imagem ${index + 1}`}
+                    fill
+                    quality={90}
+                    sizes="900px"
                     style={{
-                      width: "100%", height: "65vh", objectFit: "contain",
+                      objectFit: "contain",
                       backgroundColor: "transparent",
                     }}
                   />
@@ -226,13 +233,19 @@ export default function GalleryTabs({ images, empNome }: GalleryTabsProps) {
                       cursor: "pointer", transition: "all 0.2s",
                       border: "2px solid transparent",
                       opacity: 0.5,
+                      position: "relative",
+                      width: "72px",
+                      height: "48px",
                     }}
                   >
-                    <img
+                    <Image
                       src={img.url}
-                      alt={img.alt_text ?? `Thumbnail ${index + 1}`}
+                      alt={img.alt_text ?? `Miniatura ${index + 1}`}
+                      fill
+                      quality={75}
+                      sizes="72px"
                       loading="lazy"
-                      style={{ width: "72px", height: "48px", objectFit: "cover", display: "block" }}
+                      style={{ objectFit: "cover", display: "block" }}
                     />
                   </Carousel.Indicator>
                 ))}

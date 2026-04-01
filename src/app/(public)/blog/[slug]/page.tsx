@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/public/Navbar";
@@ -245,14 +246,18 @@ export default async function BlogPostPage({
             maxWidth: "1200px",
             margin: "0 auto",
             padding: "0 60px",
+            position: "relative",
+            height: "500px",
           }}
         >
-          <img
+          <Image
             src={blogPost.imagem_destaque_url}
-            alt={blogPost.titulo}
+            alt={`${blogPost.titulo} - Imagem destaque do artigo`}
+            fill
+            quality={85}
+            priority
+            sizes="1200px"
             style={{
-              width: "100%",
-              maxHeight: "500px",
               objectFit: "cover",
               borderRadius: "0 0 8px 8px",
               display: "block",

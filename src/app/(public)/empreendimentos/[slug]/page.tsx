@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
@@ -103,10 +104,14 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
 
       {/* ═══ HERO — Full viewport ═══ */}
       <section style={{ position: "relative", height: "100vh", overflow: "hidden" }}>
-        <img
+        <Image
           src={emp.imagem_destaque_url ?? "https://placehold.co/1440x900?text=."}
-          alt={emp.nome}
-          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          alt={`${emp.nome} - Fachada do empreendimento`}
+          fill
+          quality={85}
+          priority
+          sizes="100vw"
+          style={{ objectFit: "cover" }}
         />
         <div style={{
           position: "absolute", inset: 0,

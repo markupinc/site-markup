@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import "swiper/css";
@@ -50,9 +51,15 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                 <source src={slide.src} type="video/mp4" />
               </video>
             ) : (
-              <div
-                className="absolute inset-0 w-full h-full bg-cover bg-center"
-                style={{ backgroundImage: `url(${slide.src})` }}
+              <Image
+                src={slide.src}
+                alt={slide.label}
+                fill
+                quality={85}
+                priority={index === 0}
+                loading={index === 0 ? "eager" : "lazy"}
+                sizes="100vw"
+                className="absolute inset-0 w-full h-full object-cover"
               />
             )}
 
