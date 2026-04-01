@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
-import WhatsAppButton from "@/components/public/WhatsAppButton";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
 import LeadForm from "@/components/public/LeadForm";
 import GalleryTabs from "@/components/public/GalleryTabs";
@@ -96,8 +95,6 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
     { label: "Andares", value: emp.andares != null ? String(emp.andares) : null },
     { label: "Unidades", value: emp.total_unidades != null ? String(emp.total_unidades) : null },
   ].filter((s) => s.value != null);
-
-  const whatsappLink = `https://wa.me/5582982294001?text=${encodeURIComponent(`Olá! Tenho interesse no ${emp.nome}`)}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -380,11 +377,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
               fontSize: "14px", color: "rgba(255,255,255,0.5)", textAlign: "center",
               marginBottom: "48px", lineHeight: 1.7,
             }}>
-              Fale com um consultor ou preencha o formulário abaixo.{" "}
-              <a href={whatsappLink} target="_blank" rel="noopener"
-                style={{ color: "#1CB8E8", textDecoration: "none", borderBottom: "1px solid #1CB8E8" }}>
-                WhatsApp direto →
-              </a>
+              Preencha o formulário abaixo para entrar em contato conosco.
             </p>
             <LeadForm empreendimentoId={emp.id} empreendimentoNome={emp.nome} />
           </div>
@@ -392,7 +385,6 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       </section>
 
       <Footer logoSrc="/assets/logo.png" />
-      <WhatsAppButton />
 
       <style dangerouslySetInnerHTML={{ __html: `
         @media (max-width: 768px) {
