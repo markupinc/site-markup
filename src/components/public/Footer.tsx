@@ -49,11 +49,10 @@ const linkStyle: React.CSSProperties = {
   color: "rgba(255,255,255,0.75)",
   textDecoration: "none",
   transition: "color 0.3s ease",
-  display: "block",
-  padding: "8px 0",
-  minHeight: "44px",
   display: "flex",
   alignItems: "center",
+  padding: "8px 0",
+  minHeight: "44px",
 };
 
 export default function Footer({ logoSrc }: FooterProps) {
