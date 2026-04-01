@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     "Fique por dentro das novidades do mercado imobiliário, dicas de investimento e atualizações dos nossos empreendimentos.",
 };
 
+// Cache blog list for 30 minutes
+export const revalidate = 1800;
+
 const POSTS_PER_PAGE = 9;
 const LOGO_SRC = "/assets/logo.png";
 

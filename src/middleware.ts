@@ -1,10 +1,28 @@
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  const response = await updateSession(request);
+
+  // Add cache headers for static assets and public pages
+  const pathname = request.nextUrl.pathname;
+
+  // Cache static assets for 1 year (immutable)
+  if (pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|mp4|mov|webp)$/i)) {
+    response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  }
+  // Cache public pages for 1 hour (with revalidation)
+  else if (!pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
+    response.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+  }
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: [
+    "/admin/:path*",
+    // Também aplicar cache headers a assets
+    "/:path*",
+  ],
 };

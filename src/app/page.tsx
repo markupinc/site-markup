@@ -11,6 +11,9 @@ import Footer from "@/components/public/Footer";
 import WhatsAppButton from "@/components/public/WhatsAppButton";
 import { createClient } from "@/lib/supabase/server";
 
+// Cache home page for 1 hour, revalidate after stale
+export const revalidate = 3600;
+
 const heroSlides = [
   {
     type: "video" as const,

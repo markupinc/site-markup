@@ -10,6 +10,21 @@ import type { Metadata } from "next";
 const LOGO_SRC = "/assets/logo.png";
 const BASE_URL = "https://markupincorporacoes.com.br";
 
+// Cache blog posts for 1 hour
+export const revalidate = 3600;
+
+// Pre-render all published blog posts at build time
+export async function generateStaticParams() {
+  const supabase = await createClient();
+  const { data: posts } = (await supabase
+    .from("blog_posts")
+    .select("slug")
+    .eq("publicado", true)) as any;
+  return (posts || []).map((post: { slug: string }) => ({
+    slug: post.slug,
+  }));
+}
+
 type BlogPost = {
   id: string;
   titulo: string;

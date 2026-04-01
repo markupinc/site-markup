@@ -14,6 +14,21 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
+// Cache empreendimento pages for 1 hour
+export const revalidate = 3600;
+
+// Pre-render all active empreendimentos at build time
+export async function generateStaticParams() {
+  const supabase = await createClient();
+  const { data: empreendimentos } = (await supabase
+    .from("empreendimentos")
+    .select("slug")
+    .eq("ativo", true)) as any;
+  return (empreendimentos || []).map((emp: { slug: string }) => ({
+    slug: emp.slug,
+  }));
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const supabase = await createClient();
