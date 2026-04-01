@@ -1,15 +1,36 @@
+import dynamic from "next/dynamic";
 import Navbar from "@/components/public/Navbar";
 import HeroSlider from "@/components/public/HeroSlider";
-import MagicText from "@/components/public/MagicText";
-import ScrollExpansion from "@/components/public/ScrollExpansion";
 import LaunchesSection from "@/components/public/LaunchesSection";
 import StatsCounter from "@/components/public/StatsCounter";
-import MediaSection from "@/components/public/MediaSection";
-import BlogSection from "@/components/public/BlogSection";
 import ContactSection from "@/components/public/ContactSection";
 import Footer from "@/components/public/Footer";
 import WhatsAppButton from "@/components/public/WhatsAppButton";
 import { createClient } from "@/lib/supabase/server";
+
+// Lazy load heavy components with scroll-based animations
+const MagicText = dynamic(() => import("@/components/public/MagicText"), {
+  loading: () => <div style={{ height: "160vh" }} />,
+  ssr: false,
+});
+
+const ScrollExpansion = dynamic(
+  () => import("@/components/public/ScrollExpansion"),
+  {
+    loading: () => <div style={{ height: "300vh" }} />,
+    ssr: false,
+  }
+);
+
+const MediaSection = dynamic(() => import("@/components/public/MediaSection"), {
+  loading: () => <div style={{ height: "300px" }} />,
+  ssr: false,
+});
+
+const BlogSection = dynamic(() => import("@/components/public/BlogSection"), {
+  loading: () => <div style={{ height: "300px" }} />,
+  ssr: false,
+});
 
 // Cache home page for 1 hour, revalidate after stale
 export const revalidate = 3600;
