@@ -408,7 +408,9 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
       <Footer logoSrc="/assets/logo.png" />
 
       <style dangerouslySetInnerHTML={{ __html: `
+        * { box-sizing: border-box; }
         @media (max-width: 768px) {
+          section { padding: 48px 20px !important; }
           section > div[style*="repeat(3"] { grid-template-columns: 1fr !important; }
           .about-diff-grid { grid-template-columns: 1fr !important; gap: 48px !important; }
           section > div[style*="display: flex"][style*="justify-content: center"] {
@@ -417,6 +419,12 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
           section > div[style*="display: flex"][style*="justify-content: center"] > div {
             border-left: none !important; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 16px 0 !important;
           }
+          section > div > a > article > div {
+            padding: 20px !important;
+          }
+        }
+        @media (min-width: 769px) {
+          section { padding: 100px 60px !important; }
         }
       `}} />
     </main>
