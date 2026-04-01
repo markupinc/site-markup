@@ -49,6 +49,7 @@ export default function MediaSection({ midia }: MediaSectionProps) {
               rel="noopener noreferrer"
               className="group block"
               style={{ textDecoration: "none" }}
+              aria-label={`Ler em ${item.fonte}: ${item.titulo} (abre em nova aba)`}
             >
               <p
                 style={{

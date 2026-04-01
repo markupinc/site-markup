@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import FadeInOnScroll from "./FadeInOnScroll";
 
 interface BlogPost {
@@ -72,14 +73,17 @@ export default function BlogSection() {
               href={`/blog/${post.slug}`}
               className="group block"
               style={{ textDecoration: "none" }}
+              aria-label={`Ler artigo: ${post.title}`}
             >
-              <div className="overflow-hidden">
-                <img
+              <div className="overflow-hidden" style={{ position: "relative", height: "220px" }}>
+                <Image
                   src={post.image}
-                  alt={post.title}
+                  alt={`${post.title} - ${post.category}`}
+                  fill
+                  quality={80}
+                  loading="lazy"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   style={{
-                    width: "100%",
-                    height: "220px",
                     objectFit: "cover",
                     transition: "transform 0.6s ease",
                   }}

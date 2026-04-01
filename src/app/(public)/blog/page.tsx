@@ -349,12 +349,13 @@ export default async function BlogPage({
               {currentPage > 1 && (
                 <a
                   href={`/blog?page=${currentPage - 1}`}
+                  aria-label="Página anterior"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    minWidth: "40px",
-                    height: "40px",
+                    minWidth: "48px",
+                    height: "48px",
                     padding: "0 12px",
                     borderRadius: "6px",
                     fontSize: "13px",
@@ -374,12 +375,14 @@ export default async function BlogPage({
                   <a
                     key={page}
                     href={`/blog?page=${page}`}
+                    aria-label={`Página ${page}`}
+                    aria-current={page === currentPage ? "page" : undefined}
                     style={{
                       display: "inline-flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      width: "40px",
-                      height: "40px",
+                      width: "48px",
+                      height: "48px",
                       borderRadius: "6px",
                       fontSize: "13px",
                       fontWeight: page === currentPage ? 600 : 400,
@@ -401,12 +404,13 @@ export default async function BlogPage({
               {currentPage < totalPages && (
                 <a
                   href={`/blog?page=${currentPage + 1}`}
+                  aria-label="Próxima página"
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    minWidth: "40px",
-                    height: "40px",
+                    minWidth: "48px",
+                    height: "48px",
                     padding: "0 12px",
                     borderRadius: "6px",
                     fontSize: "13px",
