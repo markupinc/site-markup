@@ -11,25 +11,21 @@ import { createClient } from "@/lib/supabase/server";
 // Lazy load heavy components with scroll-based animations
 const MagicText = dynamic(() => import("@/components/public/MagicText"), {
   loading: () => <div style={{ height: "160vh" }} />,
-  ssr: false,
 });
 
 const ScrollExpansion = dynamic(
   () => import("@/components/public/ScrollExpansion"),
   {
     loading: () => <div style={{ height: "300vh" }} />,
-    ssr: false,
   }
 );
 
 const MediaSection = dynamic(() => import("@/components/public/MediaSection"), {
   loading: () => <div style={{ height: "300px" }} />,
-  ssr: false,
 });
 
 const BlogSection = dynamic(() => import("@/components/public/BlogSection"), {
   loading: () => <div style={{ height: "300px" }} />,
-  ssr: false,
 });
 
 // Cache home page for 1 hour, revalidate after stale
