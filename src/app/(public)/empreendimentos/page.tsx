@@ -74,7 +74,7 @@ export default async function EmpreendimentosPage() {
       </section>
 
       {/* Cards Grid */}
-      <section style={{ padding: "80px 60px" }}>
+      <section style={{ padding: "80px 20px" }}>
         <div
           style={{
             display: "grid",
@@ -209,6 +209,15 @@ export default async function EmpreendimentosPage() {
             @media (max-width: 768px) {
               section > div[style*="grid-template-columns"] {
                 grid-template-columns: 1fr !important;
+                gap: 24px !important;
+              }
+              section > div > a > article > div[style*="position: relative"] {
+                height: 280px !important;
+              }
+            }
+            @media (min-width: 769px) {
+              section[style*="padding: 80px"] {
+                padding: 80px 60px !important;
               }
             }
             article:hover img {
