@@ -1,10 +1,13 @@
 import { MetadataRoute } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const BASE_URL = "https://markupincorporacoes.com.br";
 
+// Cache sitemap for 24 hours
+export const revalidate = 86400;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // Fetch published blog posts
   const { data: blogPosts } = await (supabase
