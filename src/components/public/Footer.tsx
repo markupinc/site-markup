@@ -61,14 +61,22 @@ export default function Footer({ logoSrc }: FooterProps) {
       style={{
         backgroundColor: "#1a1a1a",
         borderTop: "1px solid rgba(255,255,255,0.08)",
-        padding: "60px 60px 30px",
+        padding: "40px 20px 20px",
       }}
     >
+      <style>{`
+        @media (min-width: 768px) {
+          footer {
+            padding: 60px 60px 30px !important;
+          }
+        }
+      `}</style>
+
       {/* Top grid: Logo + 3 link columns */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "200px 1fr 1fr 1fr",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
           gap: "40px",
           paddingBottom: "48px",
         }}
@@ -166,13 +174,22 @@ export default function Footer({ logoSrc }: FooterProps) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr",
+          gridTemplateColumns: "1fr",
           gap: "60px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
           paddingTop: "48px",
           paddingBottom: "48px",
+          maxWidth: "1200px",
+          margin: "0 auto",
         }}
       >
+        <style>{`
+          @media (min-width: 768px) {
+            div[style*="grid-template-columns: 1fr"][style*="gap: 60px"] {
+              grid-template-columns: 1fr 1fr !important;
+            }
+          }
+        `}</style>
         {/* Left: Sede */}
         <div>
           <h3
@@ -247,14 +264,28 @@ export default function Footer({ logoSrc }: FooterProps) {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          flexDirection: "column",
+          justifyContent: "center",
           alignItems: "center",
           borderTop: "1px solid rgba(255,255,255,0.08)",
           paddingTop: "24px",
+          gap: "16px",
+          textAlign: "center",
         }}
       >
+        <style>{`
+          @media (min-width: 768px) {
+            div[style*="flex-direction: column"][style*="gap: 16px"] {
+              flex-direction: row !important;
+              justify-content: space-between !important;
+              align-items: center !important;
+              text-align: left !important;
+            }
+          }
+        `}</style>
+
         {/* Social text links */}
-        <div style={{ display: "flex", gap: "24px" }}>
+        <div style={{ display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "center" }}>
           {socialLinks.map((link) => (
             <a
               key={link.label}
@@ -279,6 +310,7 @@ export default function Footer({ logoSrc }: FooterProps) {
           style={{
             fontSize: "12px",
             color: "rgba(255,255,255,0.4)",
+            margin: 0,
           }}
         >
           &copy; Markup Incorporações 2025
