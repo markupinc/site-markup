@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import WhatsAppButton from "@/components/public/WhatsAppButton";
@@ -18,8 +19,9 @@ type Props = {
 export const revalidate = 3600;
 
 // Pre-render all active empreendimentos at build time
+// Use admin client (no cookies needed at build time)
 export async function generateStaticParams() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: empreendimentos } = (await supabase
     .from("empreendimentos")
     .select("slug")

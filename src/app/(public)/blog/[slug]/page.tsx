@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
@@ -14,8 +15,9 @@ const BASE_URL = "https://markupincorporacoes.com.br";
 export const revalidate = 3600;
 
 // Pre-render all published blog posts at build time
+// Use admin client (no cookies needed at build time)
 export async function generateStaticParams() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data: posts } = (await supabase
     .from("blog_posts")
     .select("slug")
