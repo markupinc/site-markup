@@ -132,7 +132,7 @@ export default async function EmpreendimentosPage() {
                         color: emp.status === "lancamento" ? "#ffffff" : "#1a1a1a",
                         backgroundColor:
                           emp.status === "lancamento"
-                            ? "#b8945f"
+                            ? "#2563eb"
                             : emp.status === "em_obras"
                             ? "rgba(255,255,255,0.9)"
                             : "rgba(255,255,255,0.7)",
