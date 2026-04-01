@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface NavbarProps {
   logoSrc: string;
@@ -59,6 +59,8 @@ const socialLinks = [
 
 export default function Navbar({ logoSrc }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -67,11 +69,35 @@ export default function Navbar({ logoSrc }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) {
+        // Check if clicked target is not the hamburger button
+        const hamburger = document.querySelector("[data-hamburger-btn]");
+        if (hamburger && !hamburger.contains(e.target as Node)) {
+          setMobileMenuOpen(false);
+        }
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  const closeMenu = () => setMobileMenuOpen(false);
+
   return (
     <header
       className="fixed top-0 left-0 w-full z-[100] flex items-center justify-between transition-all duration-300"
       style={{
-        padding: scrolled ? "12px 60px" : "20px 60px",
+        padding: scrolled ? "12px 20px md:12px md:60px" : "20px 20px md:20px md:60px",
         backgroundColor: scrolled ? "rgba(26,26,26,0.95)" : "transparent",
         backdropFilter: scrolled ? "blur(10px)" : "none",
       }}
@@ -84,7 +110,8 @@ export default function Navbar({ logoSrc }: NavbarProps) {
         />
       </a>
 
-      <nav className="flex items-center">
+      {/* Desktop Navigation */}
+      <nav className="hidden md:flex items-center">
         {navLinks.map((link) => (
           <a
             key={link.href}
@@ -104,7 +131,8 @@ export default function Navbar({ logoSrc }: NavbarProps) {
         ))}
       </nav>
 
-      <div className="flex items-center">
+      {/* Desktop Social Links */}
+      <div className="hidden md:flex items-center">
         {socialLinks.map((social, i) => (
           <a
             key={social.label}
@@ -119,6 +147,210 @@ export default function Navbar({ logoSrc }: NavbarProps) {
           </a>
         ))}
       </div>
+
+      {/* Mobile Hamburger Button */}
+      <button
+        data-hamburger-btn
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        className="md:hidden flex flex-col items-center justify-center w-[48px] h-[48px] hover:opacity-70 transition-opacity"
+        aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+        aria-expanded={mobileMenuOpen}
+      >
+        <div
+          style={{
+            width: "24px",
+            height: "2px",
+            backgroundColor: "#fff",
+            marginBottom: "5px",
+            transition: "all 0.3s ease",
+            transform: mobileMenuOpen ? "rotate(45deg) translate(9px, 9px)" : "none",
+          }}
+        />
+        <div
+          style={{
+            width: "24px",
+            height: "2px",
+            backgroundColor: "#fff",
+            marginBottom: "5px",
+            transition: "all 0.3s ease",
+            opacity: mobileMenuOpen ? 0 : 1,
+          }}
+        />
+        <div
+          style={{
+            width: "24px",
+            height: "2px",
+            backgroundColor: "#fff",
+            transition: "all 0.3s ease",
+            transform: mobileMenuOpen ? "rotate(-45deg) translate(8px, -8px)" : "none",
+          }}
+        />
+      </button>
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setMobileMenuOpen(false)}
+            style={{
+              position: "fixed",
+              inset: 0,
+              backgroundColor: "rgba(0,0,0,0.5)",
+              zIndex: 40,
+              animation: "fadeIn 0.3s ease",
+            }}
+          />
+
+          {/* Drawer */}
+          <div
+            ref={mobileMenuRef}
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100vh",
+              backgroundColor: "#1a1a1a",
+              zIndex: 50,
+              overflow: "auto",
+              animation: "slideInLeft 0.3s ease",
+            }}
+          >
+            {/* Drawer Header */}
+            <div
+              style={{
+                padding: "20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderBottom: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <a href="/" onClick={closeMenu}>
+                <img
+                  src={logoSrc}
+                  alt="Markup Incorporações"
+                  style={{ height: "40px", filter: "brightness(0) invert(1)" }}
+                />
+              </a>
+              <button
+                onClick={closeMenu}
+                className="flex flex-col items-center justify-center w-[48px] h-[48px] hover:opacity-70 transition-opacity"
+                aria-label="Fechar menu"
+              >
+                <div
+                  style={{
+                    width: "24px",
+                    height: "2px",
+                    backgroundColor: "#fff",
+                    marginBottom: "5px",
+                    transform: "rotate(45deg) translate(9px, 9px)",
+                  }}
+                />
+                <div
+                  style={{
+                    width: "24px",
+                    height: "2px",
+                    backgroundColor: "#fff",
+                    marginBottom: "5px",
+                    opacity: 0,
+                  }}
+                />
+                <div
+                  style={{
+                    width: "24px",
+                    height: "2px",
+                    backgroundColor: "#fff",
+                    transform: "rotate(-45deg) translate(8px, -8px)",
+                  }}
+                />
+              </button>
+            </div>
+
+            {/* Drawer Navigation Links */}
+            <nav style={{ padding: "24px 20px" }}>
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  onClick={closeMenu}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    height: "48px",
+                    color: "#fff",
+                    fontSize: "16px",
+                    fontWeight: 400,
+                    letterSpacing: "0.5px",
+                    textDecoration: "none",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    transition: "opacity 0.3s ease",
+                  }}
+                  className="hover:opacity-70"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </nav>
+
+            {/* Drawer Social Links */}
+            <div
+              style={{
+                padding: "24px 20px",
+                borderTop: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.5)",
+                  marginBottom: "16px",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                }}
+              >
+                Siga-nos
+              </p>
+              <div style={{ display: "flex", gap: "16px" }}>
+                {socialLinks.map((social) => (
+                  <a
+                    key={social.label}
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener"
+                    aria-label={social.label}
+                    onClick={closeMenu}
+                    className="inline-flex hover:opacity-70 transition-opacity"
+                    style={{
+                      color: "#fff",
+                      width: "48px",
+                      height: "48px",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderRadius: "4px",
+                      backgroundColor: "rgba(255,255,255,0.05)",
+                    }}
+                  >
+                    {social.icon}
+                  </a>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slideInLeft {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+      `}</style>
     </header>
   );
 }
