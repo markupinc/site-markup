@@ -2,7 +2,7 @@ import Link from "next/link";
 import FadeInOnScroll from "./FadeInOnScroll";
 
 interface Project {
-  name: string;
+  nome: string;
   bairro?: string;
   imagem_destaque_url?: string;
   slug: string;
@@ -24,7 +24,7 @@ function ProjectCard({
       <div className="overflow-hidden">
         <img
           src={project.imagem_destaque_url || "/assets/up-fachada-01-nova.jpg"}
-          alt={project.name}
+          alt={project.nome}
           style={{
             width: "100%",
             height: imageHeight,
@@ -34,26 +34,27 @@ function ProjectCard({
           className="group-hover:scale-[1.03]"
         />
       </div>
-      <div className="flex items-baseline" style={{ marginTop: "12px" }}>
-        <span
+      <div style={{ marginTop: "12px" }}>
+        <p
           style={{
             fontSize: "14px",
             fontWeight: 600,
             color: "#1a1a1a",
+            margin: "0 0 4px 0",
           }}
         >
-          {project.name}
-        </span>
-        <span
+          {project.nome}
+        </p>
+        <p
           style={{
             fontSize: "12px",
             fontWeight: 300,
             color: "#8a7d72",
-            marginLeft: "8px",
+            margin: 0,
           }}
         >
           {project.bairro || "Maceió/Alagoas"}
-        </span>
+        </p>
       </div>
     </Link>
   );
