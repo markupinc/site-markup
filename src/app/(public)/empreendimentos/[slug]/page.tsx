@@ -306,6 +306,21 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
         </FadeInOnScroll>
       )}
 
+      {/* ═══ ENTREGA INFO (if available) ═══ */}
+      {emp.previsao_entrega && (
+        <section style={{
+          backgroundColor: "#1CB8E8", padding: "40px 60px",
+          display: "flex", justifyContent: "center", alignItems: "center", gap: "40px",
+        }}>
+          <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,0.8)" }}>
+            Previsão de entrega
+          </span>
+          <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: "24px", fontWeight: 400, color: "#fff" }}>
+            {emp.previsao_entrega}
+          </span>
+        </section>
+      )}
+
       {/* ═══ VIDEO ═══ */}
       {emp.video_url && (
         <FadeInOnScroll>
@@ -353,21 +368,6 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
           </div>
         </FadeInOnScroll>
       </section>
-
-      {/* ═══ ENTREGA INFO (if available) ═══ */}
-      {emp.previsao_entrega && (
-        <section style={{
-          backgroundColor: "#1CB8E8", padding: "40px 60px",
-          display: "flex", justifyContent: "center", alignItems: "center", gap: "40px",
-        }}>
-          <span style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase", color: "rgba(255,255,255,0.8)" }}>
-            Previsão de entrega
-          </span>
-          <span style={{ fontFamily: "var(--font-playfair), serif", fontSize: "24px", fontWeight: 400, color: "#fff" }}>
-            {emp.previsao_entrega}
-          </span>
-        </section>
-      )}
 
       <Footer logoSrc="/assets/logo.png" />
       <WhatsAppButton />
