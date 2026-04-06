@@ -260,56 +260,17 @@ export default function SobrePage() {
       </section>
 
       {/* Localização */}
-      <section style={{ backgroundColor: "#ffffff", padding: "80px 24px" }}>
-        <FadeInOnScroll>
-          <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-            <h2
-              style={{
-                fontFamily: "var(--font-playfair)",
-                fontSize: "32px",
-                color: "#1a1a1a",
-                fontWeight: 400,
-                marginBottom: "24px",
-                textAlign: "center",
-              }}
-            >
-              Localização
-            </h2>
-
-            <p
-              style={{
-                fontFamily: "var(--font-inter)",
-                fontSize: "16px",
-                color: "#666666",
-                textAlign: "center",
-                marginBottom: "32px",
-                lineHeight: 1.6,
-              }}
-            >
-              Empresarial Ocean Tower - Tv. Dr. Antônio Gouveia, 61 - Pajuçara,
-              Maceió - AL, 57030-170, Sala 307
-            </p>
-
-            <div
-              style={{
-                width: "100%",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
-            >
-              <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3933.1!2d-35.7139!3d-9.6658!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x7014578fb7c0633%3A0x4a3b1e1a0bce9e3!2sEmpresarial%20Ocean%20Tower!5e0!3m2!1spt-BR!2sbr!4v1711000000000"
-                width="100%"
-                height="400"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                title="Localização da Markup Incorporações"
-              />
-            </div>
-          </div>
-        </FadeInOnScroll>
+      <section style={{ width: "100%", height: "500px", padding: 0, margin: 0 }}>
+        <iframe
+          src="https://maps.google.com/maps?q=Empresarial+Ocean+Tower,+Pajuçara,+Maceió,+AL&t=m&z=17&output=embed"
+          width="100%"
+          height="100%"
+          style={{ border: "none", display: "block" }}
+          allowFullScreen
+          loading="lazy"
+          referrerPolicy="no-referrer-when-downgrade"
+          title="Localização da Markup Incorporações"
+        />
       </section>
 
       <Footer logoSrc={LOGO_SRC} />
