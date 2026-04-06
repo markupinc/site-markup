@@ -18,6 +18,9 @@ export const metadata: Metadata = {
   title: "Markup Incorporações",
   description:
     "Incorporadora de alto padrão em Maceió. Empreendimentos exclusivos com alta rentabilidade para investidores.",
+  icons: {
+    icon: "/favicon.png",
+  },
 };
 
 export default function RootLayout({
