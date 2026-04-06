@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Sobre a Markup | Markup Incorporações",
   description:
-    "Conheça a Markup Incorporações: 15 anos de experiência transformando o mercado imobiliário em Maceió/AL com projetos arrojados e alta rentabilidade.",
+    "Conheça a Markup Incorporações: fundada em 2024 por Matheus Vilela, com 15 anos de experiência transformando o mercado imobiliário em Alagoas com projetos arrojados e alta rentabilidade.",
 };
 
 const LOGO_SRC = "/assets/logo.png";
@@ -113,37 +113,39 @@ export default function SobrePage() {
             >
               <p style={{ marginBottom: "20px" }}>
                 A Markup Incorporações nasceu com a missão de transformar o
-                mercado imobiliário em Maceió, Alagoas. Fundada por
-                profissionais apaixonados pelo desenvolvimento urbano e pela
-                criação de empreendimentos que realmente fazem a diferença, a
+                mercado imobiliário em Alagoas. Fundada em 2024 por <strong>Matheus Vilela</strong>, é formada
+                por profissionais apaixonados pelo desenvolvimento urbano e pela
+                criação de empreendimentos que realmente fazem a diferença. A
                 empresa se consolidou como referência em projetos de alto padrão
-                na capital alagoana.
+                em Alagoas.
               </p>
 
               <p style={{ marginBottom: "20px" }}>
                 Com mais de 15 anos de experiência no desenvolvimento
-                imobiliário, construídos por meio de parcerias estratégicas com
-                os principais players do setor, a Markup direciona toda a sua
-                expertise para oferecer produtos arrojados, com alto padrão de
-                qualidade e elevada rentabilidade para seus investidores. Cada
-                empreendimento é concebido com estudo aprofundado de mercado,
-                localização privilegiada e design contemporâneo.
+                imobiliário através de parcerias estratégicas, a Markup
+                Incorporações direciona toda a sua expertise para oferecer
+                produtos arrojados, de alto padrão e com alta rentabilidade,
+                transformando projetos em realidade, oferecendo conforto e
+                funcionalidade para quem busca um lugar para morar ou investir.
               </p>
 
               <p style={{ marginBottom: "20px" }}>
-                Sediada na Pajuçara, um dos bairros mais valorizados e
-                tradicionais de Maceió, a Markup tem se destacado pela qualidade
-                inquestionável de seus projetos e pelo compromisso inabalável
-                com investidores e parceiros. Nossa sede no Empresarial Ocean
-                Tower reflete o posicionamento da empresa: moderno, estratégico
-                e voltado para o futuro.
+                Com uma abordagem focada em soluções práticas e sustentáveis, a
+                Markup adota tecnologias e materiais que garantem eficiência e
+                respeito ao meio ambiente. Nosso trabalho busca sempre entregar
+                resultados que atendam às expectativas de nossos clientes,
+                priorizando a segurança e o bem-estar de todos os envolvidos.
+              </p>
+
+              <p style={{ marginBottom: "20px" }}>
+                <strong>A Markup Incorporações se posiciona como um porto seguro para parceiros e investidores.</strong>
               </p>
 
               <p>
                 Acreditamos que o mercado imobiliário é mais do que construir
                 edifícios — é sobre criar oportunidades de investimento sólidas,
                 desenvolver espaços que elevem a qualidade de vida e contribuir
-                para o crescimento sustentável de Maceió. Essa é a essência da
+                para o crescimento sustentável de Alagoas. Essa é a essência da
                 Markup Incorporações.
               </p>
             </div>
