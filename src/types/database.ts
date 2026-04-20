@@ -305,6 +305,25 @@ export type Database = {
           valor?: string | null;
         };
       };
+      qr_codes: {
+        Row: {
+          id: string;
+          slug: string;
+          destino_url: string;
+          descricao: string | null;
+          ativo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          slug: string;
+          destino_url: string;
+          descricao?: string | null;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["qr_codes"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

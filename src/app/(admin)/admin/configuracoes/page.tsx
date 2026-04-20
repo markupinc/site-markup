@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import QrCodesSection from "./QrCodesSection";
 
 interface ConfigItem {
   chave: string;
@@ -47,16 +48,6 @@ const configGroups = [
   {
     title: "Hero",
     fields: [{ key: "hero_tagline", label: "Tagline do Hero" }],
-  },
-  {
-    title: "QR Codes",
-    fields: [
-      {
-        key: "qr_horizon_url",
-        label: "QR Horizon (tapume) - URL de destino",
-        textarea: true,
-      },
-    ],
   },
 ];
 
@@ -235,6 +226,8 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
         ))}
+
+        <QrCodesSection />
       </div>
     </div>
   );
