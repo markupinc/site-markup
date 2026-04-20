@@ -11,8 +11,7 @@ interface QrCode {
   ativo: boolean;
 }
 
-const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL || "https://markupincorporacoes.com.br";
+const BASE_URL = "https://markupincorporacoes.com.br";
 
 const slugify = (value: string) =>
   value
@@ -271,36 +270,24 @@ function QrCodeRow({
         borderRadius: "8px",
         padding: "12px",
         display: "grid",
-        gridTemplateColumns: "1fr 2fr 2fr auto auto auto",
+        gridTemplateColumns: "1.3fr 2fr 2fr auto auto auto",
         gap: "8px",
         alignItems: "center",
       }}
     >
-      <div
+      <code
         style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
+          fontSize: "12px",
+          color: "rgba(255,255,255,0.9)",
+          fontFamily: "monospace",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
         }}
+        title={`${BASE_URL}/qr/${code.slug}`}
       >
-        <span
-          style={{
-            width: "8px",
-            height: "8px",
-            borderRadius: "50%",
-            backgroundColor: code.ativo ? "#6b9f6b" : "rgba(255,255,255,0.2)",
-          }}
-        />
-        <code
-          style={{
-            fontSize: "12px",
-            color: "#fff",
-            fontFamily: "monospace",
-          }}
-        >
-          /qr/{code.slug}
-        </code>
-      </div>
+        markupincorporacoes.com.br/qr/<span style={{ color: "#fff", fontWeight: 600 }}>{code.slug}</span>
+      </code>
       <input
         type="text"
         value={destino}
@@ -320,21 +307,19 @@ function QrCodeRow({
       />
       <button
         onClick={onCopy}
-        style={miniButtonStyle}
-        title="Copiar URL"
-      >
-        {copied ? "✓" : "Copiar"}
-      </button>
-      <button
-        onClick={() => onUpdate({ ativo: !code.ativo })}
         style={{
           ...miniButtonStyle,
-          color: code.ativo ? "#fff" : "rgba(255,255,255,0.5)",
+          color: copied ? "#6b9f6b" : "#fff",
+          borderColor: copied ? "rgba(107,159,107,0.4)" : "rgba(255,255,255,0.1)",
         }}
-        title={code.ativo ? "Desativar" : "Ativar"}
+        title="Copiar URL"
       >
-        {code.ativo ? "Ativo" : "Inativo"}
+        {copied ? "✓ Copiado" : "Copiar"}
       </button>
+      <ToggleSwitch
+        ativo={code.ativo}
+        onChange={() => onUpdate({ ativo: !code.ativo })}
+      />
       <button
         onClick={onDelete}
         style={{ ...miniButtonStyle, color: "#e88" }}
@@ -343,6 +328,46 @@ function QrCodeRow({
         Remover
       </button>
     </div>
+  );
+}
+
+function ToggleSwitch({
+  ativo,
+  onChange,
+}: {
+  ativo: boolean;
+  onChange: () => void;
+}) {
+  return (
+    <button
+      onClick={onChange}
+      title={ativo ? "Ativo — clique para desativar" : "Inativo — clique para ativar"}
+      style={{
+        width: "44px",
+        height: "24px",
+        borderRadius: "12px",
+        border: "none",
+        backgroundColor: ativo ? "#22a355" : "#c0392b",
+        position: "relative",
+        cursor: "pointer",
+        transition: "background-color 0.2s",
+        padding: 0,
+      }}
+    >
+      <span
+        style={{
+          position: "absolute",
+          top: "2px",
+          left: ativo ? "22px" : "2px",
+          width: "20px",
+          height: "20px",
+          borderRadius: "50%",
+          backgroundColor: "#fff",
+          transition: "left 0.2s",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+        }}
+      />
+    </button>
   );
 }
 
