@@ -48,6 +48,16 @@ const configGroups = [
     title: "Hero",
     fields: [{ key: "hero_tagline", label: "Tagline do Hero" }],
   },
+  {
+    title: "QR Codes",
+    fields: [
+      {
+        key: "qr_horizon_url",
+        label: "QR Horizon (tapume) - URL de destino",
+        textarea: true,
+      },
+    ],
+  },
 ];
 
 export default function ConfiguracoesPage() {
@@ -59,14 +69,19 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     async function load() {
+      const map: Record<string, string> = {};
+      configGroups.forEach((group) =>
+        group.fields.forEach((field) => {
+          map[field.key] = "";
+        })
+      );
       const { data } = await supabase.from("configuracoes").select("*");
       if (data) {
-        const map: Record<string, string> = {};
         data.forEach((item: ConfigItem) => {
           map[item.chave] = item.valor || "";
         });
-        setConfigs(map);
       }
+      setConfigs(map);
       setLoading(false);
     }
     load();
@@ -79,11 +94,9 @@ export default function ConfiguracoesPage() {
 
   const handleSave = async () => {
     setSaving(true);
-    const updates = Object.entries(configs).map(([chave, valor]) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from("configuracoes") as any).update({ valor }).eq("chave", chave)
-    );
-    await Promise.all(updates);
+    const rows = Object.entries(configs).map(([chave, valor]) => ({ chave, valor }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from("configuracoes") as any).upsert(rows, { onConflict: "chave" });
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
