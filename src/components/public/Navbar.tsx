@@ -158,7 +158,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                   dominantBaseline="central"
                   fontFamily="inherit"
                   fontSize="11"
-                  fontWeight="600"
+                  fontWeight="800"
                   letterSpacing="0.8"
                   fill="black"
                 >
@@ -166,7 +166,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                 </text>
               </mask>
             </defs>
-            <rect width="168" height="30" rx="15" fill="#ffffff" mask="url(#corretor-knockout)" />
+            <rect width="168" height="30" rx="15" fill="rgba(255,255,255,0.9)" mask="url(#corretor-knockout)" />
           </svg>
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
@@ -353,7 +353,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                         dominantBaseline="central"
                         fontFamily="inherit"
                         fontSize="13"
-                        fontWeight="600"
+                        fontWeight="800"
                         letterSpacing="0.8"
                         fill="black"
                       >
@@ -361,7 +361,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                       </text>
                     </mask>
                   </defs>
-                  <rect width="220" height="44" rx="22" fill="#ffffff" mask="url(#corretor-knockout-mobile)" />
+                  <rect width="220" height="44" rx="22" fill="rgba(255,255,255,0.9)" mask="url(#corretor-knockout-mobile)" />
                 </svg>
               </a>
             </nav>
