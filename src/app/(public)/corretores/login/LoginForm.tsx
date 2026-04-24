@@ -83,7 +83,7 @@ export default function LoginForm() {
       {/* Form card */}
       <main
         style={{
-          backgroundColor: "#f5ebe1",
+          backgroundColor: "#ffffff",
           padding: "60px 20px",
           minHeight: "60vh",
         }}

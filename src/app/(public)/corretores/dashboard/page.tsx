@@ -83,7 +83,7 @@ export default async function CorretorDashboardPage() {
 
       <CorretorHeader nome={nome} />
 
-      <main style={{ backgroundColor: "#f5ebe1", minHeight: "60vh" }}>
+      <main style={{ backgroundColor: "#ffffff", minHeight: "60vh" }}>
         <section
           style={{
             padding: "60px 20px",

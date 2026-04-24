@@ -122,7 +122,7 @@ export default async function CorretorEmpreendimentoPage({
 
       <CorretorHeader nome={nome} />
 
-      <main style={{ backgroundColor: "#f5ebe1", minHeight: "60vh" }}>
+      <main style={{ backgroundColor: "#ffffff", minHeight: "60vh" }}>
         <section
           style={{
             padding: "40px 20px 60px",

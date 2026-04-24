@@ -15,8 +15,7 @@ export default function CorretorHeader({ nome }: { nome: string }) {
     <div
       style={{
         backgroundColor: "#ffffff",
-        borderBottom: "1px solid rgba(0,0,0,0.06)",
-        padding: "12px 20px",
+        padding: "16px 20px",
       }}
     >
       <div
