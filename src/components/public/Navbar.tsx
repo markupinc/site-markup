@@ -139,21 +139,40 @@ export default function Navbar({ logoSrc }: NavbarProps) {
         ))}
       </nav>
 
-      {/* Desktop Social Links */}
-      <div className="hidden md:flex items-center">
-        {socialLinks.map((social, i) => (
-          <a
-            key={social.label}
-            href={social.href}
-            target="_blank"
-            rel="noopener"
-            aria-label={social.label}
-            className="inline-flex hover:opacity-70 transition-opacity"
-            style={{ color: "#fff", marginLeft: i > 0 ? "16px" : "0" }}
-          >
-            {social.icon}
-          </a>
-        ))}
+      {/* Desktop: Corretor button + Social Links */}
+      <div className="hidden md:flex items-center" style={{ gap: "24px" }}>
+        <a
+          href="/corretores"
+          className="hover:opacity-80 transition-opacity"
+          style={{
+            padding: "8px 16px",
+            border: "1px solid rgba(184,148,95,0.6)",
+            borderRadius: "4px",
+            color: "#b8945f",
+            fontSize: "12px",
+            fontWeight: 500,
+            letterSpacing: "0.5px",
+            textDecoration: "none",
+            textTransform: "uppercase",
+          }}
+        >
+          Área do Corretor
+        </a>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+          {socialLinks.map((social) => (
+            <a
+              key={social.label}
+              href={social.href}
+              target="_blank"
+              rel="noopener"
+              aria-label={social.label}
+              className="inline-flex hover:opacity-70 transition-opacity"
+              style={{ color: "#fff" }}
+            >
+              {social.icon}
+            </a>
+          ))}
+        </div>
       </div>
 
       {/* Mobile Hamburger Button */}
@@ -300,6 +319,27 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                   {link.label}
                 </a>
               ))}
+              <a
+                href="/corretores"
+                onClick={closeMenu}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "48px",
+                  marginTop: "20px",
+                  border: "1px solid rgba(184,148,95,0.6)",
+                  borderRadius: "4px",
+                  color: "#b8945f",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  letterSpacing: "0.5px",
+                  textTransform: "uppercase",
+                  textDecoration: "none",
+                }}
+              >
+                Área do Corretor
+              </a>
             </nav>
 
             {/* Drawer Social Links */}

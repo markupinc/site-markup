@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCorretorId } from "@/lib/auth/corretor";
+import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 import CorretorHeader from "../../CorretorHeader";
 import MaterialLink from "./MaterialLink";
 
@@ -90,42 +92,56 @@ export default async function CorretorEmpreendimentoPage({
   });
 
   return (
-    <main style={{ backgroundColor: "#f5ebe1", minHeight: "100vh" }}>
-      <CorretorHeader nome={nome} />
+    <>
+      <Navbar logoSrc="/assets/logo.png" />
 
+      {/* Hero */}
       <section
         style={{
-          padding: "40px 20px 20px",
-          maxWidth: "900px",
-          margin: "0 auto",
+          backgroundColor: "#1a1a1a",
+          padding: "160px 20px 40px",
+          textAlign: "center",
         }}
       >
-        <Link
-          href="/corretores/dashboard"
-          style={{
-            fontSize: "13px",
-            color: "#8a7d72",
-            textDecoration: "none",
-            marginBottom: "24px",
-            display: "inline-block",
-          }}
-        >
-          ← Voltar
-        </Link>
         <h1
           className="font-serif"
           style={{
-            fontSize: "36px",
-            color: "#1a1a1a",
+            fontFamily: "var(--font-playfair)",
+            fontSize: "40px",
+            color: "#ffffff",
             fontWeight: 400,
             marginBottom: "8px",
           }}
         >
           {emp.nome}
         </h1>
-        <p style={{ fontSize: "14px", color: "#8a7d72", marginBottom: "40px" }}>
+        <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>
           {[emp.bairro, emp.cidade, emp.estado].filter(Boolean).join(", ")}
         </p>
+      </section>
+
+      <CorretorHeader nome={nome} />
+
+      <main style={{ backgroundColor: "#f5ebe1", minHeight: "60vh" }}>
+        <section
+          style={{
+            padding: "40px 20px 60px",
+            maxWidth: "900px",
+            margin: "0 auto",
+          }}
+        >
+          <Link
+            href="/corretores/dashboard"
+            style={{
+              fontSize: "13px",
+              color: "#8a7d72",
+              textDecoration: "none",
+              marginBottom: "24px",
+              display: "inline-block",
+            }}
+          >
+            ← Voltar para empreendimentos
+          </Link>
 
         {materiais.length === 0 ? (
           <p
@@ -176,7 +192,10 @@ export default async function CorretorEmpreendimentoPage({
             })}
           </div>
         )}
-      </section>
-    </main>
+        </section>
+      </main>
+
+      <Footer logoSrc="/assets/logo.png" />
+    </>
   );
 }

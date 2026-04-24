@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 
 const maskCpf = (value: string) =>
   value
@@ -43,45 +45,27 @@ export default function LoginForm() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f5ebe1",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 20px",
-      }}
-    >
-      <div
+    <>
+      <Navbar logoSrc="/assets/logo.png" />
+
+      {/* Hero */}
+      <section
         style={{
-          width: "100%",
-          maxWidth: "440px",
-          backgroundColor: "#ffffff",
-          borderRadius: "12px",
-          padding: "48px 32px",
-          boxShadow: "0 4px 30px rgba(0,0,0,0.05)",
+          backgroundColor: "#1a1a1a",
+          paddingTop: "160px",
+          paddingBottom: "40px",
+          textAlign: "center",
+          padding: "160px 20px 40px",
         }}
       >
-        <Link
-          href="/"
-          style={{
-            fontSize: "12px",
-            color: "#8a7d72",
-            textDecoration: "none",
-            marginBottom: "24px",
-            display: "inline-block",
-          }}
-        >
-          ← Voltar ao site
-        </Link>
         <h1
           className="font-serif"
           style={{
-            fontSize: "32px",
-            color: "#1a1a1a",
-            marginBottom: "8px",
+            fontFamily: "var(--font-playfair)",
+            fontSize: "40px",
+            color: "#ffffff",
             fontWeight: 400,
+            marginBottom: "8px",
           }}
         >
           Área do Corretor
@@ -89,86 +73,141 @@ export default function LoginForm() {
         <p
           style={{
             fontSize: "14px",
-            color: "#8a7d72",
-            marginBottom: "32px",
+            color: "rgba(255,255,255,0.6)",
           }}
         >
-          Acesse com seu CPF cadastrado.
+          Acesso aos materiais dos empreendimentos Markup.
         </p>
+      </section>
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-          <div>
-            <label style={labelStyle}>CPF</label>
-            <input
-              type="text"
-              value={cpf}
-              onChange={(e) => setCpf(maskCpf(e.target.value))}
-              placeholder="000.000.000-00"
-              style={inputStyle}
-              autoComplete="off"
-              required
-            />
-          </div>
-
-          {error && (
-            <p style={{ fontSize: "13px", color: "#c0392b", margin: 0 }}>{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
+      {/* Form card */}
+      <main
+        style={{
+          backgroundColor: "#f5ebe1",
+          padding: "60px 20px",
+          minHeight: "60vh",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "440px",
+            margin: "0 auto",
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            padding: "40px 32px",
+            boxShadow: "0 4px 30px rgba(0,0,0,0.05)",
+          }}
+        >
+          <h2
+            className="font-serif"
             style={{
-              marginTop: "8px",
-              padding: "14px",
-              backgroundColor: "#1a1a1a",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: loading ? "wait" : "pointer",
-              opacity: loading ? 0.6 : 1,
+              fontFamily: "var(--font-playfair)",
+              fontSize: "24px",
+              color: "#1a1a1a",
+              fontWeight: 400,
+              marginBottom: "8px",
             }}
           >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
-
-        <p
-          style={{
-            fontSize: "13px",
-            color: "#8a7d72",
-            marginTop: "24px",
-            textAlign: "center",
-          }}
-        >
-          Não tem cadastro?{" "}
-          <Link
-            href="/corretores/cadastro"
-            style={{ color: "#b8945f", textDecoration: "none", fontWeight: 500 }}
+            Entrar
+          </h2>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#8a7d72",
+              marginBottom: "28px",
+            }}
           >
-            Criar conta
-          </Link>
-        </p>
-      </div>
-    </main>
+            Acesse com seu CPF cadastrado.
+          </p>
+
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
+            <div>
+              <label style={labelStyle}>CPF</label>
+              <input
+                type="text"
+                value={cpf}
+                onChange={(e) => setCpf(maskCpf(e.target.value))}
+                placeholder="000.000.000-00"
+                style={inputStyle}
+                autoComplete="off"
+                required
+              />
+            </div>
+
+            {error && (
+              <p style={{ fontSize: "13px", color: "#c0392b", margin: 0 }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                marginTop: "8px",
+                padding: "14px",
+                backgroundColor: "#1a1a1a",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "4px",
+                fontSize: "13px",
+                fontWeight: 500,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                cursor: loading ? "wait" : "pointer",
+                opacity: loading ? 0.6 : 1,
+              }}
+            >
+              {loading ? "Entrando..." : "Entrar"}
+            </button>
+          </form>
+
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#8a7d72",
+              marginTop: "28px",
+              textAlign: "center",
+            }}
+          >
+            Não tem cadastro?{" "}
+            <Link
+              href="/corretores/cadastro"
+              style={{
+                color: "#b8945f",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              Criar conta
+            </Link>
+          </p>
+        </div>
+      </main>
+
+      <Footer logoSrc="/assets/logo.png" />
+    </>
   );
 }
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "12px",
+  fontSize: "11px",
   color: "#8a7d72",
   marginBottom: "6px",
   textTransform: "uppercase",
   letterSpacing: "0.5px",
+  fontWeight: 500,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 14px",
   border: "1px solid rgba(0,0,0,0.12)",
-  borderRadius: "8px",
+  borderRadius: "4px",
   fontSize: "14px",
   outline: "none",
   backgroundColor: "#ffffff",

@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCorretorId } from "@/lib/auth/corretor";
+import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 import CorretorHeader from "../CorretorHeader";
 
 export const dynamic = "force-dynamic";
@@ -51,31 +53,44 @@ export default async function CorretorDashboardPage() {
   const nome = corretorRes.data?.nome || "";
 
   return (
-    <main style={{ backgroundColor: "#f5ebe1", minHeight: "100vh" }}>
-      <CorretorHeader nome={nome} />
+    <>
+      <Navbar logoSrc="/assets/logo.png" />
 
+      {/* Hero */}
       <section
         style={{
-          padding: "60px 20px 40px",
-          maxWidth: "1200px",
-          margin: "0 auto",
+          backgroundColor: "#1a1a1a",
+          padding: "160px 20px 40px",
+          textAlign: "center",
         }}
       >
         <h1
           className="font-serif"
           style={{
-            fontSize: "36px",
-            color: "#1a1a1a",
+            fontFamily: "var(--font-playfair)",
+            fontSize: "40px",
+            color: "#ffffff",
             fontWeight: 400,
             marginBottom: "8px",
           }}
         >
-          Materiais dos empreendimentos
+          Materiais dos Empreendimentos
         </h1>
-        <p style={{ fontSize: "14px", color: "#8a7d72", marginBottom: "40px" }}>
-          Selecione um empreendimento para acessar folders, tabelas e materiais
-          de divulgação.
+        <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>
+          Selecione um empreendimento para acessar folders, tabelas e materiais de divulgação.
         </p>
+      </section>
+
+      <CorretorHeader nome={nome} />
+
+      <main style={{ backgroundColor: "#f5ebe1", minHeight: "60vh" }}>
+        <section
+          style={{
+            padding: "60px 20px",
+            maxWidth: "1200px",
+            margin: "0 auto",
+          }}
+        >
 
         {empreendimentos.length === 0 ? (
           <p style={{ fontSize: "14px", color: "#8a7d72" }}>
@@ -163,7 +178,10 @@ export default async function CorretorDashboardPage() {
             ))}
           </div>
         )}
-      </section>
-    </main>
+        </section>
+      </main>
+
+      <Footer logoSrc="/assets/logo.png" />
+    </>
   );
 }

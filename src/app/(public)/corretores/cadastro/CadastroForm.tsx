@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 
 const maskCpf = (value: string) =>
   value
@@ -61,200 +63,235 @@ export default function CadastroForm() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f5ebe1",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 20px",
-      }}
-    >
-      <div
+    <>
+      <Navbar logoSrc="/assets/logo.png" />
+
+      {/* Hero */}
+      <section
         style={{
-          width: "100%",
-          maxWidth: "520px",
-          backgroundColor: "#ffffff",
-          borderRadius: "12px",
-          padding: "48px 32px",
-          boxShadow: "0 4px 30px rgba(0,0,0,0.05)",
+          backgroundColor: "#1a1a1a",
+          paddingTop: "160px",
+          paddingBottom: "40px",
+          textAlign: "center",
+          padding: "160px 20px 40px",
         }}
       >
-        <Link
-          href="/corretores/login"
-          style={{
-            fontSize: "12px",
-            color: "#8a7d72",
-            textDecoration: "none",
-            marginBottom: "24px",
-            display: "inline-block",
-          }}
-        >
-          ← Voltar ao login
-        </Link>
         <h1
           className="font-serif"
           style={{
-            fontSize: "32px",
-            color: "#1a1a1a",
-            marginBottom: "8px",
+            fontFamily: "var(--font-playfair)",
+            fontSize: "40px",
+            color: "#ffffff",
             fontWeight: 400,
+            marginBottom: "8px",
           }}
         >
-          Cadastro de Corretor
+          Cadastro do Corretor
         </h1>
         <p
           style={{
             fontSize: "14px",
-            color: "#8a7d72",
-            marginBottom: "32px",
+            color: "rgba(255,255,255,0.6)",
           }}
         >
           Acesso imediato aos materiais dos empreendimentos.
         </p>
+      </section>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+      {/* Form card */}
+      <main
+        style={{
+          backgroundColor: "#f5ebe1",
+          padding: "60px 20px",
+          minHeight: "60vh",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "520px",
+            margin: "0 auto",
+            backgroundColor: "#ffffff",
+            borderRadius: "8px",
+            padding: "40px 32px",
+            boxShadow: "0 4px 30px rgba(0,0,0,0.05)",
+          }}
         >
-          <div>
-            <label style={labelStyle}>Nome completo</label>
-            <input
-              type="text"
-              value={form.nome}
-              onChange={(e) => update("nome", e.target.value)}
-              style={inputStyle}
-              required
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>E-mail</label>
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => update("email", e.target.value)}
-              style={inputStyle}
-              required
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>Telefone</label>
-            <input
-              type="tel"
-              value={form.telefone}
-              onChange={(e) => update("telefone", maskPhone(e.target.value))}
-              placeholder="(82) 98229-4001"
-              style={inputStyle}
-              required
-            />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <form
+            onSubmit={handleSubmit}
+            style={{ display: "flex", flexDirection: "column", gap: "16px" }}
+          >
             <div>
-              <label style={labelStyle}>CPF</label>
+              <label style={labelStyle}>Nome completo</label>
               <input
                 type="text"
-                value={form.cpf}
-                onChange={(e) => update("cpf", maskCpf(e.target.value))}
-                placeholder="000.000.000-00"
+                value={form.nome}
+                onChange={(e) => update("nome", e.target.value)}
                 style={inputStyle}
                 required
               />
             </div>
             <div>
-              <label style={labelStyle}>CRECI</label>
+              <label style={labelStyle}>E-mail</label>
               <input
-                type="text"
-                value={form.creci}
-                onChange={(e) => update("creci", e.target.value.toUpperCase())}
-                placeholder="AL-12345"
+                type="email"
+                value={form.email}
+                onChange={(e) => update("email", e.target.value)}
                 style={inputStyle}
                 required
               />
             </div>
-          </div>
+            <div>
+              <label style={labelStyle}>Telefone</label>
+              <input
+                type="tel"
+                value={form.telefone}
+                onChange={(e) => update("telefone", maskPhone(e.target.value))}
+                placeholder="(82) 98229-4001"
+                style={inputStyle}
+                required
+              />
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <label style={labelStyle}>CPF</label>
+                <input
+                  type="text"
+                  value={form.cpf}
+                  onChange={(e) => update("cpf", maskCpf(e.target.value))}
+                  placeholder="000.000.000-00"
+                  style={inputStyle}
+                  required
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>CRECI</label>
+                <input
+                  type="text"
+                  value={form.creci}
+                  onChange={(e) => update("creci", e.target.value.toUpperCase())}
+                  placeholder="AL-12345"
+                  style={inputStyle}
+                  required
+                />
+              </div>
+            </div>
 
-          <label
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                fontSize: "13px",
+                color: "#444",
+                marginTop: "8px",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={form.aceite_termos}
+                onChange={(e) => update("aceite_termos", e.target.checked)}
+                style={{ marginTop: "3px" }}
+                required
+              />
+              <span>
+                Aceito os{" "}
+                <Link
+                  href="/termos"
+                  target="_blank"
+                  style={{ color: "#b8945f", textDecoration: "none" }}
+                >
+                  termos de uso
+                </Link>{" "}
+                e a{" "}
+                <Link
+                  href="/privacidade"
+                  target="_blank"
+                  style={{ color: "#b8945f", textDecoration: "none" }}
+                >
+                  política de privacidade
+                </Link>
+                .
+              </span>
+            </label>
+
+            {error && (
+              <p style={{ fontSize: "13px", color: "#c0392b", margin: 0 }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                marginTop: "8px",
+                padding: "14px",
+                backgroundColor: "#1a1a1a",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "4px",
+                fontSize: "13px",
+                fontWeight: 500,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
+                cursor: loading ? "wait" : "pointer",
+                opacity: loading ? 0.6 : 1,
+              }}
+            >
+              {loading ? "Criando conta..." : "Criar conta"}
+            </button>
+          </form>
+
+          <p
             style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "10px",
               fontSize: "13px",
-              color: "#444",
-              marginTop: "8px",
-              cursor: "pointer",
+              color: "#8a7d72",
+              marginTop: "28px",
+              textAlign: "center",
             }}
           >
-            <input
-              type="checkbox"
-              checked={form.aceite_termos}
-              onChange={(e) => update("aceite_termos", e.target.checked)}
-              style={{ marginTop: "3px" }}
-              required
-            />
-            <span>
-              Aceito os{" "}
-              <Link
-                href="/termos"
-                target="_blank"
-                style={{ color: "#b8945f", textDecoration: "none" }}
-              >
-                termos de uso
-              </Link>{" "}
-              e a{" "}
-              <Link
-                href="/privacidade"
-                target="_blank"
-                style={{ color: "#b8945f", textDecoration: "none" }}
-              >
-                política de privacidade
-              </Link>
-              .
-            </span>
-          </label>
+            Já tem cadastro?{" "}
+            <Link
+              href="/corretores/login"
+              style={{
+                color: "#b8945f",
+                textDecoration: "none",
+                fontWeight: 500,
+              }}
+            >
+              Entrar
+            </Link>
+          </p>
+        </div>
+      </main>
 
-          {error && (
-            <p style={{ fontSize: "13px", color: "#c0392b", margin: 0 }}>{error}</p>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              marginTop: "8px",
-              padding: "14px",
-              backgroundColor: "#1a1a1a",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "8px",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: loading ? "wait" : "pointer",
-              opacity: loading ? 0.6 : 1,
-            }}
-          >
-            {loading ? "Criando conta..." : "Criar conta"}
-          </button>
-        </form>
-      </div>
-    </main>
+      <Footer logoSrc="/assets/logo.png" />
+    </>
   );
 }
 
 const labelStyle: React.CSSProperties = {
   display: "block",
-  fontSize: "12px",
+  fontSize: "11px",
   color: "#8a7d72",
   marginBottom: "6px",
   textTransform: "uppercase",
   letterSpacing: "0.5px",
+  fontWeight: 500,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "12px 14px",
   border: "1px solid rgba(0,0,0,0.12)",
-  borderRadius: "8px",
+  borderRadius: "4px",
   fontSize: "14px",
   outline: "none",
   backgroundColor: "#ffffff",
