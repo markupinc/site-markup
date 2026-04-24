@@ -143,21 +143,31 @@ export default function Navbar({ logoSrc }: NavbarProps) {
       <div className="hidden md:flex items-center" style={{ gap: "24px" }}>
         <a
           href="/corretores"
+          aria-label="Área do Corretor"
           className="hover:opacity-80 transition-opacity"
-          style={{
-            padding: "6px 12px",
-            backgroundColor: "transparent",
-            border: "1px solid #ffffff",
-            borderRadius: "999px",
-            color: "#ffffff",
-            fontSize: "11px",
-            fontWeight: 500,
-            letterSpacing: "0.5px",
-            textDecoration: "none",
-            textTransform: "uppercase",
-          }}
+          style={{ display: "inline-flex", textDecoration: "none" }}
         >
-          Área do Corretor
+          <svg width="168" height="30" viewBox="0 0 168 30" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <mask id="corretor-knockout" maskUnits="userSpaceOnUse">
+                <rect width="168" height="30" rx="15" fill="white" />
+                <text
+                  x="50%"
+                  y="50%"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontFamily="inherit"
+                  fontSize="11"
+                  fontWeight="600"
+                  letterSpacing="0.8"
+                  fill="black"
+                >
+                  ÁREA DO CORRETOR
+                </text>
+              </mask>
+            </defs>
+            <rect width="168" height="30" rx="15" fill="#ffffff" mask="url(#corretor-knockout)" />
+          </svg>
         </a>
         <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           {socialLinks.map((social) => (
@@ -323,24 +333,36 @@ export default function Navbar({ logoSrc }: NavbarProps) {
               <a
                 href="/corretores"
                 onClick={closeMenu}
+                aria-label="Área do Corretor"
                 style={{
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  height: "44px",
                   marginTop: "20px",
-                  backgroundColor: "transparent",
-                  border: "1px solid #ffffff",
-                  borderRadius: "999px",
-                  color: "#ffffff",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  letterSpacing: "0.5px",
-                  textTransform: "uppercase",
                   textDecoration: "none",
                 }}
               >
-                Área do Corretor
+                <svg width="220" height="44" viewBox="0 0 220 44" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <mask id="corretor-knockout-mobile" maskUnits="userSpaceOnUse">
+                      <rect width="220" height="44" rx="22" fill="white" />
+                      <text
+                        x="50%"
+                        y="50%"
+                        textAnchor="middle"
+                        dominantBaseline="central"
+                        fontFamily="inherit"
+                        fontSize="13"
+                        fontWeight="600"
+                        letterSpacing="0.8"
+                        fill="black"
+                      >
+                        ÁREA DO CORRETOR
+                      </text>
+                    </mask>
+                  </defs>
+                  <rect width="220" height="44" rx="22" fill="#ffffff" mask="url(#corretor-knockout-mobile)" />
+                </svg>
               </a>
             </nav>
 
