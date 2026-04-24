@@ -5,7 +5,6 @@ import {
   isValidCpf,
   normalizeCpf,
   normalizeCreci,
-  signCorretorToken,
 } from "@/lib/auth/corretor";
 
 export const runtime = "nodejs";
@@ -60,8 +59,8 @@ export async function POST(request: Request) {
     .from("corretores")
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .insert(insertData as any)
-    .select("id, nome, creci")
-    .single<{ id: string; nome: string; creci: string }>();
+    .select("id")
+    .single<{ id: string }>();
 
   if (error) {
     if (error.code === "23505") {
@@ -73,19 +72,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const token = await signCorretorToken({
-    id: data.id,
-    nome: data.nome,
-    creci: data.creci,
-  });
-
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(CORRETOR_COOKIE, token, {
+  response.cookies.set(CORRETOR_COOKIE, data.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 365,
   });
   return response;
 }

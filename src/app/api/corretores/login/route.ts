@@ -4,7 +4,6 @@ import {
   CORRETOR_COOKIE,
   normalizeCpf,
   normalizeCreci,
-  signCorretorToken,
 } from "@/lib/auth/corretor";
 
 export const runtime = "nodejs";
@@ -28,10 +27,10 @@ export async function POST(request: Request) {
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("corretores")
-    .select("id, nome, creci, ativo")
+    .select("id, ativo")
     .eq("cpf", cpf)
     .eq("creci", creci)
-    .maybeSingle<{ id: string; nome: string; creci: string; ativo: boolean }>();
+    .maybeSingle<{ id: string; ativo: boolean }>();
 
   if (!data) {
     return NextResponse.json(
@@ -52,19 +51,13 @@ export async function POST(request: Request) {
     .update({ last_login_at: new Date().toISOString() })
     .eq("id", data.id);
 
-  const token = await signCorretorToken({
-    id: data.id,
-    nome: data.nome,
-    creci: data.creci,
-  });
-
   const response = NextResponse.json({ ok: true });
-  response.cookies.set(CORRETOR_COOKIE, token, {
+  response.cookies.set(CORRETOR_COOKIE, data.id, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 365,
   });
   return response;
 }

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCorretorSession } from "@/lib/auth/corretor";
+import { getCorretorId } from "@/lib/auth/corretor";
 import CorretorHeader from "../CorretorHeader";
 
 export const dynamic = "force-dynamic";
@@ -29,20 +29,30 @@ const statusLabels: Record<string, string> = {
 };
 
 export default async function CorretorDashboardPage() {
-  const session = await getCorretorSession();
+  const corretorId = await getCorretorId();
   const supabase = createAdminClient();
 
-  const { data } = await supabase
-    .from("empreendimentos")
-    .select("id, slug, nome, bairro, cidade, estado, status, imagem_destaque_url")
-    .eq("ativo", true)
-    .order("ordem", { ascending: true });
+  const [empRes, corretorRes] = await Promise.all([
+    supabase
+      .from("empreendimentos")
+      .select("id, slug, nome, bairro, cidade, estado, status, imagem_destaque_url")
+      .eq("ativo", true)
+      .order("ordem", { ascending: true }),
+    corretorId
+      ? supabase
+          .from("corretores")
+          .select("nome")
+          .eq("id", corretorId)
+          .maybeSingle<{ nome: string }>()
+      : Promise.resolve({ data: null }),
+  ]);
 
-  const empreendimentos = (data as Empreendimento[]) || [];
+  const empreendimentos = (empRes.data as Empreendimento[]) || [];
+  const nome = corretorRes.data?.nome || "";
 
   return (
     <main style={{ backgroundColor: "#f5ebe1", minHeight: "100vh" }}>
-      <CorretorHeader nome={session?.nome || ""} />
+      <CorretorHeader nome={nome} />
 
       <section
         style={{

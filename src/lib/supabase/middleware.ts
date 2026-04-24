@@ -1,6 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { CORRETOR_COOKIE, verifyCorretorToken } from "@/lib/auth/corretor";
+import { CORRETOR_COOKIE } from "@/lib/auth/corretor";
 
 const CORRETOR_PUBLIC_PATHS = ["/corretores/login", "/corretores/cadastro"];
 
@@ -59,15 +59,14 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (pathname.startsWith("/corretores")) {
     const isPublicPath = CORRETOR_PUBLIC_PATHS.includes(pathname);
-    const token = request.cookies.get(CORRETOR_COOKIE)?.value;
-    const session = token ? await verifyCorretorToken(token) : null;
+    const corretorId = request.cookies.get(CORRETOR_COOKIE)?.value;
 
-    if (!session && !isPublicPath) {
+    if (!corretorId && !isPublicPath) {
       const url = request.nextUrl.clone();
       url.pathname = "/corretores/login";
       return NextResponse.redirect(url);
     }
-    if (session && isPublicPath) {
+    if (corretorId && isPublicPath) {
       const url = request.nextUrl.clone();
       url.pathname = "/corretores/dashboard";
       return NextResponse.redirect(url);

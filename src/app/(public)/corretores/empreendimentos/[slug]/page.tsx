@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCorretorSession } from "@/lib/auth/corretor";
+import { getCorretorId } from "@/lib/auth/corretor";
 import CorretorHeader from "../../CorretorHeader";
 import MaterialLink from "./MaterialLink";
 
@@ -50,15 +50,27 @@ export default async function CorretorEmpreendimentoPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const session = await getCorretorSession();
+  const corretorId = await getCorretorId();
   const supabase = createAdminClient();
 
-  const { data: emp } = await supabase
-    .from("empreendimentos")
-    .select("id, slug, nome, bairro, cidade, estado, imagem_destaque_url")
-    .eq("slug", slug)
-    .eq("ativo", true)
-    .maybeSingle<Empreendimento>();
+  const [empRes, corretorRes] = await Promise.all([
+    supabase
+      .from("empreendimentos")
+      .select("id, slug, nome, bairro, cidade, estado, imagem_destaque_url")
+      .eq("slug", slug)
+      .eq("ativo", true)
+      .maybeSingle<Empreendimento>(),
+    corretorId
+      ? supabase
+          .from("corretores")
+          .select("nome")
+          .eq("id", corretorId)
+          .maybeSingle<{ nome: string }>()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  const emp = empRes.data;
+  const nome = corretorRes.data?.nome || "";
 
   if (!emp) notFound();
 
@@ -79,7 +91,7 @@ export default async function CorretorEmpreendimentoPage({
 
   return (
     <main style={{ backgroundColor: "#f5ebe1", minHeight: "100vh" }}>
-      <CorretorHeader nome={session?.nome || ""} />
+      <CorretorHeader nome={nome} />
 
       <section
         style={{

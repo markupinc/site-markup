@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCorretorSession } from "@/lib/auth/corretor";
+import { getCorretorId } from "@/lib/auth/corretor";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  const session = await getCorretorSession();
-  if (!session) {
+  const corretorId = await getCorretorId();
+  if (!corretorId) {
     return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
   }
 
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const supabase = createAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from("material_acessos") as any).insert({
-    corretor_id: session.id,
+    corretor_id: corretorId,
     material_id: materialId,
   });
 
