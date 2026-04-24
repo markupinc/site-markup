@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  CORRETOR_COOKIE,
-  normalizeCpf,
-  normalizeCreci,
-} from "@/lib/auth/corretor";
+import { CORRETOR_COOKIE, normalizeCpf } from "@/lib/auth/corretor";
 
 export const runtime = "nodejs";
 
@@ -15,13 +11,9 @@ export async function POST(request: Request) {
   }
 
   const cpf = normalizeCpf(String(body.cpf || ""));
-  const creci = normalizeCreci(String(body.creci || ""));
 
-  if (!cpf || !creci) {
-    return NextResponse.json(
-      { error: "Informe CPF e CRECI." },
-      { status: 400 }
-    );
+  if (!cpf) {
+    return NextResponse.json({ error: "Informe o CPF." }, { status: 400 });
   }
 
   const supabase = createAdminClient();
@@ -29,12 +21,11 @@ export async function POST(request: Request) {
     .from("corretores")
     .select("id, ativo")
     .eq("cpf", cpf)
-    .eq("creci", creci)
     .maybeSingle<{ id: string; ativo: boolean }>();
 
   if (!data) {
     return NextResponse.json(
-      { error: "CPF ou CRECI não encontrados. Verifique os dados ou cadastre-se." },
+      { error: "CPF não encontrado. Verifique o número ou cadastre-se." },
       { status: 401 }
     );
   }

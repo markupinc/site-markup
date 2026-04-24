@@ -15,7 +15,6 @@ const maskCpf = (value: string) =>
 export default function LoginForm() {
   const router = useRouter();
   const [cpf, setCpf] = useState("");
-  const [creci, setCreci] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -27,7 +26,7 @@ export default function LoginForm() {
       const res = await fetch("/api/corretores/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cpf, creci }),
+        body: JSON.stringify({ cpf }),
       });
       const json = await res.json();
       if (!res.ok) {
@@ -94,7 +93,7 @@ export default function LoginForm() {
             marginBottom: "32px",
           }}
         >
-          Acesse com seu CPF e CRECI.
+          Acesse com seu CPF cadastrado.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -105,18 +104,6 @@ export default function LoginForm() {
               value={cpf}
               onChange={(e) => setCpf(maskCpf(e.target.value))}
               placeholder="000.000.000-00"
-              style={inputStyle}
-              autoComplete="off"
-              required
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>CRECI</label>
-            <input
-              type="text"
-              value={creci}
-              onChange={(e) => setCreci(e.target.value.toUpperCase())}
-              placeholder="AL-12345"
               style={inputStyle}
               autoComplete="off"
               required

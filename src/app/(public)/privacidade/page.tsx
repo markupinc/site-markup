@@ -151,13 +151,13 @@ export default function PrivacidadePage() {
             <li>Endereço de e-mail</li>
             <li>Número de telefone</li>
             <li>CPF (usado como credencial de login)</li>
-            <li>Número do CRECI (usado como credencial de login)</li>
+            <li>Número do CRECI (para identificação profissional)</li>
             <li>Registro de acessos aos materiais (data e material acessado)</li>
           </ul>
           <p style={paragraphStyle}>
-            O CPF e o CRECI são utilizados exclusivamente para autenticação na
-            Área do Corretor. Esses dados são armazenados de forma segura no
-            Supabase e jamais são compartilhados com terceiros.
+            O CPF é utilizado exclusivamente para autenticação na Área do
+            Corretor. Esses dados são armazenados de forma segura no Supabase
+            e jamais são compartilhados com terceiros.
           </p>
 
           <h3
