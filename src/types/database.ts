@@ -324,12 +324,80 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["qr_codes"]["Insert"]>;
       };
+      corretores: {
+        Row: {
+          id: string;
+          nome: string;
+          email: string;
+          telefone: string;
+          cpf: string;
+          creci: string;
+          ativo: boolean;
+          aceite_termos: boolean;
+          aceite_termos_em: string | null;
+          created_at: string;
+          last_login_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          email: string;
+          telefone: string;
+          cpf: string;
+          creci: string;
+          ativo?: boolean;
+          aceite_termos?: boolean;
+          aceite_termos_em?: string | null;
+          last_login_at?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["corretores"]["Insert"]>;
+      };
+      empreendimento_materiais: {
+        Row: {
+          id: string;
+          empreendimento_id: string;
+          titulo: string;
+          categoria: "folder" | "tabela" | "divulgacao" | "outros";
+          drive_url: string;
+          descricao: string | null;
+          ordem: number;
+          ativo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          empreendimento_id: string;
+          titulo: string;
+          categoria?: "folder" | "tabela" | "divulgacao" | "outros";
+          drive_url: string;
+          descricao?: string | null;
+          ordem?: number;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["empreendimento_materiais"]["Insert"]>;
+      };
+      material_acessos: {
+        Row: {
+          id: string;
+          corretor_id: string;
+          material_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          corretor_id: string;
+          material_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["material_acessos"]["Insert"]>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
       empreendimento_status: "lancamento" | "em_obras" | "entregue";
       lead_status: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
+      material_categoria: "folder" | "tabela" | "divulgacao" | "outros";
     };
   };
 };

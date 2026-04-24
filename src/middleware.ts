@@ -12,7 +12,11 @@ export async function middleware(request: NextRequest) {
     response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
   }
   // Cache public pages for 1 hour (with revalidation)
-  else if (!pathname.startsWith("/admin") && !pathname.startsWith("/api")) {
+  else if (
+    !pathname.startsWith("/admin") &&
+    !pathname.startsWith("/api") &&
+    !pathname.startsWith("/corretores")
+  ) {
     response.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
   }
 
@@ -22,6 +26,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     "/admin/:path*",
+    "/corretores/:path*",
     // Também aplicar cache headers a assets
     "/:path*",
   ],
