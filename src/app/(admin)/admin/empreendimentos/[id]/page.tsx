@@ -7,6 +7,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import ImageUpload from "@/components/admin/ImageUpload";
+import MateriaisSection from "./MateriaisSection";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 interface Imagem {
@@ -853,6 +854,9 @@ export default function EditEmpreendimentoPage() {
             </button>
           </div>
         </div>
+
+        {/* ─── Materiais (Área do Corretor) ────────────────────────── */}
+        <MateriaisSection empreendimentoId={id} />
 
         {/* ─── Zona de Perigo ─────────────────────────────────────── */}
         <div

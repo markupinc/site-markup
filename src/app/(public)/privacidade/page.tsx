@@ -144,6 +144,32 @@ export default function PrivacidadePage() {
               marginTop: "24px",
             }}
           >
+            Cadastro na Área do Corretor
+          </h3>
+          <ul style={listStyle}>
+            <li>Nome completo</li>
+            <li>Endereço de e-mail</li>
+            <li>Número de telefone</li>
+            <li>CPF (usado como credencial de login)</li>
+            <li>Número do CRECI (usado como credencial de login)</li>
+            <li>Registro de acessos aos materiais (data e material acessado)</li>
+          </ul>
+          <p style={paragraphStyle}>
+            O CPF e o CRECI são utilizados exclusivamente para autenticação na
+            Área do Corretor. Esses dados são armazenados de forma segura no
+            Supabase e jamais são compartilhados com terceiros.
+          </p>
+
+          <h3
+            style={{
+              fontFamily: "var(--font-inter)",
+              fontSize: "16px",
+              fontWeight: 600,
+              color: "#1a1a1a",
+              marginBottom: "8px",
+              marginTop: "24px",
+            }}
+          >
             Cookies e tecnologias de rastreamento
           </h3>
           <ul style={listStyle}>
@@ -212,6 +238,14 @@ export default function PrivacidadePage() {
             </li>
             <li>
               Melhoria contínua da experiência do usuário no site
+            </li>
+            <li>
+              Autenticação e fornecimento de materiais de divulgação na Área do
+              Corretor
+            </li>
+            <li>
+              Registro de acessos aos materiais na Área do Corretor para fins
+              de análise interna
             </li>
           </ul>
 

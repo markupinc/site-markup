@@ -11,6 +11,7 @@ import {
   Mail,
   Settings,
   LogOut,
+  UserCheck,
 } from "lucide-react";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
   { label: "Empreendimentos", href: "/admin/empreendimentos", icon: Building2 },
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Leads", href: "/admin/leads", icon: Users },
+  { label: "Corretores", href: "/admin/corretores", icon: UserCheck },
   { label: "Mídia", href: "/admin/midia", icon: Newspaper },
   { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },
