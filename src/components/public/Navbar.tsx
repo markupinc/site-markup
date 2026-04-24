@@ -146,7 +146,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
           className="hover:opacity-80 transition-opacity"
           style={{
             padding: "6px 12px",
-            border: "1px solid rgba(184,148,95,0.6)",
+            border: "1px solid rgba(255,255,255,0.6)",
             borderRadius: "999px",
             color: "#ffffff",
             fontSize: "11px",
@@ -328,7 +328,7 @@ export default function Navbar({ logoSrc }: NavbarProps) {
                   justifyContent: "center",
                   height: "44px",
                   marginTop: "20px",
-                  border: "1px solid rgba(184,148,95,0.6)",
+                  border: "1px solid rgba(255,255,255,0.6)",
                   borderRadius: "999px",
                   color: "#ffffff",
                   fontSize: "13px",
