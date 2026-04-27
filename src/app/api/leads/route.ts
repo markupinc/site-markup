@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { dispatchWebhook } from "@/lib/webhooks/dispatch";
 
 const leadSchema = z.object({
   nome: z.string().min(1, "Nome é obrigatório"),
@@ -53,9 +54,11 @@ export async function POST(request: NextRequest) {
     if (data.utm_content) insertData.utm_content = data.utm_content;
     if (data.utm_term) insertData.utm_term = data.utm_term;
 
-    const { error } = await supabase
+    const { data: created, error } = await supabase
       .from("leads")
-      .insert(insertData as any);
+      .insert(insertData as any)
+      .select("*, empreendimentos(nome)")
+      .single();
 
     if (error) {
       console.error("Lead insert error:", error);
@@ -64,6 +67,11 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    // Dispara webhooks em background — não atrasa a resposta
+    dispatchWebhook("lead.criado", created as Record<string, unknown>).catch(
+      () => {}
+    );
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

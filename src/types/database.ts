@@ -327,6 +327,32 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["qr_codes"]["Insert"]>;
       };
+      webhooks: {
+        Row: {
+          id: string;
+          nome: string;
+          url: string;
+          evento: string;
+          ativo: boolean;
+          ultimo_status: number | null;
+          ultimo_disparo_em: string | null;
+          ultimo_erro: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          nome: string;
+          url: string;
+          evento?: string;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["webhooks"]["Insert"]> & {
+          ultimo_status?: number | null;
+          ultimo_disparo_em?: string | null;
+          ultimo_erro?: string | null;
+        };
+      };
       qr_acessos: {
         Row: {
           id: string;
