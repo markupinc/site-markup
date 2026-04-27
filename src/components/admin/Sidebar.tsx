@@ -56,22 +56,22 @@ export default function Sidebar() {
     >
       {/* Logo */}
       <div style={{ padding: "0 24px", marginBottom: "40px" }}>
-        <span
+        <img
+          src="/assets/logo.png"
+          alt="Markup Incorporações"
           style={{
-            color: "#fff",
-            fontSize: "18px",
-            fontWeight: 300,
-            letterSpacing: "1px",
+            height: "32px",
+            width: "auto",
+            filter: "brightness(0) invert(1)",
           }}
-        >
-          MARKUP
-        </span>
+        />
         <span
           style={{
             color: "rgba(255,255,255,0.4)",
             fontSize: "11px",
             display: "block",
-            marginTop: "2px",
+            marginTop: "8px",
+            letterSpacing: "0.5px",
           }}
         >
           Admin
