@@ -36,6 +36,12 @@ interface MaterialAcesso {
   created_at: string;
 }
 
+interface FormularioResposta {
+  empreendimento_id: string | null;
+  respostas: Record<string, string | string[]>;
+  created_at: string;
+}
+
 interface Empreendimento {
   id: string;
   nome: string;
@@ -57,6 +63,7 @@ export default function AnalyticsPage() {
   const [corretores, setCorretores] = useState<Corretor[]>([]);
   const [materialAcessos, setMaterialAcessos] = useState<MaterialAcesso[]>([]);
   const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
+  const [respostas, setRespostas] = useState<FormularioResposta[]>([]);
   const [ga4Url, setGa4Url] = useState("");
 
   useEffect(() => {
@@ -93,12 +100,18 @@ export default function AnalyticsPage() {
         .select("id, corretor_id, material_id, created_at");
       if (since) matQuery.gte("created_at", since);
 
-      const [leadsRes, qrRes, corRes, matRes, empRes, configRes] =
+      const respQuery = supabase
+        .from("formulario_respostas")
+        .select("empreendimento_id, respostas, created_at");
+      if (since) respQuery.gte("created_at", since);
+
+      const [leadsRes, qrRes, corRes, matRes, respRes, empRes, configRes] =
         await Promise.all([
           leadsQuery,
           qrQuery,
           corQuery,
           matQuery,
+          respQuery,
           supabase.from("empreendimentos").select("id, nome"),
           supabase
             .from("configuracoes")
@@ -111,6 +124,7 @@ export default function AnalyticsPage() {
       setQrAcessos((qrRes.data as QrAcesso[]) || []);
       setCorretores((corRes.data as Corretor[]) || []);
       setMaterialAcessos((matRes.data as MaterialAcesso[]) || []);
+      setRespostas((respRes.data as FormularioResposta[]) || []);
       setEmpreendimentos((empRes.data as Empreendimento[]) || []);
       setGa4Url(configRes.data?.valor || "");
       setLoading(false);
@@ -190,6 +204,41 @@ export default function AnalyticsPage() {
       .sort((a, b) => b[1] - a[1])
       .map(([id, count]) => ({ nome: corMap.get(id) || "—", count }));
   }, [materialAcessos, corretores]);
+
+  // Agrega respostas por (empreendimento → pergunta → opção)
+  const respostasAgrupadas = useMemo(() => {
+    const empMap = new Map(empreendimentos.map((e) => [e.id, e.nome]));
+    type Pergunta = { pergunta: string; opcoes: Map<string, number> };
+    const porEmp = new Map<string, Map<string, Pergunta>>();
+
+    respostas.forEach((r) => {
+      const empId = r.empreendimento_id || "geral";
+      if (!porEmp.has(empId)) porEmp.set(empId, new Map());
+      const perguntas = porEmp.get(empId)!;
+
+      Object.entries(r.respostas || {}).forEach(([pergunta, resp]) => {
+        if (!perguntas.has(pergunta)) {
+          perguntas.set(pergunta, { pergunta, opcoes: new Map() });
+        }
+        const item = perguntas.get(pergunta)!;
+        const valores = Array.isArray(resp) ? resp : [String(resp)];
+        valores.forEach((v) => {
+          if (!v) return;
+          item.opcoes.set(v, (item.opcoes.get(v) || 0) + 1);
+        });
+      });
+    });
+
+    return [...porEmp.entries()].map(([empId, perguntas]) => ({
+      empreendimento: empMap.get(empId) || "(sem empreendimento)",
+      perguntas: [...perguntas.values()].map((p) => ({
+        pergunta: p.pergunta,
+        opcoes: [...p.opcoes.entries()]
+          .sort((a, b) => b[1] - a[1])
+          .map(([opcao, count]) => ({ opcao, count })),
+      })),
+    }));
+  }, [respostas, empreendimentos]);
 
   return (
     <div>
@@ -355,6 +404,52 @@ export default function AnalyticsPage() {
           />
         </Section>
       </div>
+
+      {/* Respostas dos formulários personalizados */}
+      {respostasAgrupadas.length > 0 && (
+        <div style={{ marginTop: "32px" }}>
+          <h2
+            style={{
+              fontSize: "16px",
+              fontWeight: 500,
+              color: "#fff",
+              marginBottom: "16px",
+            }}
+          >
+            Respostas dos formulários
+          </h2>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+              gap: "16px",
+            }}
+          >
+            {respostasAgrupadas.map((emp) => (
+              <Section
+                key={emp.empreendimento}
+                title={emp.empreendimento}
+              >
+                {emp.perguntas.map((p) => (
+                  <div key={p.pergunta} style={{ marginBottom: "20px" }}>
+                    <p
+                      style={{
+                        fontSize: "12px",
+                        color: "rgba(255,255,255,0.5)",
+                        marginBottom: "8px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {p.pergunta}
+                    </p>
+                    <RankingTable rows={p.opcoes} keyName="opcao" empty="Sem dados." />
+                  </div>
+                ))}
+              </Section>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

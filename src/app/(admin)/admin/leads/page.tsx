@@ -115,6 +115,26 @@ export default function LeadsPage() {
   // Expanded row
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  // Respostas custom por lead_id (carregadas sob demanda)
+  const [respostasPorLead, setRespostasPorLead] = useState<
+    Record<string, Record<string, string | string[]>>
+  >({});
+
+  useEffect(() => {
+    if (!expandedId || respostasPorLead[expandedId] !== undefined) return;
+    (async () => {
+      const { data } = await supabase
+        .from("formulario_respostas")
+        .select("respostas")
+        .eq("lead_id", expandedId)
+        .maybeSingle<{ respostas: Record<string, string | string[]> }>();
+      setRespostasPorLead((prev) => ({
+        ...prev,
+        [expandedId]: data?.respostas || {},
+      }));
+    })();
+  }, [expandedId]);
+
   // Inline edit state
   const [editNotas, setEditNotas] = useState<Record<string, string>>({});
   const [editAtendente, setEditAtendente] = useState<Record<string, string>>({});
@@ -595,6 +615,55 @@ export default function LeadsPage() {
                                 </div>
                               </div>
                             )}
+
+                            {/* Respostas customizadas */}
+                            {respostasPorLead[lead.id] &&
+                              Object.keys(respostasPorLead[lead.id]).length > 0 && (
+                                <div>
+                                  <div style={labelStyle}>Respostas do formulário</div>
+                                  <div
+                                    style={{
+                                      background: "rgba(184,148,95,0.06)",
+                                      border: "1px solid rgba(184,148,95,0.15)",
+                                      borderRadius: "8px",
+                                      padding: "12px",
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: "8px",
+                                      fontSize: "12px",
+                                    }}
+                                  >
+                                    {Object.entries(respostasPorLead[lead.id]).map(
+                                      ([pergunta, resp]) => (
+                                        <div
+                                          key={pergunta}
+                                          style={{
+                                            display: "grid",
+                                            gridTemplateColumns: "auto 1fr",
+                                            gap: "16px",
+                                          }}
+                                        >
+                                          <span
+                                            style={{
+                                              color: "rgba(255,255,255,0.5)",
+                                              fontWeight: 500,
+                                            }}
+                                          >
+                                            {pergunta}
+                                          </span>
+                                          <span
+                                            style={{ color: "rgba(255,255,255,0.85)" }}
+                                          >
+                                            {Array.isArray(resp)
+                                              ? resp.join(", ")
+                                              : String(resp)}
+                                          </span>
+                                        </div>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
                             {/* UTM / Origem */}
                             <div>
