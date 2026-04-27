@@ -48,7 +48,12 @@ async function getTrackingConfig(): Promise<{
 
 export default async function TrackingScripts() {
   // Força dynamic rendering — sem isso o Next pode pré-renderizar com config vazia
-  await headers();
+  const h = await headers();
+  const pathname = h.get("x-pathname") || "";
+
+  // Não rastreia páginas do admin
+  if (pathname.startsWith("/admin")) return null;
+
   const { config, debug } = await getTrackingConfig();
 
   return (

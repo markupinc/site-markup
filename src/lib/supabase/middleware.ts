@@ -5,8 +5,12 @@ import { CORRETOR_COOKIE } from "@/lib/auth/corretor";
 const CORRETOR_PUBLIC_PATHS = ["/corretores/login", "/corretores/cadastro"];
 
 export async function updateSession(request: NextRequest) {
+  // Encaminha o pathname como header para componentes server lerem
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
   let supabaseResponse = NextResponse.next({
-    request,
+    request: { headers: requestHeaders },
   });
 
   const supabase = createServerClient(
@@ -22,7 +26,7 @@ export async function updateSession(request: NextRequest) {
             request.cookies.set(name, value)
           );
           supabaseResponse = NextResponse.next({
-            request,
+            request: { headers: requestHeaders },
           });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
