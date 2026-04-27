@@ -165,26 +165,41 @@ export default function LoginForm() {
             </button>
           </form>
 
-          <p
+          <div
             style={{
-              fontSize: "13px",
-              color: "#8a7d72",
-              marginTop: "28px",
+              marginTop: "24px",
+              paddingTop: "24px",
+              borderTop: "1px solid rgba(0,0,0,0.08)",
               textAlign: "center",
             }}
           >
-            Não tem cadastro?{" "}
+            <p
+              style={{
+                fontSize: "13px",
+                color: "#1a1a1a",
+                marginBottom: "12px",
+              }}
+            >
+              Ainda não tem cadastro?
+            </p>
             <Link
               href="/corretores/cadastro"
               style={{
-                color: "#b8945f",
+                display: "block",
+                padding: "12px",
+                border: "1px solid #1a1a1a",
+                borderRadius: "4px",
+                color: "#1a1a1a",
+                fontSize: "13px",
+                fontWeight: 600,
+                letterSpacing: "0.5px",
+                textTransform: "uppercase",
                 textDecoration: "none",
-                fontWeight: 500,
               }}
             >
               Criar conta
             </Link>
-          </p>
+          </div>
         </div>
       </main>
 
