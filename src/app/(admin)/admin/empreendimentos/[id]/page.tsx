@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { slugify } from "@/lib/utils";
 import ImageUpload from "@/components/admin/ImageUpload";
 import MateriaisSection from "./MateriaisSection";
+import FormularioBuilder from "./FormularioBuilder";
 
 // ─── Types ───────────────────────────────────────────────────────────────
 interface Imagem {
@@ -857,6 +858,9 @@ export default function EditEmpreendimentoPage() {
 
         {/* ─── Materiais (Área do Corretor) ────────────────────────── */}
         <MateriaisSection empreendimentoId={id} />
+
+        {/* ─── Formulário Personalizado ────────────────────────────── */}
+        <FormularioBuilder empreendimentoId={id} />
 
         {/* ─── Zona de Perigo ─────────────────────────────────────── */}
         <div
