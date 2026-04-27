@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import TrackingScripts from "@/components/public/TrackingScripts";
+import UtmCapture from "@/components/public/UtmCapture";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,6 +37,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
         {children}
+        <UtmCapture />
         <TrackingScripts />
       </body>
     </html>

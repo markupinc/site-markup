@@ -10,9 +10,12 @@ const leadSchema = z.object({
   empreendimento_id: z.string().uuid("ID inválido").optional(),
   origem: z.string().optional(),
   pagina_origem: z.string().optional(),
+  referrer: z.string().optional(),
   utm_source: z.string().optional(),
   utm_medium: z.string().optional(),
   utm_campaign: z.string().optional(),
+  utm_content: z.string().optional(),
+  utm_term: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -43,9 +46,12 @@ export async function POST(request: NextRequest) {
       insertData.empreendimento_id = data.empreendimento_id;
     if (data.origem) insertData.origem = data.origem;
     if (data.pagina_origem) insertData.pagina_origem = data.pagina_origem;
+    if (data.referrer) insertData.referrer = data.referrer;
     if (data.utm_source) insertData.utm_source = data.utm_source;
     if (data.utm_medium) insertData.utm_medium = data.utm_medium;
     if (data.utm_campaign) insertData.utm_campaign = data.utm_campaign;
+    if (data.utm_content) insertData.utm_content = data.utm_content;
+    if (data.utm_term) insertData.utm_term = data.utm_term;
 
     const { error } = await supabase
       .from("leads")

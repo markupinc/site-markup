@@ -225,9 +225,12 @@ export type Database = {
           empreendimento_id: string | null;
           origem: string | null;
           pagina_origem: string | null;
+          referrer: string | null;
           utm_source: string | null;
           utm_medium: string | null;
           utm_campaign: string | null;
+          utm_content: string | null;
+          utm_term: string | null;
           status: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
           notas: string | null;
           atendente: string | null;

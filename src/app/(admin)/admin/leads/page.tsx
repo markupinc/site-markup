@@ -14,9 +14,12 @@ interface Lead {
   empreendimento_id: string | null;
   origem: string | null;
   pagina_origem: string | null;
+  referrer: string | null;
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
   status: LeadStatus;
   notas: string | null;
   atendente: string | null;
@@ -39,6 +42,53 @@ const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string }> = {
 };
 
 const PAGE_SIZE = 20;
+
+function detectarOrigem(lead: {
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  referrer: string | null;
+}): { label: string; color: string } {
+  const src = (lead.utm_source || "").toLowerCase();
+  const med = (lead.utm_medium || "").toLowerCase();
+
+  if (src) {
+    if (src.includes("google") || src.includes("adwords") || src.includes("gclid")) {
+      return med === "cpc" || med === "ppc" || med.includes("paid")
+        ? { label: "Google Ads", color: "#4285F4" }
+        : { label: "Google", color: "#4285F4" };
+    }
+    if (src.includes("facebook") || src.includes("meta") || src.includes("fb")) {
+      return { label: "Meta Ads", color: "#1877F2" };
+    }
+    if (src.includes("instagram") || src.includes("ig")) {
+      return { label: "Instagram", color: "#E1306C" };
+    }
+    if (src.includes("tapume") || med.includes("qr")) {
+      return { label: "QR / Tapume", color: "#b8945f" };
+    }
+    return { label: lead.utm_source || "—", color: "#888" };
+  }
+
+  const ref = (lead.referrer || "").toLowerCase();
+  if (ref) {
+    if (ref.includes("google.")) return { label: "Google (orgânico)", color: "#4285F4" };
+    if (ref.includes("facebook.") || ref.includes("fb.")) return { label: "Facebook", color: "#1877F2" };
+    if (ref.includes("instagram.")) return { label: "Instagram", color: "#E1306C" };
+    if (ref.includes("youtube.")) return { label: "YouTube", color: "#FF0000" };
+    if (ref.includes("bing.")) return { label: "Bing", color: "#008373" };
+    if (ref.includes("wa.me") || ref.includes("whatsapp"))
+      return { label: "WhatsApp", color: "#25D366" };
+    try {
+      const host = new URL(lead.referrer!).hostname.replace("www.", "");
+      return { label: host, color: "#888" };
+    } catch {
+      return { label: "Outro", color: "#888" };
+    }
+  }
+
+  return { label: "Direto", color: "rgba(255,255,255,0.4)" };
+}
 
 export default function LeadsPage() {
   const supabase = createClient();
@@ -421,10 +471,33 @@ export default function LeadsPage() {
 
                     {/* Origem */}
                     <td style={tdStyle}>
-                      <div>{lead.origem || <span style={{ color: "rgba(255,255,255,0.2)" }}>—</span>}</div>
-                      {lead.utm_source && (
-                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginTop: "2px" }}>
-                          {lead.utm_source}
+                      {(() => {
+                        const o = detectarOrigem(lead);
+                        return (
+                          <span
+                            style={{
+                              display: "inline-block",
+                              padding: "3px 10px",
+                              borderRadius: "9999px",
+                              fontSize: "11px",
+                              fontWeight: 600,
+                              color: o.color,
+                              backgroundColor: `${o.color}22`,
+                            }}
+                          >
+                            {o.label}
+                          </span>
+                        );
+                      })()}
+                      {lead.utm_campaign && (
+                        <div
+                          style={{
+                            fontSize: "10px",
+                            color: "rgba(255,255,255,0.4)",
+                            marginTop: "4px",
+                          }}
+                        >
+                          {lead.utm_campaign}
                         </div>
                       )}
                     </td>
@@ -551,14 +624,32 @@ export default function LeadsPage() {
                                     <span style={{ color: "rgba(255,255,255,0.7)" }}>{lead.utm_campaign}</span>
                                   </div>
                                 )}
+                                {lead.utm_content && (
+                                  <div>
+                                    <span style={{ color: "rgba(255,255,255,0.35)" }}>UTM Content: </span>
+                                    <span style={{ color: "rgba(255,255,255,0.7)" }}>{lead.utm_content}</span>
+                                  </div>
+                                )}
+                                {lead.utm_term && (
+                                  <div>
+                                    <span style={{ color: "rgba(255,255,255,0.35)" }}>UTM Term: </span>
+                                    <span style={{ color: "rgba(255,255,255,0.7)" }}>{lead.utm_term}</span>
+                                  </div>
+                                )}
+                                {lead.referrer && (
+                                  <div>
+                                    <span style={{ color: "rgba(255,255,255,0.35)" }}>Veio de: </span>
+                                    <span style={{ color: "rgba(255,255,255,0.7)" }}>{lead.referrer}</span>
+                                  </div>
+                                )}
                                 {lead.pagina_origem && (
                                   <div>
-                                    <span style={{ color: "rgba(255,255,255,0.35)" }}>Página: </span>
+                                    <span style={{ color: "rgba(255,255,255,0.35)" }}>Página do form: </span>
                                     <span style={{ color: "rgba(255,255,255,0.7)" }}>{lead.pagina_origem}</span>
                                   </div>
                                 )}
                               </div>
-                              {!lead.origem && !lead.utm_source && !lead.utm_medium && !lead.utm_campaign && !lead.pagina_origem && (
+                              {!lead.origem && !lead.utm_source && !lead.utm_medium && !lead.utm_campaign && !lead.referrer && !lead.pagina_origem && (
                                 <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.2)" }}>
                                   Nenhum dado de rastreamento
                                 </div>

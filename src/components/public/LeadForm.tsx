@@ -29,16 +29,55 @@ export default function LeadForm({
     "idle"
   );
   const [errorMessage, setErrorMessage] = useState("");
-  const [utmParams, setUtmParams] = useState<Record<string, string>>({});
+  const [attribution, setAttribution] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const utms: Record<string, string> = {};
-    for (const key of ["utm_source", "utm_medium", "utm_campaign"]) {
-      const val = searchParams.get(key);
-      if (val) utms[key] = val;
+    const data: Record<string, string> = {};
+
+    // 1. UTMs da URL atual têm prioridade
+    const params = new URLSearchParams(window.location.search);
+    for (const key of [
+      "utm_source",
+      "utm_medium",
+      "utm_campaign",
+      "utm_content",
+      "utm_term",
+    ]) {
+      const v = params.get(key);
+      if (v) data[key] = v;
     }
-    setUtmParams(utms);
+
+    // 2. Senão usa o que está em sessionStorage (primeira atribuição da sessão)
+    if (!data.utm_source) {
+      try {
+        const stored = sessionStorage.getItem("markup_lead_attribution");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          for (const key of [
+            "utm_source",
+            "utm_medium",
+            "utm_campaign",
+            "utm_content",
+            "utm_term",
+          ]) {
+            if (!data[key] && parsed[key]) data[key] = parsed[key];
+          }
+          if (parsed.referrer) data.referrer = parsed.referrer;
+        }
+      } catch {
+        // ignora
+      }
+    }
+
+    // 3. Captura referrer atual se não tiver vindo do storage
+    if (!data.referrer) {
+      const ref = document.referrer || "";
+      if (ref && !ref.startsWith(window.location.origin)) {
+        data.referrer = ref;
+      }
+    }
+
+    setAttribution(data);
   }, []);
 
   const {
@@ -58,7 +97,7 @@ export default function LeadForm({
         telefone: data.telefone,
         origem: "site",
         pagina_origem: window.location.href,
-        ...utmParams,
+        ...attribution,
       };
 
       if (data.email) body.email = data.email;
