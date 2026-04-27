@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,6 +26,25 @@ export async function GET(
   const target = /^https?:\/\//i.test(destino)
     ? destino
     : new URL(destino, base).toString();
+
+  // Log do acesso (não bloqueia o redirect)
+  const url = new URL(request.url);
+  const headers = request.headers;
+  const adminClient = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (adminClient.from("qr_acessos") as any)
+    .insert({
+      qr_slug: slug,
+      user_agent: headers.get("user-agent") || null,
+      referer: headers.get("referer") || null,
+      utm_source: url.searchParams.get("utm_source"),
+      utm_medium: url.searchParams.get("utm_medium"),
+      utm_campaign: url.searchParams.get("utm_campaign"),
+      utm_content: url.searchParams.get("utm_content"),
+      utm_term: url.searchParams.get("utm_term"),
+    })
+    .then(() => {})
+    .catch(() => {});
 
   return NextResponse.redirect(target, { status: 302 });
 }

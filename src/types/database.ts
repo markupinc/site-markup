@@ -324,6 +324,32 @@ export type Database = {
         };
         Update: Partial<Database["public"]["Tables"]["qr_codes"]["Insert"]>;
       };
+      qr_acessos: {
+        Row: {
+          id: string;
+          qr_slug: string;
+          user_agent: string | null;
+          referer: string | null;
+          utm_source: string | null;
+          utm_medium: string | null;
+          utm_campaign: string | null;
+          utm_content: string | null;
+          utm_term: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          qr_slug: string;
+          user_agent?: string | null;
+          referer?: string | null;
+          utm_source?: string | null;
+          utm_medium?: string | null;
+          utm_campaign?: string | null;
+          utm_content?: string | null;
+          utm_term?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["qr_acessos"]["Insert"]>;
+      };
       corretores: {
         Row: {
           id: string;
