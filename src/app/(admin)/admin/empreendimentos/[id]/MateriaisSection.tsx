@@ -148,12 +148,12 @@ export default function MateriaisSection({
             onChange={(e) =>
               setNovo({ ...novo, categoria: e.target.value as Categoria })
             }
-            style={inputStyle}
+            style={{ ...inputStyle, colorScheme: "dark" }}
           >
-            <option value="folder">Folder</option>
-            <option value="tabela">Tabela</option>
-            <option value="divulgacao">Divulgação</option>
-            <option value="outros">Outros</option>
+            <option value="folder" style={optionStyle}>Folder</option>
+            <option value="tabela" style={optionStyle}>Tabela</option>
+            <option value="divulgacao" style={optionStyle}>Divulgação</option>
+            <option value="outros" style={optionStyle}>Outros</option>
           </select>
         </div>
         <input
@@ -326,6 +326,11 @@ const inputStyle: React.CSSProperties = {
   fontSize: "13px",
   outline: "none",
   boxSizing: "border-box",
+};
+
+const optionStyle: React.CSSProperties = {
+  backgroundColor: "#1a1a1a",
+  color: "#fff",
 };
 
 const deleteBtnStyle: React.CSSProperties = {
