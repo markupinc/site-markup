@@ -1,3 +1,28 @@
+export type CampoTipo =
+  | "texto"
+  | "textarea"
+  | "numero"
+  | "selecao_unica"
+  | "multipla_escolha"
+  | "select";
+
+export interface CampoFormulario {
+  id: string;
+  tipo: CampoTipo;
+  label: string;
+  obrigatorio: boolean;
+  placeholder?: string;
+  opcoes?: string[];
+  ordem: number;
+  // Lógica condicional: só mostra se outro campo tiver determinado valor
+  condicao?: {
+    campo_id: string;
+    valor: string;
+  };
+}
+
+export type RespostasFormulario = Record<string, string | string[]>;
+
 export type Database = {
   public: {
     Tables: {
@@ -326,6 +351,43 @@ export type Database = {
           ativo?: boolean;
         };
         Update: Partial<Database["public"]["Tables"]["qr_codes"]["Insert"]>;
+      };
+      empreendimento_formularios: {
+        Row: {
+          id: string;
+          empreendimento_id: string;
+          ativo: boolean;
+          campos: CampoFormulario[];
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          empreendimento_id: string;
+          ativo?: boolean;
+          campos?: CampoFormulario[];
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["empreendimento_formularios"]["Insert"]
+        >;
+      };
+      formulario_respostas: {
+        Row: {
+          id: string;
+          lead_id: string;
+          empreendimento_id: string | null;
+          respostas: Record<string, string | string[]>;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          lead_id: string;
+          empreendimento_id?: string | null;
+          respostas: Record<string, string | string[]>;
+        };
+        Update: Partial<
+          Database["public"]["Tables"]["formulario_respostas"]["Insert"]
+        >;
       };
       webhooks: {
         Row: {

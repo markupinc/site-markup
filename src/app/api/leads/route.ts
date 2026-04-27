@@ -17,6 +17,9 @@ const leadSchema = z.object({
   utm_campaign: z.string().optional(),
   utm_content: z.string().optional(),
   utm_term: z.string().optional(),
+  respostas_personalizadas: z
+    .record(z.string(), z.union([z.string(), z.array(z.string())]))
+    .optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -58,9 +61,9 @@ export async function POST(request: NextRequest) {
       .from("leads")
       .insert(insertData as any)
       .select("*, empreendimentos(nome)")
-      .single();
+      .single<Record<string, unknown> & { id: string }>();
 
-    if (error) {
+    if (error || !created) {
       console.error("Lead insert error:", error);
       return NextResponse.json(
         { success: false, error: "Erro ao salvar lead." },
@@ -68,10 +71,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Salva respostas customizadas, se houver
+    if (
+      data.respostas_personalizadas &&
+      Object.keys(data.respostas_personalizadas).length > 0
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase.from("formulario_respostas") as any).insert({
+        lead_id: created.id,
+        empreendimento_id: data.empreendimento_id || null,
+        respostas: data.respostas_personalizadas,
+      });
+    }
+
     // Dispara webhooks em background — não atrasa a resposta
-    dispatchWebhook("lead.criado", created as Record<string, unknown>).catch(
-      () => {}
-    );
+    dispatchWebhook(
+      "lead.criado",
+      {
+        ...created,
+        respostas_personalizadas: data.respostas_personalizadas || null,
+      } as Record<string, unknown>
+    ).catch(() => {});
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
