@@ -41,7 +41,8 @@ const configGroups = [
   {
     title: "Tracking",
     fields: [
-      { key: "gtm_id", label: "Google Tag Manager ID" },
+      { key: "ga4_measurement_id", label: "GA4 Measurement ID (G-XXXXX)" },
+      { key: "gtm_id", label: "Google Tag Manager ID (GTM-XXXX)" },
       { key: "meta_pixel_id", label: "Meta Pixel ID" },
       { key: "ga4_dashboard_url", label: "URL do GA4 (atalho no admin)" },
     ],
