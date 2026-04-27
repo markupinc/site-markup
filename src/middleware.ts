@@ -11,13 +11,13 @@ export async function middleware(request: NextRequest) {
   if (pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot|mp4|mov|webp)$/i)) {
     response.headers.set("Cache-Control", "public, max-age=31536000, immutable");
   }
-  // Cache public pages for 1 hour (with revalidation)
+  // Cache public pages briefly so tracking config changes propagate fast
   else if (
     !pathname.startsWith("/admin") &&
     !pathname.startsWith("/api") &&
     !pathname.startsWith("/corretores")
   ) {
-    response.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600");
+    response.headers.set("Cache-Control", "public, max-age=0, s-maxage=60, must-revalidate");
   }
 
   return response;
