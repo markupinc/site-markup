@@ -6,7 +6,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
-import LeadForm from "@/components/public/LeadForm";
+import DynamicLeadForm from "@/components/public/DynamicLeadForm";
+import type { CampoFormulario } from "@/types/database";
 import GalleryTabs from "@/components/public/GalleryTabs";
 import PlantasSection from "@/components/public/PlantasSection";
 
@@ -81,6 +82,13 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
     .from("empreendimento_diferenciais").select("*").eq("empreendimento_id", emp.id).order("ordem")) as any;
   const { data: plantasData } = (await supabase
     .from("empreendimento_plantas").select("*").eq("empreendimento_id", emp.id).order("ordem")) as any;
+  const { data: formData } = (await supabase
+    .from("empreendimento_formularios")
+    .select("campos, ativo")
+    .eq("empreendimento_id", emp.id)
+    .eq("ativo", true)
+    .maybeSingle()) as { data: { campos: CampoFormulario[]; ativo: boolean } | null };
+  const formCampos: CampoFormulario[] = formData?.campos || [];
 
   const gallery = (imagens ?? []).filter((img: any) => img.categoria !== "planta");
   const plantas = plantasData ?? [];
@@ -379,7 +387,11 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
             }}>
               Preencha o formulário abaixo para entrar em contato conosco.
             </p>
-            <LeadForm empreendimentoId={emp.id} empreendimentoNome={emp.nome} />
+            <DynamicLeadForm
+              empreendimentoId={emp.id}
+              empreendimentoNome={emp.nome}
+              campos={formCampos}
+            />
           </div>
         </FadeInOnScroll>
       </section>
