@@ -512,7 +512,7 @@ export type Database = {
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
-      empreendimento_status: "lancamento" | "em_obras" | "entregue";
+      empreendimento_status: "pre_lancamento" | "lancamento" | "em_obras" | "entregue";
       lead_status: "novo" | "contatado" | "em_negociacao" | "convertido" | "perdido";
       material_categoria: "folder" | "tabela" | "divulgacao" | "outros";
     };

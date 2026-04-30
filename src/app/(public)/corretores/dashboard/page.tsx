@@ -25,6 +25,7 @@ interface Empreendimento {
 }
 
 const statusLabels: Record<string, string> = {
+  pre_lancamento: "Pré-lançamento",
   lancamento: "Lançamento",
   em_obras: "Em obras",
   entregue: "Entregue",
@@ -150,8 +151,14 @@ export default async function CorretorDashboardPage() {
                       backgroundColor:
                         emp.status === "lancamento"
                           ? "#2563eb"
+                          : emp.status === "pre_lancamento"
+                          ? "#b8945f"
                           : "rgba(255,255,255,0.9)",
-                      color: emp.status === "lancamento" ? "#fff" : "#1a1a1a",
+                      color:
+                        emp.status === "lancamento" ||
+                        emp.status === "pre_lancamento"
+                          ? "#fff"
+                          : "#1a1a1a",
                     }}
                   >
                     {statusLabels[emp.status] ?? emp.status}

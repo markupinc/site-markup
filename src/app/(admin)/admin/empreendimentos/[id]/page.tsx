@@ -41,7 +41,7 @@ const schema = z.object({
   slug: z.string().min(1, "Slug e obrigatorio"),
   descricao_curta: z.string().max(500).optional().or(z.literal("")),
   descricao: z.string().optional().or(z.literal("")),
-  status: z.enum(["lancamento", "em_obras", "entregue"]),
+  status: z.enum(["pre_lancamento", "lancamento", "em_obras", "entregue"]),
   destaque: z.boolean(),
   ativo: z.boolean(),
   ordem: z.coerce.number().int().min(0),
@@ -472,6 +472,7 @@ export default function EditEmpreendimentoPage() {
             <div>
               <label style={labelStyle}>Status</label>
               <select {...register("status")} style={{ ...inputStyle, backgroundColor: "#1a1a1a" }}>
+                <option value="pre_lancamento" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Pré-lançamento</option>
                 <option value="lancamento" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Lançamento</option>
                 <option value="em_obras" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Em Obras</option>
                 <option value="entregue" style={{ backgroundColor: "#1a1a1a", color: "#fff" }}>Entregue</option>

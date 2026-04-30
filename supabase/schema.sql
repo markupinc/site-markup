@@ -18,7 +18,7 @@ CREATE TABLE admin_profiles (
 -- =====================================================
 -- EMPREENDIMENTOS
 -- =====================================================
-CREATE TYPE empreendimento_status AS ENUM ('lancamento', 'em_obras', 'entregue');
+CREATE TYPE empreendimento_status AS ENUM ('pre_lancamento', 'lancamento', 'em_obras', 'entregue');
 
 CREATE TABLE empreendimentos (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

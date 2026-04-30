@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 };
 
 const statusLabels: Record<string, string> = {
+  pre_lancamento: "Pré-lançamento",
   lancamento: "Lançamento",
   em_obras: "Em obras",
   entregue: "Entregue",
@@ -129,10 +130,16 @@ export default async function EmpreendimentosPage() {
                         fontWeight: 600,
                         letterSpacing: "0.5px",
                         textTransform: "uppercase",
-                        color: emp.status === "lancamento" ? "#ffffff" : "#1a1a1a",
+                        color:
+                          emp.status === "lancamento" ||
+                          emp.status === "pre_lancamento"
+                            ? "#ffffff"
+                            : "#1a1a1a",
                         backgroundColor:
                           emp.status === "lancamento"
                             ? "#2563eb"
+                            : emp.status === "pre_lancamento"
+                            ? "#b8945f"
                             : emp.status === "em_obras"
                             ? "rgba(255,255,255,0.9)"
                             : "rgba(255,255,255,0.7)",

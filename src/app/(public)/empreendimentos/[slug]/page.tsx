@@ -56,6 +56,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 const statusLabels: Record<string, string> = {
+  pre_lancamento: "Pré-lançamento",
   lancamento: "Lançamento",
   em_obras: "Em obras",
   entregue: "Entregue",
