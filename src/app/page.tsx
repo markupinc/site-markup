@@ -59,7 +59,7 @@ const stats = [
   { target: 15, suffix: "", label: "anos de experiência" },
   { target: 200, suffix: "+", label: "investidores" },
   { target: 2, suffix: "", label: "empreendimentos" },
-  { target: 200, suffix: "+", label: "unid. em desenvolvimento" },
+  { target: 500, suffix: "+", label: "unid. em desenvolvimento" },
 ];
 
 export default async function Home() {
