@@ -84,7 +84,7 @@ export default async function Home() {
         <HeroSlider slides={heroSlides} />
         <MagicText lines={magicLines} />
         <ScrollExpansion
-          imageSrc="/assets/apt-varanda.png"
+          imageSrc="/assets/vista-mar-cobertura-sala08.png"
           titleTop="Você investe,"
           titleBottom="o retorno vem."
         />
