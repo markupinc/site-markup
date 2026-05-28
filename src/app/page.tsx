@@ -34,8 +34,8 @@ export const revalidate = 3600;
 const heroSlides = [
   {
     type: "video" as const,
-    src: "/assets/video-horizon.mov",
-    label: "Em breve...",
+    src: "/assets/horizon-video-site.mov",
+    label: "Horizon Trade Center",
   },
   {
     type: "image" as const,
