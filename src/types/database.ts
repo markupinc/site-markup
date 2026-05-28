@@ -389,6 +389,29 @@ export type Database = {
           Database["public"]["Tables"]["formulario_respostas"]["Insert"]
         >;
       };
+      hero_slides: {
+        Row: {
+          id: string;
+          tipo: "image" | "video";
+          src: string;
+          label: string | null;
+          href: string | null;
+          ordem: number;
+          ativo: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          tipo?: "image" | "video";
+          src: string;
+          label?: string | null;
+          href?: string | null;
+          ordem?: number;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["hero_slides"]["Insert"]>;
+      };
       webhooks: {
         Row: {
           id: string;

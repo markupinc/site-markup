@@ -113,6 +113,7 @@ export default function FormularioBuilder({ empreendimentoId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [erro, setErro] = useState("");
 
   useEffect(() => {
     async function load() {
@@ -184,9 +185,10 @@ export default function FormularioBuilder({ empreendimentoId }: Props) {
 
   async function save() {
     setSaving(true);
+    setErro("");
     // upsert (1 form por empreendimento)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("empreendimento_formularios") as any).upsert(
+    const { error } = await (supabase.from("empreendimento_formularios") as any).upsert(
       {
         empreendimento_id: empreendimentoId,
         ativo,
@@ -195,6 +197,13 @@ export default function FormularioBuilder({ empreendimentoId }: Props) {
       { onConflict: "empreendimento_id" }
     );
     setSaving(false);
+    if (error) {
+      setErro(
+        error.message ||
+          "Erro ao salvar. Verifique se a tabela do formulário existe no banco."
+      );
+      return;
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -260,6 +269,22 @@ export default function FormularioBuilder({ empreendimentoId }: Props) {
           </button>
         </div>
       </div>
+
+      {erro && (
+        <p
+          style={{
+            fontSize: "12px",
+            color: "#e88",
+            backgroundColor: "rgba(212,91,91,0.1)",
+            border: "1px solid rgba(212,91,91,0.25)",
+            borderRadius: "6px",
+            padding: "10px 12px",
+            marginBottom: "16px",
+          }}
+        >
+          {erro}
+        </p>
+      )}
 
       {/* Templates */}
       <div
