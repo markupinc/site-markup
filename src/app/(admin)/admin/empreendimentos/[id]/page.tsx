@@ -356,6 +356,37 @@ export default function EditEmpreendimentoPage() {
     setDiferenciais((prev) => prev.filter((d) => d.id !== difId));
   };
 
+  // Drag & drop de diferenciais
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  const persistOrdemDiferenciais = async (lista: Diferencial[]) => {
+    await Promise.all(
+      lista.map((d, i) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase.from("empreendimento_diferenciais") as any)
+          .update({ ordem: i })
+          .eq("id", d.id)
+      )
+    );
+  };
+
+  const handleDropDiferencial = (alvo: number) => {
+    if (dragIndex === null || dragIndex === alvo) {
+      setDragIndex(null);
+      setDragOverIndex(null);
+      return;
+    }
+    const next = [...diferenciais];
+    const [movido] = next.splice(dragIndex, 1);
+    next.splice(alvo, 0, movido);
+    const reordenado = next.map((d, i) => ({ ...d, ordem: i }));
+    setDiferenciais(reordenado);
+    setDragIndex(null);
+    setDragOverIndex(null);
+    persistOrdemDiferenciais(reordenado);
+  };
+
   // ─── Loading state ─────────────────────────────────────────────────
   if (loading) {
     return (
@@ -791,28 +822,64 @@ export default function EditEmpreendimentoPage() {
 
           {diferenciais.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "16px" }}>
-              {diferenciais.map((d) => (
+              <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", marginBottom: "4px" }}>
+                Arraste para reordenar.
+              </p>
+              {diferenciais.map((d, index) => (
                 <div
                   key={d.id}
+                  draggable
+                  onDragStart={() => setDragIndex(index)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (dragOverIndex !== index) setDragOverIndex(index);
+                  }}
+                  onDrop={() => handleDropDiferencial(index)}
+                  onDragEnd={() => {
+                    setDragIndex(null);
+                    setDragOverIndex(null);
+                  }}
                   style={{
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     padding: "10px 12px",
-                    backgroundColor: "rgba(255,255,255,0.03)",
+                    backgroundColor:
+                      dragOverIndex === index && dragIndex !== index
+                        ? "rgba(184,148,95,0.12)"
+                        : "rgba(255,255,255,0.03)",
                     borderRadius: "8px",
-                    border: "1px solid rgba(255,255,255,0.06)",
+                    border:
+                      dragOverIndex === index && dragIndex !== index
+                        ? "1px dashed rgba(184,148,95,0.5)"
+                        : "1px solid rgba(255,255,255,0.06)",
+                    opacity: dragIndex === index ? 0.4 : 1,
+                    cursor: "grab",
+                    transition: "background-color 0.15s, border-color 0.15s",
                   }}
                 >
-                  <div>
-                    <span style={{ fontSize: "13px", color: "#fff" }}>
-                      {d.icone ? `${d.icone} ` : ""}{d.titulo}
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span
+                      style={{
+                        color: "rgba(255,255,255,0.3)",
+                        fontSize: "14px",
+                        lineHeight: 1,
+                        userSelect: "none",
+                      }}
+                      title="Arraste para reordenar"
+                    >
+                      ⠿
                     </span>
-                    {d.descricao && (
-                      <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginLeft: "12px" }}>
-                        {d.descricao.substring(0, 60)}{d.descricao.length > 60 ? "..." : ""}
+                    <div>
+                      <span style={{ fontSize: "13px", color: "#fff" }}>
+                        {d.icone ? `${d.icone} ` : ""}{d.titulo}
                       </span>
-                    )}
+                      {d.descricao && (
+                        <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.3)", marginLeft: "12px" }}>
+                          {d.descricao.substring(0, 60)}{d.descricao.length > 60 ? "..." : ""}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <button type="button" onClick={() => removeDiferencial(d.id)} style={deleteBtnStyle}>
                     Remover
