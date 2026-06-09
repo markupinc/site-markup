@@ -13,6 +13,7 @@ import {
   LogOut,
   UserCheck,
   BarChart3,
+  GraduationCap,
 } from "lucide-react";
 
 const navItems = [
@@ -22,6 +23,7 @@ const navItems = [
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Leads", href: "/admin/leads", icon: Users },
   { label: "Corretores", href: "/admin/corretores", icon: UserCheck },
+  { label: "Treinamentos", href: "/admin/treinamentos", icon: GraduationCap },
   { label: "Mídia", href: "/admin/midia", icon: Newspaper },
   { label: "Newsletter", href: "/admin/newsletter", icon: Mail },
   { label: "Configurações", href: "/admin/configuracoes", icon: Settings },

@@ -389,6 +389,81 @@ export type Database = {
           Database["public"]["Tables"]["formulario_respostas"]["Insert"]
         >;
       };
+      treinamentos: {
+        Row: {
+          id: string;
+          titulo: string;
+          descricao: string | null;
+          local: string | null;
+          modalidade: "presencial" | "online";
+          mapa_url: string | null;
+          online_url: string | null;
+          slug: string;
+          status: "rascunho" | "publicado" | "encerrado";
+          cor: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          titulo: string;
+          descricao?: string | null;
+          local?: string | null;
+          modalidade?: "presencial" | "online";
+          mapa_url?: string | null;
+          online_url?: string | null;
+          slug: string;
+          status?: "rascunho" | "publicado" | "encerrado";
+          cor?: string | null;
+        };
+        Update: Partial<Database["public"]["Tables"]["treinamentos"]["Insert"]>;
+      };
+      treinamento_horarios: {
+        Row: {
+          id: string;
+          treinamento_id: string;
+          data: string;
+          hora_inicio: string;
+          hora_fim: string | null;
+          capacidade: number;
+          ativo: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          treinamento_id: string;
+          data: string;
+          hora_inicio: string;
+          hora_fim?: string | null;
+          capacidade?: number;
+          ativo?: boolean;
+        };
+        Update: Partial<Database["public"]["Tables"]["treinamento_horarios"]["Insert"]>;
+      };
+      treinamento_reservas: {
+        Row: {
+          id: string;
+          horario_id: string;
+          corretor_id: string | null;
+          nome: string;
+          creci: string;
+          email: string;
+          telefone: string;
+          status: "confirmada" | "cancelada";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          horario_id: string;
+          corretor_id?: string | null;
+          nome: string;
+          creci: string;
+          email: string;
+          telefone: string;
+          status?: "confirmada" | "cancelada";
+        };
+        Update: Partial<Database["public"]["Tables"]["treinamento_reservas"]["Insert"]>;
+      };
       hero_slides: {
         Row: {
           id: string;
