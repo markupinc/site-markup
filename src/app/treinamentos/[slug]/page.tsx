@@ -156,12 +156,13 @@ export default async function TreinamentoPublicPage({ params }: Props) {
     email: string;
     telefone: string;
     creci: string;
+    cpf: string;
   } | null = null;
   if (corretorId) {
     const admin = createAdminClient();
     const { data: cor } = await admin
       .from("corretores")
-      .select("id, nome, email, telefone, creci")
+      .select("id, nome, email, telefone, creci, cpf")
       .eq("id", corretorId)
       .maybeSingle<{
         id: string;
@@ -169,6 +170,7 @@ export default async function TreinamentoPublicPage({ params }: Props) {
         email: string;
         telefone: string;
         creci: string;
+        cpf: string;
       }>();
     if (cor) corretorPre = cor;
   }
