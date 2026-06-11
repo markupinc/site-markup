@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import TrackingScripts from "@/components/public/TrackingScripts";
 import UtmCapture from "@/components/public/UtmCapture";
+import ServiceWorkerRegistration from "@/components/public/ServiceWorkerRegistration";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -20,12 +21,29 @@ export const metadata: Metadata = {
   title: "Markup Incorporações",
   description:
     "Incorporadora de alto padrão em Maceió. Empreendimentos exclusivos com alta rentabilidade para investidores.",
+  applicationName: "Markup Incorporações",
+  appleWebApp: {
+    capable: true,
+    title: "Markup",
+    statusBarStyle: "default",
+  },
   icons: {
-    icon: "/favicon.png",
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icons/icon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [
+      { url: "/icons/apple-icon-180.png", sizes: "180x180", type: "image/png" },
+    ],
   },
   verification: {
     google: "15Op8xGxORHl3CqdEuaGSMDVMucT5vy1QH0meem7yoE",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#1a1a1a",
 };
 
 export default function RootLayout({
@@ -39,6 +57,7 @@ export default function RootLayout({
         {children}
         <UtmCapture />
         <TrackingScripts />
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
