@@ -394,7 +394,7 @@ export default function ContatoPage() {
                     Instagram
                   </a>
                   <a
-                    href="https://www.facebook.com/profile.php?id=61575200364485"
+                    href="https://www.facebook.com/p/Markup-Inc-61571062839626/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="contato-social-link"
@@ -413,7 +413,7 @@ export default function ContatoPage() {
                     Facebook
                   </a>
                   <a
-                    href="https://www.youtube.com/@MarkupIncorporacoes"
+                    href="https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="contato-social-link"

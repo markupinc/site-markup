@@ -28,7 +28,7 @@ const socialLinks = [
     ),
   },
   {
-    href: "https://www.facebook.com/profile.php?id=61575200364485",
+    href: "https://www.facebook.com/p/Markup-Inc-61571062839626/",
     label: "Facebook",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -37,7 +37,7 @@ const socialLinks = [
     ),
   },
   {
-    href: "https://www.youtube.com/@MarkupIncorporacoes",
+    href: "https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q",
     label: "YouTube",
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

@@ -32,15 +32,15 @@ const contactLinks = [
   },
   {
     label: "Instagram",
-    href: "https://instagram.com/markupinc",
+    href: "https://www.instagram.com/markup_inc/",
     external: true,
   },
 ];
 
 const socialLinks = [
-  { label: "Facebook", href: "https://facebook.com/markupinc" },
-  { label: "Instagram", href: "https://instagram.com/markupinc" },
-  { label: "Youtube", href: "https://youtube.com/@markupinc" },
+  { label: "Facebook", href: "https://www.facebook.com/p/Markup-Inc-61571062839626/" },
+  { label: "Instagram", href: "https://www.instagram.com/markup_inc/" },
+  { label: "Youtube", href: "https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q" },
   { label: "WhatsApp", href: "https://wa.me/5582982294001" },
 ];
 
@@ -213,9 +213,8 @@ export default function Footer({ logoSrc }: FooterProps) {
           >
             Empresarial Ocean Tower
             <br />
-            Tv. Dr. Antônio Gouveia, 61 - Pajuçara
-            <br />
-            Maceió - AL, 57030-170, Sala 307
+            Tv. Dr. Antônio Gouveia, 61, Sala 307 - Pajuçara - Maceió - AL,
+            57030-170
           </p>
           <a
             href="tel:+5582982294001"
