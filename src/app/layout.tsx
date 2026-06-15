@@ -17,11 +17,37 @@ const playfair = Playfair_Display({
   weight: ["400", "500", "600", "700"],
 });
 
+const SITE_URL = "https://markupincorporacoes.com.br";
+const SITE_DESCRIPTION =
+  "Incorporadora de alto padrão em Maceió. Empreendimentos exclusivos com alta rentabilidade para investidores.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "Markup Incorporações",
-  description:
-    "Incorporadora de alto padrão em Maceió. Empreendimentos exclusivos com alta rentabilidade para investidores.",
+  description: SITE_DESCRIPTION,
   applicationName: "Markup Incorporações",
+  openGraph: {
+    type: "website",
+    locale: "pt_BR",
+    url: SITE_URL,
+    siteName: "Markup Incorporações",
+    title: "Markup Incorporações",
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Markup Incorporações",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Markup Incorporações",
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.png"],
+  },
   appleWebApp: {
     capable: true,
     title: "Markup",
@@ -56,6 +82,24 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${playfair.variable}`}>
       <body className="antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "Markup Incorporações",
+              url: SITE_URL,
+              logo: `${SITE_URL}/icons/icon-512.png`,
+              description: SITE_DESCRIPTION,
+              sameAs: [
+                "https://www.instagram.com/markup_inc/",
+                "https://www.facebook.com/p/Markup-Inc-61571062839626/",
+                "https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q",
+              ],
+            }),
+          }}
+        />
         {children}
         <UtmCapture />
         <TrackingScripts />
