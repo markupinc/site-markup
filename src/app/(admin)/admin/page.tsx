@@ -24,7 +24,7 @@ export default async function AdminDashboard() {
       count: empreendimentos.count ?? 0,
       icon: Building2,
       href: "/admin/empreendimentos",
-      color: "#b8945f",
+      color: "#00aeef",
     },
     {
       label: "Posts do Blog",
@@ -147,7 +147,7 @@ export default async function AdminDashboard() {
             href="/admin/leads"
             style={{
               fontSize: "12px",
-              color: "#b8945f",
+              color: "#00aeef",
               textDecoration: "none",
             }}
           >
@@ -187,7 +187,7 @@ async function RecentLeads() {
 
   const statusColors: Record<string, string> = {
     novo: "#5b8fd4",
-    contatado: "#b8945f",
+    contatado: "#00aeef",
     em_negociacao: "#d4835b",
     convertido: "#6b9f6b",
     perdido: "#d45b5b",

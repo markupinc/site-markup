@@ -172,7 +172,7 @@ export default function ImageUpload({
                 style={{
                   height: "100%",
                   width: `${uploadCount.total > 0 ? (uploadCount.done / uploadCount.total) * 100 : 0}%`,
-                  backgroundColor: "#b8945f",
+                  backgroundColor: "#00aeef",
                   borderRadius: "2px",
                   transition: "width 0.3s ease",
                 }}

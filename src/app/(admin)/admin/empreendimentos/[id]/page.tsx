@@ -402,7 +402,7 @@ export default function EditEmpreendimentoPage() {
           <h1 style={{ fontSize: "24px", fontWeight: 300, color: "#fff", marginBottom: "8px" }}>
             Empreendimento nao encontrado
           </h1>
-          <a href="/admin/empreendimentos" style={{ fontSize: "13px", color: "#b8945f" }}>
+          <a href="/admin/empreendimentos" style={{ fontSize: "13px", color: "#00aeef" }}>
             Voltar para lista
           </a>
         </div>
@@ -846,12 +846,12 @@ export default function EditEmpreendimentoPage() {
                     padding: "10px 12px",
                     backgroundColor:
                       dragOverIndex === index && dragIndex !== index
-                        ? "rgba(184,148,95,0.12)"
+                        ? "rgba(0,174,239,0.12)"
                         : "rgba(255,255,255,0.03)",
                     borderRadius: "8px",
                     border:
                       dragOverIndex === index && dragIndex !== index
-                        ? "1px dashed rgba(184,148,95,0.5)"
+                        ? "1px dashed rgba(0,174,239,0.5)"
                         : "1px solid rgba(255,255,255,0.06)",
                     opacity: dragIndex === index ? 0.4 : 1,
                     cursor: "grab",

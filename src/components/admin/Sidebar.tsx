@@ -106,7 +106,7 @@ export default function Sidebar() {
                   ? "rgba(255,255,255,0.06)"
                   : "transparent",
                 borderLeft: isActive
-                  ? "2px solid #b8945f"
+                  ? "2px solid #00aeef"
                   : "2px solid transparent",
                 textDecoration: "none",
                 transition: "all 0.2s",

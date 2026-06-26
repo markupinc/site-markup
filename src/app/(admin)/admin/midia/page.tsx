@@ -253,7 +253,7 @@ export default async function MidiaListPage() {
                         href={`/admin/midia/${item.id}`}
                         style={{
                           fontSize: "12px",
-                          color: "#b8945f",
+                          color: "#00aeef",
                           textDecoration: "none",
                         }}
                       >

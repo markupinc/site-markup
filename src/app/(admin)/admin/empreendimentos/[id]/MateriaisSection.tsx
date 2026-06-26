@@ -220,8 +220,8 @@ export default function MateriaisSection({
                 style={{
                   fontSize: "10px",
                   padding: "4px 8px",
-                  backgroundColor: "rgba(184,148,95,0.15)",
-                  color: "#b8945f",
+                  backgroundColor: "rgba(0,174,239,0.15)",
+                  color: "#00aeef",
                   borderRadius: "4px",
                   textTransform: "uppercase",
                   letterSpacing: "0.5px",

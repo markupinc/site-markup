@@ -321,7 +321,7 @@ export default function FormularioBuilder({ empreendimentoId }: Props) {
           <button
             type="button"
             onClick={() => addCampo()}
-            style={{ ...chipStyle, borderColor: "rgba(184,148,95,0.5)", color: "#b8945f" }}
+            style={{ ...chipStyle, borderColor: "rgba(0,174,239,0.5)", color: "#00aeef" }}
           >
             + Campo em branco
           </button>
@@ -498,7 +498,7 @@ function CampoEditor({
                 type="checkbox"
                 checked={campo.obrigatorio}
                 onChange={(e) => onUpdate({ obrigatorio: e.target.checked })}
-                style={{ accentColor: "#b8945f" }}
+                style={{ accentColor: "#00aeef" }}
               />
               Obrigatório
             </label>

@@ -238,7 +238,7 @@ export default async function BlogListPage() {
                         href={`/admin/blog/${item.id}`}
                         style={{
                           fontSize: "12px",
-                          color: "#b8945f",
+                          color: "#00aeef",
                           textDecoration: "none",
                         }}
                       >

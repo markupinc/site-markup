@@ -231,7 +231,7 @@ export default function InscritosManager({
                           {r.corretor_id ? (
                             <Link
                               href={`/admin/corretores`}
-                              style={{ color: "#b8945f", textDecoration: "none" }}
+                              style={{ color: "#00aeef", textDecoration: "none" }}
                               title="Tem cadastro de corretor"
                             >
                               {r.nome} ↗

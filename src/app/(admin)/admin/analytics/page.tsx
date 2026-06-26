@@ -309,8 +309,8 @@ export default function AnalyticsPage() {
       {!ga4Url && (
         <div
           style={{
-            backgroundColor: "rgba(184,148,95,0.08)",
-            border: "1px solid rgba(184,148,95,0.2)",
+            backgroundColor: "rgba(0,174,239,0.08)",
+            border: "1px solid rgba(0,174,239,0.2)",
             borderRadius: "8px",
             padding: "12px 16px",
             marginBottom: "24px",
@@ -321,7 +321,7 @@ export default function AnalyticsPage() {
           Dica: cole a URL da sua propriedade no GA4 em{" "}
           <a
             href="/admin/configuracoes"
-            style={{ color: "#b8945f", textDecoration: "none" }}
+            style={{ color: "#00aeef", textDecoration: "none" }}
           >
             Configurações → Tracking → URL do GA4
           </a>{" "}
@@ -592,7 +592,7 @@ function RankingTable({
                 style={{
                   width: `${pct}%`,
                   height: "100%",
-                  backgroundColor: "#b8945f",
+                  backgroundColor: "#00aeef",
                 }}
               />
             </div>

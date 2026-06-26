@@ -322,8 +322,8 @@ export default function HorariosManager({
                       }
                       style={{
                         padding: "8px 12px",
-                        backgroundColor: ativo ? "#b8945f" : "rgba(255,255,255,0.06)",
-                        border: `1px solid ${ativo ? "#b8945f" : "rgba(255,255,255,0.1)"}`,
+                        backgroundColor: ativo ? "#00aeef" : "rgba(255,255,255,0.06)",
+                        border: `1px solid ${ativo ? "#00aeef" : "rgba(255,255,255,0.1)"}`,
                         borderRadius: "6px",
                         color: "#fff",
                         fontSize: "12px",
@@ -499,7 +499,7 @@ function TabBtn({
         padding: "10px 16px",
         backgroundColor: "transparent",
         border: "none",
-        borderBottom: `2px solid ${ativo ? "#b8945f" : "transparent"}`,
+        borderBottom: `2px solid ${ativo ? "#00aeef" : "transparent"}`,
         color: ativo ? "#fff" : "rgba(255,255,255,0.5)",
         fontSize: "13px",
         cursor: "pointer",

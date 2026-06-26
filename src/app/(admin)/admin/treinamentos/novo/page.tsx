@@ -16,7 +16,7 @@ export default function NovoTreinamentoPage() {
     local: "",
     mapa_url: "",
     online_url: "",
-    cor: "#b8945f",
+    cor: "#00aeef",
   });
   const [saving, setSaving] = useState(false);
   const [erro, setErro] = useState("");

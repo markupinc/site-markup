@@ -3,7 +3,7 @@ import Link from "next/link";
 import ToggleAtivoButton from "./ToggleAtivoButton";
 
 const statusConfig: Record<string, { label: string; color: string }> = {
-  lancamento: { label: "Lancamento", color: "#b8945f" },
+  lancamento: { label: "Lancamento", color: "#00aeef" },
   em_obras: { label: "Em Obras", color: "#5b8fd4" },
   entregue: { label: "Entregue", color: "#6b9f6b" },
 };
@@ -205,7 +205,7 @@ export default async function EmpreendimentosPage() {
                         padding: "10px 16px",
                         borderBottom: "1px solid rgba(255,255,255,0.04)",
                         fontSize: "13px",
-                        color: item.destaque ? "#b8945f" : "rgba(255,255,255,0.2)",
+                        color: item.destaque ? "#00aeef" : "rgba(255,255,255,0.2)",
                       }}
                     >
                       {item.destaque ? "Sim" : "Nao"}
@@ -232,7 +232,7 @@ export default async function EmpreendimentosPage() {
                         href={`/admin/empreendimentos/${item.id}`}
                         style={{
                           fontSize: "12px",
-                          color: "#b8945f",
+                          color: "#00aeef",
                           textDecoration: "none",
                         }}
                       >

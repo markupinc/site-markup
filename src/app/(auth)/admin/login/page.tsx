@@ -35,9 +35,16 @@ export default function AdminLogin() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0a0a0a]">
       <div className="w-full max-w-sm p-8">
-        <h1 className="text-2xl font-light text-white mb-8 text-center tracking-wide">
-          Markup Admin
-        </h1>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/assets/logo.png"
+          alt="Markup Incorporações"
+          className="h-9 mx-auto mb-3"
+          style={{ filter: "brightness(0) invert(1)" }}
+        />
+        <p className="text-xs text-white/40 mb-8 text-center tracking-[0.2em] uppercase">
+          Painel administrativo
+        </p>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
@@ -47,7 +54,7 @@ export default function AdminLogin() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#00aeef] transition-colors"
             />
           </div>
 
@@ -58,7 +65,7 @@ export default function AdminLogin() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-white/30 transition-colors"
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/30 focus:outline-none focus:border-[#00aeef] transition-colors"
             />
           </div>
 
@@ -69,7 +76,7 @@ export default function AdminLogin() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-white text-black rounded-lg font-medium hover:bg-white/90 transition-colors disabled:opacity-50"
+            className="w-full py-3 bg-[#00aeef] text-white rounded-lg font-medium hover:bg-[#0098d4] transition-colors disabled:opacity-50"
           >
             {loading ? "Entrando..." : "Entrar"}
           </button>

@@ -35,7 +35,7 @@ interface Empreendimento {
 
 const STATUS_CONFIG: Record<LeadStatus, { label: string; color: string }> = {
   novo: { label: "Novo", color: "#1CB8E8" },
-  contatado: { label: "Contatado", color: "#b8945f" },
+  contatado: { label: "Contatado", color: "#00aeef" },
   em_negociacao: { label: "Em Negociação", color: "#d4835b" },
   convertido: { label: "Convertido", color: "#6b9f6b" },
   perdido: { label: "Perdido", color: "#d45b5b" },
@@ -65,7 +65,7 @@ function detectarOrigem(lead: {
       return { label: "Instagram", color: "#E1306C" };
     }
     if (src.includes("tapume") || med.includes("qr")) {
-      return { label: "QR / Tapume", color: "#b8945f" };
+      return { label: "QR / Tapume", color: "#00aeef" };
     }
     return { label: lead.utm_source || "—", color: "#888" };
   }
@@ -623,8 +623,8 @@ export default function LeadsPage() {
                                   <div style={labelStyle}>Respostas do formulário</div>
                                   <div
                                     style={{
-                                      background: "rgba(184,148,95,0.06)",
-                                      border: "1px solid rgba(184,148,95,0.15)",
+                                      background: "rgba(0,174,239,0.06)",
+                                      border: "1px solid rgba(0,174,239,0.15)",
                                       borderRadius: "8px",
                                       padding: "12px",
                                       display: "flex",

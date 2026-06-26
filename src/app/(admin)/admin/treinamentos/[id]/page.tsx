@@ -220,7 +220,7 @@ export default function EditarTreinamentoPage() {
           <Field label="Cor">
             <input
               type="color"
-              value={form.cor || "#b8945f"}
+              value={form.cor || "#00aeef"}
               onChange={(e) => setForm({ ...form, cor: e.target.value })}
               style={{ ...inputStyle, padding: "4px", height: "42px" }}
             />
