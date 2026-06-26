@@ -20,33 +20,28 @@ interface Insight {
   data: string;
   campaign_id: string;
   campaign_name: string | null;
-  objetivo: string | null;
   bucket: string;
+  produto: string;
   gasto: number;
   impressoes: number;
   alcance: number;
-  frequencia: number;
   cliques: number;
   ctr: number;
-  cpc: number;
-  cpm: number;
   leads: number;
-  custo_por_lead: number | null;
+  visitas_perfil: number;
   moeda: string;
 }
-
 interface Seguidor {
   data: string;
   plataforma: string;
   seguidores_total: number | null;
   novos_seguidores: number | null;
   alcance: number | null;
+  views: number | null;
+  profile_views: number | null;
 }
-
 interface SyncLog {
-  tipo: string;
   status: string;
-  mensagem: string | null;
   executado_em: string;
 }
 
@@ -55,16 +50,18 @@ const RANGES = [
   { label: "Últimos 14 dias", value: 14 },
   { label: "Últimos 30 dias", value: 30 },
 ];
-
 const BUCKET_LABEL: Record<string, string> = {
   lead: "Geração de leads",
   reconhecimento: "Reconhecimento",
-  outro: "Outros objetivos",
+  social: "Post do Instagram",
+  trafego: "Tráfego",
+  outro: "Outros",
 };
+const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", outro: "Outros" };
 
 export default function MarketingPage() {
   const supabase = createClient();
-  const [range, setRange] = useState(14);
+  const [range, setRange] = useState(30);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
@@ -75,34 +72,22 @@ export default function MarketingPage() {
     async function load() {
       setLoading(true);
       setErro(null);
-
-      const sinceDate = new Date(Date.now() - range * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10);
-
+      const since = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const [insRes, segRes, logRes] = await Promise.all([
-        (supabase.from("meta_campanha_insights") as any)
-          .select("*")
-          .gte("data", sinceDate)
-          .order("data", { ascending: true }),
-        (supabase.from("meta_seguidores") as any)
-          .select("*")
-          .gte("data", sinceDate)
-          .order("data", { ascending: true }),
+        (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).order("data"),
+        (supabase.from("meta_seguidores") as any).select("*").gte("data", since).order("data"),
         (supabase.from("meta_sync_log") as any)
-          .select("tipo, status, mensagem, executado_em")
+          .select("status, executado_em")
           .order("executado_em", { ascending: false })
-          .limit(10),
+          .limit(1),
       ]);
       /* eslint-enable @typescript-eslint/no-explicit-any */
-
       if (insRes.error) {
         setErro(insRes.error.message);
         setLoading(false);
         return;
       }
-
       setInsights((insRes.data as Insight[]) || []);
       setSeguidores((segRes.data as Seguidor[]) || []);
       setSyncLog((logRes.data as SyncLog[]) || []);
@@ -111,130 +96,117 @@ export default function MarketingPage() {
     load();
   }, [range]);
 
-  // ---- Agregações -----------------------------------------------------------
-  const totals = useMemo(() => {
-    let gasto = 0,
-      imp = 0,
-      clq = 0,
-      leads = 0;
+  // ---- Agregações ----
+  const t = useMemo(() => {
+    const s = { gasto: 0, imp: 0, clq: 0, alc: 0, leads: 0 };
     insights.forEach((r) => {
-      gasto += Number(r.gasto) || 0;
-      imp += Number(r.impressoes) || 0;
-      clq += Number(r.cliques) || 0;
-      leads += Number(r.leads) || 0;
+      s.gasto += +r.gasto || 0;
+      s.imp += +r.impressoes || 0;
+      s.clq += +r.cliques || 0;
+      s.alc += +r.alcance || 0;
+      s.leads += +r.leads || 0;
     });
-    return {
-      gasto,
-      imp,
-      clq,
-      leads,
-      ctr: imp > 0 ? (clq / imp) * 100 : 0,
-      cpl: leads > 0 ? gasto / leads : null,
-      moeda: insights[0]?.moeda || "BRL",
-    };
+    return { ...s, ctr: s.imp > 0 ? (s.clq / s.imp) * 100 : 0, moeda: insights[0]?.moeda || "BRL" };
   }, [insights]);
 
-  const porBucket = useMemo(() => {
-    const m = new Map<string, { gasto: number; leads: number; alc: number }>();
-    insights.forEach((r) => {
-      const b = r.bucket || "outro";
-      const o = m.get(b) || { gasto: 0, leads: 0, alc: 0 };
-      o.gasto += Number(r.gasto) || 0;
-      o.leads += Number(r.leads) || 0;
-      o.alc += Number(r.alcance) || 0;
-      m.set(b, o);
+  const lead = useMemo(() => {
+    const rows = insights.filter((r) => r.bucket === "lead");
+    const gasto = rows.reduce((a, r) => a + (+r.gasto || 0), 0);
+    const leads = rows.reduce((a, r) => a + (+r.leads || 0), 0);
+    const porProduto = (["salsa", "up", "outro"] as const).map((p) => {
+      const pr = rows.filter((r) => r.produto === p);
+      const g = pr.reduce((a, r) => a + (+r.gasto || 0), 0);
+      const l = pr.reduce((a, r) => a + (+r.leads || 0), 0);
+      return { produto: p, gasto: g, leads: l, cpl: l > 0 ? g / l : null };
     });
-    return m;
+    return { gasto, leads, cpl: leads > 0 ? gasto / leads : null, porProduto };
   }, [insights]);
 
-  const campanhas = useMemo(() => {
-    const m = new Map<
-      string,
-      {
-        campaign_id: string;
-        nome: string | null;
-        bucket: string;
-        gasto: number;
-        leads: number;
-        imp: number;
-        clq: number;
-      }
-    >();
-    insights.forEach((r) => {
-      const o = m.get(r.campaign_id) || {
-        campaign_id: r.campaign_id,
-        nome: r.campaign_name,
-        bucket: r.bucket,
-        gasto: 0,
-        leads: 0,
-        imp: 0,
-        clq: 0,
-      };
-      o.gasto += Number(r.gasto) || 0;
-      o.leads += Number(r.leads) || 0;
-      o.imp += Number(r.impressoes) || 0;
-      o.clq += Number(r.cliques) || 0;
+  const social = useMemo(() => {
+    const rows = insights.filter((r) => r.bucket === "social");
+    const gasto = rows.reduce((a, r) => a + (+r.gasto || 0), 0);
+    const visitas = rows.reduce((a, r) => a + (+r.visitas_perfil || 0), 0);
+    // agrega por campanha
+    const m = new Map<string, { nome: string | null; gasto: number; visitas: number }>();
+    rows.forEach((r) => {
+      const o = m.get(r.campaign_id) || { nome: r.campaign_name, gasto: 0, visitas: 0 };
+      o.gasto += +r.gasto || 0;
+      o.visitas += +r.visitas_perfil || 0;
       if (!o.nome) o.nome = r.campaign_name;
       m.set(r.campaign_id, o);
     });
-    return [...m.values()]
-      .map((o) => ({
-        ...o,
-        cpl: o.leads > 0 ? o.gasto / o.leads : null,
-        ctr: o.imp > 0 ? (o.clq / o.imp) * 100 : 0,
-      }))
+    const campanhas = [...m.values()]
+      .map((o) => ({ ...o, custoVisita: o.visitas > 0 ? o.gasto / o.visitas : null }))
       .sort((a, b) => b.gasto - a.gasto);
+    return { gasto, visitas, custoVisita: visitas > 0 ? gasto / visitas : null, campanhas };
+  }, [insights]);
+
+  const reconh = useMemo(() => {
+    const rows = insights.filter((r) => r.bucket === "reconhecimento");
+    return {
+      gasto: rows.reduce((a, r) => a + (+r.gasto || 0), 0),
+      alc: rows.reduce((a, r) => a + (+r.alcance || 0), 0),
+    };
   }, [insights]);
 
   const porDia = useMemo(() => {
     const m = new Map<string, { data: string; gasto: number; leads: number }>();
     insights.forEach((r) => {
       const o = m.get(r.data) || { data: r.data, gasto: 0, leads: 0 };
-      o.gasto += Number(r.gasto) || 0;
-      o.leads += Number(r.leads) || 0;
+      o.gasto += +r.gasto || 0;
+      o.leads += +r.leads || 0;
       m.set(r.data, o);
     });
-    return [...m.values()]
-      .sort((a, b) => a.data.localeCompare(b.data))
-      .map((d) => ({ ...d, label: diaLabel(d.data) }));
+    return [...m.values()].sort((a, b) => a.data.localeCompare(b.data)).map((d) => ({ ...d, label: dia(d.data) }));
   }, [insights]);
 
-  const ig = useMemo(
+  // Instagram orgânico
+  const ig = useMemo(() => {
+    const rows = seguidores.filter((s) => s.plataforma === "instagram").sort((a, b) => a.data.localeCompare(b.data));
+    let acc = 0;
+    const serie = rows.map((s) => {
+      acc += +(s.novos_seguidores || 0);
+      return {
+        data: s.data,
+        label: dia(s.data),
+        novos: s.novos_seguidores ?? 0,
+        acumulado: acc,
+        alcance: s.alcance ?? null,
+        views: s.views ?? null,
+        profile_views: s.profile_views ?? null,
+      };
+    });
+    const totalAtual = [...rows].reverse().find((s) => s.seguidores_total != null)?.seguidores_total ?? null;
+    const novosPeriodo = rows.reduce((a, s) => a + (+(s.novos_seguidores || 0)), 0);
+    const viewsPeriodo = rows.reduce((a, s) => a + (+(s.views || 0)), 0);
+    const visitasPeriodo = rows.reduce((a, s) => a + (+(s.profile_views || 0)), 0);
+    return { serie, totalAtual, novosPeriodo, viewsPeriodo, visitasPeriodo };
+  }, [seguidores]);
+
+  const fbAtual = useMemo(
     () =>
-      seguidores
-        .filter((s) => s.plataforma === "instagram")
-        .sort((a, b) => a.data.localeCompare(b.data))
-        .map((s) => ({ ...s, label: diaLabel(s.data) })),
+      [...seguidores.filter((s) => s.plataforma === "facebook")].reverse().find((s) => s.seguidores_total != null)
+        ?.seguidores_total ?? null,
     [seguidores]
   );
-  const fb = useMemo(
-    () =>
-      seguidores
-        .filter((s) => s.plataforma === "facebook")
-        .sort((a, b) => a.data.localeCompare(b.data)),
-    [seguidores]
-  );
-  const igAtual = ig[ig.length - 1];
-  const fbAtual = fb[fb.length - 1];
+
+  // custo por seguidor (blended, estimativa): gasto social ÷ novos seguidores no período
+  const custoSeguidorBlended = ig.novosPeriodo > 0 ? social.gasto / ig.novosPeriodo : null;
 
   const ultimaSync = syncLog[0];
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
-  const m = totals.moeda;
+  const m = t.moeda;
 
   return (
     <div>
-      {/* Header */}
       <div style={headerRow}>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 300, color: "#fff", marginBottom: 8 }}>
-            Marketing
-          </h1>
+          <h1 style={{ fontSize: 24, fontWeight: 300, color: "#fff", marginBottom: 8 }}>Marketing</h1>
           <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-            Desempenho do Meta Ads e crescimento no Instagram. Dados em cache,
-            atualizados a cada sincronização.
+            Meta Ads + Instagram. Dados em cache, atualizados a cada sincronização.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
           {ultimaSync && (
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
               <span
@@ -243,20 +215,16 @@ export default function MarketingPage() {
                   width: 7,
                   height: 7,
                   borderRadius: "50%",
-                  backgroundColor: ultimaSync.status === "ok" ? "#4caf7d" : "#d9737a",
+                  background: ultimaSync.status === "ok" ? "#4caf7d" : "#d9737a",
                   marginRight: 6,
                 }}
               />
-              sync {tempoRelativo(ultimaSync.executado_em)}
+              sync {rel(ultimaSync.executado_em)}
             </span>
           )}
-          <select
-            value={range}
-            onChange={(e) => setRange(Number(e.target.value))}
-            style={{ ...inputStyle, colorScheme: "dark", minWidth: 160 }}
-          >
+          <select value={range} onChange={(e) => setRange(+e.target.value)} style={{ ...input, colorScheme: "dark" }}>
             {RANGES.map((r) => (
-              <option key={r.value} value={r.value} style={optionStyle}>
+              <option key={r.value} value={r.value} style={{ background: "#1a1a1a" }}>
                 {r.label}
               </option>
             ))}
@@ -264,77 +232,117 @@ export default function MarketingPage() {
         </div>
       </div>
 
-      {/* Avisos de setup */}
       {erro && (
         <Aviso tom="erro">
-          Não foi possível ler as métricas: <code>{erro}</code>.{" "}
-          {/relation|does not exist|não existe/i.test(erro)
-            ? "As tabelas ainda não existem — aplique a migration 006_meta_metrics.sql no Supabase."
-            : "Verifique as permissões/RLS."}
+          Erro ao ler métricas: <code>{erro}</code>.{" "}
+          {/relation|exist|não existe/i.test(erro) ? "Aplique a migration 007_meta_metrics_v2.sql." : ""}
         </Aviso>
       )}
       {semDados && (
         <Aviso tom="info">
-          Aguardando a primeira sincronização com a Meta. Confirme as variáveis de
-          ambiente e dispare <code>/api/meta/sync</code> (o agendador faz isso
-          automaticamente a cada ~15 min).
+          Sem dados ainda. Rode <code>/api/meta/sync?backfill=30</code> para popular o histórico do mês.
         </Aviso>
       )}
 
-      {/* Cards de totais */}
-      <div style={cardGrid}>
-        <Card label={`Investimento (${m})`} value={brl(totals.gasto, m)} loading={loading} />
-        <Card label="Impressões" value={int(totals.imp)} loading={loading} />
-        <Card label="Cliques" value={int(totals.clq)} loading={loading} />
-        <Card label="CTR médio" value={`${totals.ctr.toFixed(2)}%`} loading={loading} />
-        <Card label="Leads (Meta)" value={int(totals.leads)} loading={loading} accent />
+      {/* Totais gerais */}
+      <H>Visão geral</H>
+      <div style={grid}>
+        <Card label={`Investimento (${m})`} value={brl(t.gasto, m)} loading={loading} />
+        <Card label="Impressões" value={int(t.imp)} loading={loading} />
+        <Card label="Cliques" value={int(t.clq)} loading={loading} />
+        <Card label="CTR médio" value={`${t.ctr.toFixed(2)}%`} loading={loading} />
+        <Card label="Leads (Meta)" value={int(t.leads)} loading={loading} accent />
+      </div>
+
+      {/* Leads */}
+      <H>Geração de leads</H>
+      <div style={grid}>
+        <Card label="Leads (campanhas de lead)" value={int(lead.leads)} loading={loading} accent />
+        <Card label="Investimento em lead" value={brl(lead.gasto, m)} loading={loading} />
         <Card
           label="Custo por lead"
-          value={totals.cpl != null ? brl(totals.cpl, m) : "—"}
+          sub="só campanhas de lead"
+          value={lead.cpl != null ? brl(lead.cpl, m) : "—"}
           loading={loading}
           accent
         />
       </div>
-
-      {/* Split por objetivo */}
-      <div style={{ ...twoCol, marginTop: 8 }}>
-        <ObjetivoCard
-          titulo={BUCKET_LABEL.lead}
-          dados={porBucket.get("lead")}
-          moeda={m}
-          metricaLabel="Leads"
-          metrica={porBucket.get("lead")?.leads ?? 0}
-        />
-        <ObjetivoCard
-          titulo={BUCKET_LABEL.reconhecimento}
-          dados={porBucket.get("reconhecimento")}
-          moeda={m}
-          metricaLabel="Alcance"
-          metrica={porBucket.get("reconhecimento")?.alc ?? 0}
-        />
+      <div style={{ ...grid, marginTop: 8 }}>
+        {lead.porProduto
+          .filter((p) => p.produto !== "outro" || p.leads > 0)
+          .map((p) => (
+            <div key={p.produto} style={cardBox(true)}>
+              <p style={cardLabel}>{PRODUTO_LABEL[p.produto]} — leads</p>
+              <p style={{ fontSize: 26, color: "#b8945f", fontWeight: 300, margin: "0 0 8px" }}>{int(p.leads)}</p>
+              <div style={{ display: "flex", gap: 20, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                <span>Inv.: {brl(p.gasto, m)}</span>
+                <span>CPL: {p.cpl != null ? brl(p.cpl, m) : "—"}</span>
+              </div>
+            </div>
+          ))}
       </div>
 
-      {/* Gráfico investimento × leads por dia */}
+      {/* Reconhecimento */}
+      <H>Reconhecimento</H>
+      <div style={grid}>
+        <Card label="Investimento" value={brl(reconh.gasto, m)} loading={loading} />
+        <Card label="Alcance (soma diária)" value={int(reconh.alc)} loading={loading} />
+      </div>
+
+      {/* Posts do Instagram */}
+      <H>Posts do Instagram (impulsionados)</H>
+      <div style={grid}>
+        <Card label="Investimento" value={brl(social.gasto, m)} loading={loading} />
+        <Card label="Visitas ao perfil" value={int(social.visitas)} loading={loading} accent />
+        <Card
+          label="Custo por visita ao perfil"
+          value={social.custoVisita != null ? brl(social.custoVisita, m) : "—"}
+          loading={loading}
+          accent
+        />
+        <Card
+          label="Custo por seguidor"
+          sub="estimado (gasto ÷ seguidores no período)"
+          value={custoSeguidorBlended != null ? brl(custoSeguidorBlended, m) : "—"}
+          loading={loading}
+        />
+      </div>
+      <Section title="Custo por visita ao perfil — por post">
+        {social.campanhas.length === 0 ? (
+          <Vazio loading={loading} />
+        ) : (
+          <Tabela
+            head={["Post", "Investimento", "Visitas perfil", "Custo/visita"]}
+            rows={social.campanhas.map((c) => [
+              c.nome || "—",
+              brl(c.gasto, m),
+              int(c.visitas),
+              c.custoVisita != null ? brl(c.custoVisita, m) : "—",
+            ])}
+          />
+        )}
+      </Section>
+      <p style={muted}>
+        ⚠️ O Meta não expõe &quot;novos seguidores&quot; por campanha nesta conta — o custo por seguidor acima é uma
+        estimativa que mistura orgânico + pago. O custo por visita ao perfil é real (campo dedicado da API).
+      </p>
+
+      {/* Gráfico investimento × leads */}
       <Section title="Investimento e leads por dia">
         {porDia.length === 0 ? (
           <Vazio loading={loading} />
         ) : (
           <ResponsiveContainer width="100%" height={280}>
-            <ComposedChart data={porDia} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <ComposedChart data={porDia} margin={chartM}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
               <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
               <YAxis yAxisId="l" stroke="rgba(255,255,255,0.3)" fontSize={11} />
               <YAxis yAxisId="r" orientation="right" stroke="rgba(255,255,255,0.3)" fontSize={11} />
               <Tooltip
-                contentStyle={tooltipStyle}
-                formatter={(value, name) => {
-                  const v = Number(Array.isArray(value) ? value[0] : value);
-                  return (
-                    name === "Investimento"
-                      ? [brl(v, m), String(name)]
-                      : [int(v), String(name)]
-                  ) as [string, string];
-                }}
+                contentStyle={tip}
+                formatter={(v, n) =>
+                  [n === "Investimento" ? brl(Number(v), m) : int(Number(v)), String(n)] as [string, string]
+                }
               />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Bar yAxisId="l" dataKey="gasto" name="Investimento" fill="#b8945f" radius={[4, 4, 0, 0]} />
@@ -344,208 +352,120 @@ export default function MarketingPage() {
         )}
       </Section>
 
-      {/* Tabela por campanha */}
-      <Section title="Por campanha">
-        {campanhas.length === 0 ? (
-          <Vazio loading={loading} />
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ color: "rgba(255,255,255,0.5)", textAlign: "left" }}>
-                  <th style={th}>Campanha</th>
-                  <th style={th}>Objetivo</th>
-                  <th style={thNum}>Investimento</th>
-                  <th style={thNum}>Leads</th>
-                  <th style={thNum}>CPL</th>
-                  <th style={thNum}>CTR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {campanhas.map((c) => (
-                  <tr key={c.campaign_id} style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                    <td style={{ ...td, color: "#fff", maxWidth: 260 }} title={c.nome || c.campaign_id}>
-                      <span style={ellipsis}>{c.nome || c.campaign_id}</span>
-                    </td>
-                    <td style={td}>
-                      <Tag bucket={c.bucket} />
-                    </td>
-                    <td style={tdNum}>{brl(c.gasto, m)}</td>
-                    <td style={tdNum}>{int(c.leads)}</td>
-                    <td style={tdNum}>{c.cpl != null ? brl(c.cpl, m) : "—"}</td>
-                    <td style={tdNum}>{c.ctr.toFixed(2)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Section>
-
-      {/* Instagram */}
-      <h2 style={{ fontSize: 16, fontWeight: 500, color: "#fff", margin: "32px 0 16px" }}>
-        Instagram
-      </h2>
-      <div style={cardGrid}>
-        <Card
-          label="Seguidores (Instagram)"
-          value={igAtual?.seguidores_total != null ? int(igAtual.seguidores_total) : "—"}
-          loading={loading}
-          accent
-        />
-        <Card
-          label="Novos seguidores (último dia)"
-          value={igAtual?.novos_seguidores != null ? int(igAtual.novos_seguidores) : "—"}
-          loading={loading}
-        />
-        <Card
-          label="Alcance IG (último dia)"
-          value={igAtual?.alcance != null ? int(igAtual.alcance) : "—"}
-          loading={loading}
-        />
-        <Card
-          label="Seguidores (Facebook)"
-          value={fbAtual?.seguidores_total != null ? int(fbAtual.seguidores_total) : "—"}
-          loading={loading}
-        />
+      {/* Instagram orgânico */}
+      <H>Instagram (orgânico)</H>
+      <div style={grid}>
+        <Card label="Seguidores (total)" value={ig.totalAtual != null ? int(ig.totalAtual) : "—"} loading={loading} accent />
+        <Card label="Novos seguidores (período)" value={int(ig.novosPeriodo)} loading={loading} accent />
+        <Card label="Visualizações (período)" value={int(ig.viewsPeriodo)} loading={loading} />
+        <Card label="Visitas ao perfil (período)" value={int(ig.visitasPeriodo)} loading={loading} />
+        <Card label="Seguidores (Facebook)" value={fbAtual != null ? int(fbAtual) : "—"} loading={loading} />
       </div>
 
       <div style={twoCol}>
-        <Section title="Crescimento de seguidores (Instagram)">
-          {ig.length === 0 ? (
+        <Section title="Evolução de seguidores no período">
+          {ig.serie.length === 0 ? (
             <Vazio loading={loading} />
           ) : (
             <ResponsiveContainer width="100%" height={240}>
-              <LineChart data={ig} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <ComposedChart data={ig.serie} margin={chartM}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} domain={["auto", "auto"]} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Line dataKey="seguidores_total" name="Seguidores" stroke="#b8945f" strokeWidth={2} dot={false} />
+                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
+                <Tooltip contentStyle={tip} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="novos" name="Novos/dia" fill="#5b9bd5" radius={[4, 4, 0, 0]} />
+                <Line dataKey="acumulado" name="Acumulado" stroke="#b8945f" strokeWidth={2} dot={false} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
+        </Section>
+
+        <Section title="Alcance e visualizações por dia">
+          {ig.serie.length === 0 ? (
+            <Vazio loading={loading} />
+          ) : (
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart data={ig.serie} margin={chartM}>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+                <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
+                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
+                <Tooltip contentStyle={tip} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Line dataKey="alcance" name="Alcance" stroke="#b8945f" strokeWidth={2} dot={false} />
+                <Line dataKey="views" name="Visualizações" stroke="#5b9bd5" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           )}
         </Section>
 
-        <Section title="Novos seguidores por dia (Instagram)">
-          {ig.length === 0 ? (
+        <Section title="Visitas ao perfil por dia">
+          {ig.serie.length === 0 ? (
             <Vazio loading={loading} />
           ) : (
             <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={ig} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+              <BarChart data={ig.serie} margin={chartM}>
                 <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
                 <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
                 <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <Tooltip contentStyle={tooltipStyle} />
-                <Bar dataKey="novos_seguidores" name="Novos seguidores" fill="#5b9bd5" radius={[4, 4, 0, 0]} />
+                <Tooltip contentStyle={tip} />
+                <Bar dataKey="profile_views" name="Visitas ao perfil" fill="#b8945f" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </Section>
       </div>
 
-      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 24 }}>
-        Os números de hoje ainda estão sendo consolidados pela Meta (atraso de
-        ~15–30 min); dias fechados são definitivos.
-      </p>
+      <p style={muted}>Números de hoje ainda consolidam na Meta (~15–30 min); dias fechados são definitivos.</p>
     </div>
   );
 }
 
-// ---- Componentes ------------------------------------------------------------
-
+// ---- Componentes ----
 function Card({
   label,
+  sub,
   value,
   loading,
   accent,
 }: {
   label: string;
+  sub?: string;
   value: string;
   loading: boolean;
   accent?: boolean;
 }) {
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(255,255,255,0.04)",
-        border: `1px solid ${accent ? "rgba(184,148,95,0.3)" : "rgba(255,255,255,0.08)"}`,
-        borderRadius: 12,
-        padding: 20,
-      }}
-    >
+    <div style={cardBox(accent)}>
       <p style={cardLabel}>{label}</p>
+      {sub && <p style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", margin: "-6px 0 6px" }}>{sub}</p>}
       <p style={{ fontSize: 26, color: accent ? "#b8945f" : "#fff", fontWeight: 300, margin: 0 }}>
         {loading ? "—" : value}
       </p>
     </div>
   );
 }
-
-function ObjetivoCard({
-  titulo,
-  dados,
-  moeda,
-  metricaLabel,
-  metrica,
-}: {
-  titulo: string;
-  dados?: { gasto: number; leads: number; alc: number };
-  moeda: string;
-  metricaLabel: string;
-  metrica: number;
-}) {
-  return (
-    <div
-      style={{
-        backgroundColor: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 12,
-        padding: 20,
-      }}
-    >
-      <p style={cardLabel}>{titulo}</p>
-      <div style={{ display: "flex", gap: 24, marginTop: 8 }}>
-        <div>
-          <p style={miniLabel}>Investimento</p>
-          <p style={miniValue}>{dados ? brl(dados.gasto, moeda) : "—"}</p>
-        </div>
-        <div>
-          <p style={miniLabel}>{metricaLabel}</p>
-          <p style={miniValue}>{int(metrica)}</p>
-        </div>
-      </div>
-    </div>
-  );
+function H({ children }: { children: React.ReactNode }) {
+  return <h2 style={{ fontSize: 15, fontWeight: 500, color: "#fff", margin: "32px 0 12px" }}>{children}</h2>;
 }
-
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(255,255,255,0.04)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        borderRadius: 12,
-        padding: 20,
-        marginTop: 16,
-      }}
-    >
-      <h2 style={{ fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 16 }}>{title}</h2>
+    <div style={{ ...cardBox(false), marginTop: 16 }}>
+      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 16 }}>{title}</h3>
       {children}
     </div>
   );
 }
-
 function Aviso({ tom, children }: { tom: "erro" | "info"; children: React.ReactNode }) {
-  const cor = tom === "erro" ? "217,115,122" : "184,148,95";
+  const c = tom === "erro" ? "217,115,122" : "184,148,95";
   return (
     <div
       style={{
-        backgroundColor: `rgba(${cor},0.08)`,
-        border: `1px solid rgba(${cor},0.25)`,
+        background: `rgba(${c},0.08)`,
+        border: `1px solid rgba(${c},0.25)`,
         borderRadius: 8,
         padding: "12px 16px",
-        marginBottom: 24,
+        margin: "0 0 24px",
         fontSize: 12,
         color: "rgba(255,255,255,0.75)",
       }}
@@ -554,41 +474,51 @@ function Aviso({ tom, children }: { tom: "erro" | "info"; children: React.ReactN
     </div>
   );
 }
-
-function Tag({ bucket }: { bucket: string }) {
-  const map: Record<string, string> = {
-    lead: "184,148,95",
-    reconhecimento: "91,155,213",
-    outro: "255,255,255",
-  };
-  const cor = map[bucket] || map.outro;
+function Tabela({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
   return (
-    <span
-      style={{
-        fontSize: 11,
-        color: `rgb(${cor})`,
-        backgroundColor: `rgba(${cor},0.12)`,
-        border: `1px solid rgba(${cor},0.25)`,
-        borderRadius: 999,
-        padding: "2px 8px",
-        whiteSpace: "nowrap",
-      }}
-    >
-      {BUCKET_LABEL[bucket] || bucket}
-    </span>
+    <div style={{ overflowX: "auto" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+        <thead>
+          <tr style={{ color: "rgba(255,255,255,0.5)", textAlign: "left" }}>
+            {head.map((h, i) => (
+              <th key={i} style={{ padding: 8, fontWeight: 500, textAlign: i === 0 ? "left" : "right" }}>
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              {r.map((c, j) => (
+                <td
+                  key={j}
+                  style={{
+                    padding: 8,
+                    color: j === 0 ? "#fff" : "rgba(255,255,255,0.85)",
+                    textAlign: j === 0 ? "left" : "right",
+                    maxWidth: j === 0 ? 280 : undefined,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={String(c)}
+                >
+                  {c}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
-
 function Vazio({ loading }: { loading: boolean }) {
-  return (
-    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
-      {loading ? "Carregando..." : "Sem dados no período."}
-    </p>
-  );
+  return <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{loading ? "Carregando..." : "Sem dados no período."}</p>;
 }
 
-// ---- Helpers ----------------------------------------------------------------
-
+// ---- Helpers ----
 function brl(n: number, moeda: string) {
   try {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: moeda }).format(n);
@@ -597,46 +527,43 @@ function brl(n: number, moeda: string) {
   }
 }
 const int = (n: number) => Math.round(n).toLocaleString("pt-BR");
-
-function diaLabel(dateStr: string) {
-  const [, mo, d] = dateStr.split("-");
-  return `${d}/${mo}`;
+function dia(d: string) {
+  const [, mo, da] = d.split("-");
+  return `${da}/${mo}`;
 }
-
-function tempoRelativo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const min = Math.floor(diff / 60000);
+function rel(iso: string) {
+  const min = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
   if (min < 1) return "agora";
   if (min < 60) return `há ${min} min`;
   const h = Math.floor(min / 60);
-  if (h < 24) return `há ${h}h`;
-  return `há ${Math.floor(h / 24)}d`;
+  return h < 24 ? `há ${h}h` : `há ${Math.floor(h / 24)}d`;
 }
 
-// ---- Estilos ----------------------------------------------------------------
-
+// ---- Estilos ----
+const cardBox = (accent?: boolean): React.CSSProperties => ({
+  background: "rgba(255,255,255,0.04)",
+  border: `1px solid ${accent ? "rgba(184,148,95,0.3)" : "rgba(255,255,255,0.08)"}`,
+  borderRadius: 12,
+  padding: 20,
+});
 const headerRow: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "flex-start",
   gap: 16,
-  marginBottom: 32,
+  marginBottom: 8,
   flexWrap: "wrap",
 };
-
-const cardGrid: React.CSSProperties = {
+const grid: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
   gap: 16,
-  marginBottom: 16,
 };
-
 const twoCol: React.CSSProperties = {
   display: "grid",
   gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
   gap: 16,
 };
-
 const cardLabel: React.CSSProperties = {
   fontSize: 11,
   color: "rgba(255,255,255,0.5)",
@@ -644,37 +571,21 @@ const cardLabel: React.CSSProperties = {
   letterSpacing: "0.5px",
   marginBottom: 8,
 };
-
-const miniLabel: React.CSSProperties = { fontSize: 10, color: "rgba(255,255,255,0.4)", margin: 0 };
-const miniValue: React.CSSProperties = { fontSize: 20, color: "#fff", fontWeight: 300, margin: "2px 0 0" };
-
-const th: React.CSSProperties = { padding: "8px 8px", fontWeight: 500 };
-const thNum: React.CSSProperties = { ...th, textAlign: "right" };
-const td: React.CSSProperties = { padding: "10px 8px", color: "rgba(255,255,255,0.85)" };
-const tdNum: React.CSSProperties = { ...td, textAlign: "right", whiteSpace: "nowrap" };
-const ellipsis: React.CSSProperties = {
-  display: "block",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-};
-
-const tooltipStyle: React.CSSProperties = {
-  backgroundColor: "#1a1a1a",
-  border: "1px solid rgba(255,255,255,0.12)",
-  borderRadius: 8,
-  fontSize: 12,
-  color: "#fff",
-};
-
-const inputStyle: React.CSSProperties = {
+const muted: React.CSSProperties = { fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 16 };
+const input: React.CSSProperties = {
   padding: "10px 12px",
-  backgroundColor: "rgba(255,255,255,0.06)",
+  background: "rgba(255,255,255,0.06)",
   border: "1px solid rgba(255,255,255,0.1)",
   borderRadius: 8,
   color: "#fff",
   fontSize: 13,
   outline: "none",
 };
-
-const optionStyle: React.CSSProperties = { backgroundColor: "#1a1a1a", color: "#fff" };
+const tip: React.CSSProperties = {
+  background: "#1a1a1a",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 8,
+  fontSize: 12,
+  color: "#fff",
+};
+const chartM = { top: 8, right: 8, left: 0, bottom: 0 };

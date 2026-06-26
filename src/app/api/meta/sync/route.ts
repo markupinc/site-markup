@@ -2,105 +2,131 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   fetchCampaignInsights,
-  fetchInstagramSeguidores,
-  fetchFacebookSeguidores,
+  fetchIgMetricasDia,
+  fetchIgNovosSeguidores,
+  fetchInstagramTotal,
+  fetchFacebookTotal,
+  listarDias,
   MetaConfigError,
-  type SeguidoresSnapshot,
 } from "@/lib/meta/client";
 
 export const runtime = "nodejs";
-// Não cachear: é um endpoint de sincronização disparado por agendador.
 export const dynamic = "force-dynamic";
 
 /**
- * Sincroniza métricas do Meta Ads para o cache no Supabase.
- * Disparar por agendador (Supabase pg_cron / cron externo) a cada ~10-15 min.
- *
- * Autenticação: header `Authorization: Bearer <META_SYNC_SECRET>` OU `?secret=<...>`.
- * Janela de insights: ?preset=last_14d (default) — repuxa os últimos N dias para
- * corrigir os valores de "hoje/ontem" que o Meta ainda está consolidando.
+ * Sincroniza Meta Ads + Instagram para o cache no Supabase.
+ * Auth: header Authorization: Bearer <META_SYNC_SECRET> ou ?secret=.
+ * Params: ?preset=last_30d  ?backfill=N (N dias de métricas diárias de IG; default 3).
  */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 async function handle(request: NextRequest) {
   const secret = process.env.META_SYNC_SECRET;
   if (!secret) {
-    return NextResponse.json(
-      { ok: false, error: "META_SYNC_SECRET não configurado no servidor." },
-      { status: 503 }
-    );
+    return NextResponse.json({ ok: false, error: "META_SYNC_SECRET não configurado." }, { status: 503 });
   }
-
-  const auth = request.headers.get("authorization");
-  const qsSecret = request.nextUrl.searchParams.get("secret");
-  const provided = auth?.replace(/^Bearer\s+/i, "") || qsSecret;
+  const provided =
+    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ||
+    request.nextUrl.searchParams.get("secret");
   if (provided !== secret) {
     return NextResponse.json({ ok: false, error: "Não autorizado." }, { status: 401 });
   }
 
-  const preset = request.nextUrl.searchParams.get("preset") || "last_14d";
+  const preset = request.nextUrl.searchParams.get("preset") || "last_30d";
+  const backfill = Math.min(Number(request.nextUrl.searchParams.get("backfill")) || 0, 30);
+  const igMetricDias = backfill > 0 ? backfill : 3; // re-puxa só os últimos dias no sync normal
   const supabase = createAdminClient();
-  const hoje = new Date().toISOString().slice(0, 10);
+  const agora = new Date().toISOString();
+  const hoje = agora.slice(0, 10);
   const resultado: Record<string, unknown> = {};
 
-  // ---- Insights por campanha ----
+  // ---- Anúncios (insights por campanha) ----
   try {
     const insights = await fetchCampaignInsights(preset);
     if (insights.length > 0) {
       const { error } = await (supabase.from("meta_campanha_insights") as any).upsert(
-        insights.map((r) => ({ ...r, atualizado_em: new Date().toISOString() })),
+        insights.map((r) => ({ ...r, atualizado_em: agora })),
         { onConflict: "data,campaign_id" }
       );
       if (error) throw new Error(error.message);
     }
     resultado.insights = { ok: true, linhas: insights.length };
-    await logSync(supabase, "insights", "ok", `${insights.length} linhas`, insights.length);
+    await log(supabase, "insights", "ok", `${insights.length} linhas`, insights.length);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     resultado.insights = { ok: false, erro: msg };
-    await logSync(supabase, "insights", "erro", msg, 0);
+    await log(supabase, "insights", "erro", msg, 0);
     if (err instanceof MetaConfigError) {
-      return NextResponse.json(
-        { ok: false, error: msg, dica: "Configure as env vars do Meta." },
-        { status: 503 }
-      );
+      return NextResponse.json({ ok: false, error: msg }, { status: 503 });
     }
   }
 
-  // ---- Seguidores (IG + Página) ----
+  // ---- Instagram orgânico (métricas diárias + seguidores) ----
   try {
-    const snaps: SeguidoresSnapshot[] = [];
-    for (const fn of [fetchInstagramSeguidores, fetchFacebookSeguidores]) {
+    const rows = new Map<string, any>();
+    const get = (d: string) => {
+      if (!rows.has(d)) rows.set(d, { data: d, plataforma: "instagram", atualizado_em: agora });
+      return rows.get(d);
+    };
+
+    // Métricas total_value, dia a dia (1 chamada por dia)
+    for (const dia of listarDias(igMetricDias)) {
       try {
-        snaps.push(await fn());
-      } catch (e) {
-        // uma plataforma falhar não derruba a outra
-        await logSync(
-          supabase,
-          "seguidores",
-          "erro",
-          e instanceof Error ? e.message : String(e),
-          0
-        );
+        const m = await fetchIgMetricasDia(dia);
+        const r = get(dia);
+        r.alcance = m.alcance;
+        r.views = m.views;
+        r.profile_views = m.profile_views;
+        r.total_interactions = m.total_interactions;
+        r.accounts_engaged = m.accounts_engaged;
+      } catch {
+        /* dia individual pode falhar; segue */
       }
     }
-    if (snaps.length > 0) {
+
+    // Ganho de seguidores diário (sempre 30 dias, 1 chamada) — alimenta o gráfico de evolução
+    for (const s of await fetchIgNovosSeguidores(30)) {
+      get(s.data).novos_seguidores = s.novos_seguidores;
+    }
+
+    // Total atual de seguidores (snapshot de hoje)
+    const igTotal = await fetchInstagramTotal();
+    if (igTotal != null) get(hoje).seguidores_total = igTotal;
+
+    if (rows.size > 0) {
+      const { error } = await (supabase.from("meta_seguidores") as any).upsert([...rows.values()], {
+        onConflict: "data,plataforma",
+      });
+      if (error) throw new Error(error.message);
+    }
+    resultado.instagram = { ok: true, dias: rows.size };
+    await log(supabase, "instagram", "ok", `${rows.size} dias`, rows.size);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    resultado.instagram = { ok: false, erro: msg };
+    await log(supabase, "instagram", "erro", msg, 0);
+  }
+
+  // ---- Facebook (total de seguidores) ----
+  try {
+    const fbTotal = await fetchFacebookTotal();
+    if (fbTotal != null) {
       const { error } = await (supabase.from("meta_seguidores") as any).upsert(
-        snaps.map((s) => ({ ...s, data: hoje, atualizado_em: new Date().toISOString() })),
+        [{ data: hoje, plataforma: "facebook", seguidores_total: fbTotal, atualizado_em: agora }],
         { onConflict: "data,plataforma" }
       );
       if (error) throw new Error(error.message);
     }
-    resultado.seguidores = { ok: true, plataformas: snaps.length };
-    await logSync(supabase, "seguidores", "ok", `${snaps.length} plataformas`, snaps.length);
+    resultado.facebook = { ok: true };
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    resultado.seguidores = { ok: false, erro: msg };
-    await logSync(supabase, "seguidores", "erro", msg, 0);
+    resultado.facebook = { ok: false, erro: msg };
+    await log(supabase, "facebook", "erro", msg, 0);
   }
 
-  return NextResponse.json({ ok: true, sincronizado_em: new Date().toISOString(), resultado });
+  return NextResponse.json({ ok: true, sincronizado_em: agora, backfill, resultado });
 }
 
-async function logSync(
+async function log(
   supabase: ReturnType<typeof createAdminClient>,
   tipo: string,
   status: string,
@@ -116,7 +142,6 @@ async function logSync(
 export async function GET(request: NextRequest) {
   return handle(request);
 }
-
 export async function POST(request: NextRequest) {
   return handle(request);
 }

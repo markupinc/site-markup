@@ -1,13 +1,7 @@
 /**
- * Cliente server-side da Meta Graph / Marketing API.
- * Usado SOMENTE no servidor (rota /api/meta/sync). Nunca expor o token no client.
- *
- * Env vars necessárias (server-only — NÃO usar prefixo NEXT_PUBLIC_):
- *   META_SYSTEM_USER_TOKEN  – token long-lived de um System User com permissão ads_read
- *   META_AD_ACCOUNT_ID      – id da conta de anúncios, formato "act_1234567890"
- *   META_PAGE_ID            – id da Página do Facebook (métricas de seguidores)
- *   META_IG_USER_ID         – id da conta Instagram Business (linkada à Página)
- *   META_GRAPH_VERSION      – opcional, default "v25.0"
+ * Cliente server-side da Meta Graph / Marketing API (v25). Só no servidor.
+ * Env: META_SYSTEM_USER_TOKEN, META_AD_ACCOUNT_ID (act_...), META_PAGE_ID,
+ *      META_IG_USER_ID, META_GRAPH_VERSION (default v25.0).
  */
 
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v25.0";
@@ -20,88 +14,67 @@ function token(): string {
   if (!t) throw new MetaConfigError("META_SYSTEM_USER_TOKEN não configurado");
   return t;
 }
-
 function requireEnv(name: string): string {
   const v = process.env[name];
   if (!v) throw new MetaConfigError(`${name} não configurado`);
   return v;
 }
 
-async function graphGet<T>(
-  path: string,
-  params: Record<string, string>
-): Promise<T> {
+/* eslint-disable @typescript-eslint/no-explicit-any */
+async function graphGet<T = any>(path: string, params: Record<string, string>): Promise<T> {
   const url = new URL(`${BASE}/${path}`);
   url.searchParams.set("access_token", token());
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
-
-  const res = await fetch(url.toString(), {
-    cache: "no-store",
-    signal: AbortSignal.timeout(30_000),
-  });
-  const json = await res.json();
-  if (!res.ok) {
-    const msg = json?.error?.message || res.statusText;
-    throw new Error(`Meta API ${res.status}: ${msg}`);
-  }
+  const res = await fetch(url.toString(), { cache: "no-store", signal: AbortSignal.timeout(30_000) });
+  const json: any = await res.json();
+  if (!res.ok) throw new Error(`Meta API ${res.status}: ${json?.error?.message || res.statusText}`);
   return json as T;
 }
 
-// ---- Objetivo de campanha -> bucket do dashboard --------------------------
+const num = (v?: string | number | null) => (v == null ? 0 : Number(v));
 
-export type Bucket = "lead" | "reconhecimento" | "outro";
+// ---- Classificação de campanha --------------------------------------------
 
-export function objetivoParaBucket(objective?: string): Bucket {
+export type Bucket = "lead" | "reconhecimento" | "social" | "trafego" | "outro";
+export type Produto = "salsa" | "up" | "outro";
+
+export function classificaBucket(objective?: string, nome?: string): Bucket {
+  if (/^post do instagram/i.test(nome || "")) return "social";
   const o = (objective || "").toUpperCase();
   if (o === "OUTCOME_LEADS" || o === "LEAD_GENERATION") return "lead";
-  if (
-    o === "OUTCOME_AWARENESS" ||
-    o === "BRAND_AWARENESS" ||
-    o === "REACH"
-  ) {
-    return "reconhecimento";
-  }
+  if (o === "OUTCOME_AWARENESS" || o === "BRAND_AWARENESS" || o === "REACH") return "reconhecimento";
+  if (o === "LINK_CLICKS" || o === "OUTCOME_TRAFFIC") return "trafego";
   return "outro";
 }
 
-// action_types que contam como "lead". Varia por tipo de formulário/conta —
-// CONFIRMAR contra a resposta real de /insights desta conta antes de fechar.
-const LEAD_ACTION_TYPES = new Set([
-  "lead",
-  "leadgen_grouped",
-  "onsite_conversion.lead_grouped",
-  "onsite_conversion.lead",
-]);
-
-interface InsightAction {
-  action_type: string;
-  value: string;
+export function classificaProduto(nome?: string): Produto {
+  const n = nome || "";
+  if (/salsa/i.test(n)) return "salsa";
+  if (/\bup!?\b|up\s*studios/i.test(n)) return "up";
+  return "outro";
 }
 
-interface RawInsightRow {
-  date_start: string;
-  date_stop: string;
-  campaign_id: string;
-  campaign_name?: string;
-  objective?: string;
-  spend?: string;
-  impressions?: string;
-  reach?: string;
-  frequency?: string;
-  clicks?: string;
-  ctr?: string;
-  cpc?: string;
-  cpm?: string;
-  actions?: InsightAction[];
-  account_currency?: string;
+// Conta de leads: 'lead' já é o TOTAL agregado (instant form + pixel). NÃO somar
+// com os _grouped (duplicaria). Usa um único valor canônico.
+function contaLeads(actions: Array<{ action_type: string; value: string }>): number {
+  const get = (t: string) => actions.find((a) => a.action_type === t)?.value;
+  const v =
+    get("lead") ??
+    get("onsite_conversion.lead_grouped") ??
+    get("leadgen_grouped") ??
+    get("offsite_conversion.fb_pixel_lead");
+  return num(v);
 }
+
+// ---- Insights por campanha -------------------------------------------------
 
 export interface CampanhaInsight {
-  data: string; // YYYY-MM-DD
+  data: string;
   campaign_id: string;
   campaign_name: string | null;
   objetivo: string | null;
   bucket: Bucket;
+  produto: Produto;
   gasto: number;
   impressoes: number;
   alcance: number;
@@ -112,18 +85,12 @@ export interface CampanhaInsight {
   cpm: number;
   leads: number;
   custo_por_lead: number | null;
+  visitas_perfil: number;
+  custo_por_visita: number | null;
   moeda: string;
 }
 
-const num = (v?: string) => (v ? Number(v) : 0);
-
-/**
- * Insights por campanha, com linhas diárias (time_increment=1).
- * datePreset ex.: "today" | "yesterday" | "last_7d" | "last_14d" | "last_30d".
- */
-export async function fetchCampaignInsights(
-  datePreset = "last_14d"
-): Promise<CampanhaInsight[]> {
+export async function fetchCampaignInsights(datePreset = "last_30d"): Promise<CampanhaInsight[]> {
   const account = requireEnv("META_AD_ACCOUNT_ID");
   const fields = [
     "campaign_id",
@@ -138,12 +105,12 @@ export async function fetchCampaignInsights(
     "cpc",
     "cpm",
     "actions",
+    "instagram_profile_visits",
     "account_currency",
   ].join(",");
 
   const rows: CampanhaInsight[] = [];
   let after: string | undefined;
-
   do {
     const params: Record<string, string> = {
       level: "campaign",
@@ -153,23 +120,18 @@ export async function fetchCampaignInsights(
       limit: "200",
     };
     if (after) params.after = after;
-
-    const page = await graphGet<{
-      data: RawInsightRow[];
-      paging?: { cursors?: { after?: string }; next?: string };
-    }>(`${account}/insights`, params);
-
-    for (const r of page.data) {
-      const leads = (r.actions || [])
-        .filter((a) => LEAD_ACTION_TYPES.has(a.action_type))
-        .reduce((sum, a) => sum + num(a.value), 0);
+    const page = await graphGet(`${account}/insights`, params);
+    for (const r of page.data || []) {
       const gasto = num(r.spend);
+      const leads = contaLeads(r.actions || []);
+      const visitas = num(r.instagram_profile_visits);
       rows.push({
         data: r.date_start,
         campaign_id: r.campaign_id,
         campaign_name: r.campaign_name ?? null,
         objetivo: r.objective ?? null,
-        bucket: objetivoParaBucket(r.objective),
+        bucket: classificaBucket(r.objective, r.campaign_name),
+        produto: classificaProduto(r.campaign_name),
         gasto,
         impressoes: num(r.impressions),
         alcance: num(r.reach),
@@ -180,69 +142,98 @@ export async function fetchCampaignInsights(
         cpm: num(r.cpm),
         leads,
         custo_por_lead: leads > 0 ? Number((gasto / leads).toFixed(2)) : null,
+        visitas_perfil: visitas,
+        custo_por_visita: visitas > 0 ? Number((gasto / visitas).toFixed(2)) : null,
         moeda: r.account_currency || "BRL",
       });
     }
-
     after = page.paging?.next ? page.paging?.cursors?.after : undefined;
   } while (after);
 
   return rows;
 }
 
-// ---- Seguidores -----------------------------------------------------------
+// ---- Instagram orgânico ----------------------------------------------------
 
-export interface SeguidoresSnapshot {
-  plataforma: "instagram" | "facebook";
-  seguidores_total: number | null;
-  novos_seguidores: number | null;
-  alcance: number | null;
+// Janela [00:00, 24:00) UTC de uma data YYYY-MM-DD
+function dayRange(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const since = Math.floor(Date.UTC(y, m - 1, d) / 1000);
+  return { since, until: since + 86400 };
 }
 
-export async function fetchInstagramSeguidores(): Promise<SeguidoresSnapshot> {
-  const ig = requireEnv("META_IG_USER_ID");
-
-  const profile = await graphGet<{ followers_count?: number }>(ig, {
-    fields: "followers_count",
-  });
-
-  let novos: number | null = null;
-  let alcance: number | null = null;
-  try {
-    const insights = await graphGet<{
-      data: Array<{ name: string; values: Array<{ value: number }> }>;
-    }>(`${ig}/insights`, {
-      metric: "follower_count,reach",
-      period: "day",
-    });
-    for (const m of insights.data) {
-      const v = m.values?.[0]?.value ?? null;
-      if (m.name === "follower_count") novos = v;
-      if (m.name === "reach") alcance = v;
-    }
-  } catch {
-    // métricas de insights podem falhar (conta nova / <100 seguidores) — segue só com o total
+export function listarDias(n: number): string[] {
+  const dias: string[] = [];
+  const hoje = Date.now();
+  for (let i = n - 1; i >= 0; i--) {
+    dias.push(new Date(hoje - i * 86400_000).toISOString().slice(0, 10));
   }
+  return dias;
+}
 
+export interface IgMetricasDia {
+  data: string;
+  alcance: number | null;
+  views: number | null;
+  profile_views: number | null;
+  total_interactions: number | null;
+  accounts_engaged: number | null;
+}
+
+// Métricas total_value de um dia (1 chamada agrupando as métricas)
+export async function fetchIgMetricasDia(dateStr: string): Promise<IgMetricasDia> {
+  const ig = requireEnv("META_IG_USER_ID");
+  const { since, until } = dayRange(dateStr);
+  const r = await graphGet(`${ig}/insights`, {
+    metric: "reach,views,profile_views,total_interactions,accounts_engaged",
+    period: "day",
+    metric_type: "total_value",
+    since: String(since),
+    until: String(until),
+  });
+  const val: Record<string, number | null> = {};
+  for (const m of r.data || []) val[m.name] = m.total_value?.value ?? null;
   return {
-    plataforma: "instagram",
-    seguidores_total: profile.followers_count ?? null,
-    novos_seguidores: novos,
-    alcance,
+    data: dateStr,
+    alcance: val.reach ?? null,
+    views: val.views ?? null,
+    profile_views: val.profile_views ?? null,
+    total_interactions: val.total_interactions ?? null,
+    accounts_engaged: val.accounts_engaged ?? null,
   };
 }
 
-export async function fetchFacebookSeguidores(): Promise<SeguidoresSnapshot> {
-  const page = requireEnv("META_PAGE_ID");
-  const data = await graphGet<{
-    followers_count?: number;
-    fan_count?: number;
-  }>(page, { fields: "followers_count,fan_count" });
+// Série diária de NOVOS seguidores (follower_count). 1 chamada cobre até 30 dias.
+export async function fetchIgNovosSeguidores(dias: number): Promise<Array<{ data: string; novos_seguidores: number }>> {
+  const ig = requireEnv("META_IG_USER_ID");
+  const until = Math.floor(Date.now() / 1000);
+  const since = until - Math.min(dias, 30) * 86400;
+  try {
+    const r = await graphGet(`${ig}/insights`, {
+      metric: "follower_count",
+      period: "day",
+      since: String(since),
+      until: String(until),
+    });
+    const values = r.data?.[0]?.values || [];
+    return values.map((v: any) => ({
+      // end_time marca o fim do dia; atribui ao dia que terminou (-12h)
+      data: new Date(Date.parse(v.end_time) - 43_200_000).toISOString().slice(0, 10),
+      novos_seguidores: num(v.value),
+    }));
+  } catch {
+    return []; // conta <100 seguidores ou métrica indisponível
+  }
+}
 
-  return {
-    plataforma: "facebook",
-    seguidores_total: data.followers_count ?? data.fan_count ?? null,
-    novos_seguidores: null,
-    alcance: null,
-  };
+export async function fetchInstagramTotal(): Promise<number | null> {
+  const ig = requireEnv("META_IG_USER_ID");
+  const r = await graphGet(`${ig}`, { fields: "followers_count" });
+  return r.followers_count ?? null;
+}
+
+export async function fetchFacebookTotal(): Promise<number | null> {
+  const page = requireEnv("META_PAGE_ID");
+  const r = await graphGet(`${page}`, { fields: "followers_count,fan_count" });
+  return r.followers_count ?? r.fan_count ?? null;
 }
