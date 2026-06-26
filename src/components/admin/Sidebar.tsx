@@ -14,11 +14,13 @@ import {
   UserCheck,
   BarChart3,
   GraduationCap,
+  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
+  { label: "Marketing", href: "/admin/marketing", icon: TrendingUp },
   { label: "Empreendimentos", href: "/admin/empreendimentos", icon: Building2 },
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Leads", href: "/admin/leads", icon: Users },
