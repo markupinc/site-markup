@@ -49,13 +49,18 @@ interface SyncLog {
   status: string;
   executado_em: string;
 }
+interface KommoLead {
+  produto: string;
+  bucket: string;
+  created_at: string | null;
+}
 
 const RANGES = [
   { label: "Últimos 7 dias", value: 7 },
   { label: "Últimos 14 dias", value: 14 },
   { label: "Últimos 30 dias", value: 30 },
 ];
-const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", outro: "Outros" };
+const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", horizon: "Horizon", outro: "Outros" };
 
 export default function MarketingPage() {
   const supabase = createClient();
@@ -65,6 +70,7 @@ export default function MarketingPage() {
   const [insights, setInsights] = useState<Insight[]>([]);
   const [seguidores, setSeguidores] = useState<Seguidor[]>([]);
   const [syncLog, setSyncLog] = useState<SyncLog[]>([]);
+  const [kommoLeads, setKommoLeads] = useState<KommoLead[]>([]);
 
   useEffect(() => {
     async function load() {
@@ -72,13 +78,14 @@ export default function MarketingPage() {
       setErro(null);
       const since = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
       /* eslint-disable @typescript-eslint/no-explicit-any */
-      const [insRes, segRes, logRes] = await Promise.all([
+      const [insRes, segRes, logRes, kommoRes] = await Promise.all([
         (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).order("data"),
         (supabase.from("meta_seguidores") as any).select("*").gte("data", since).order("data"),
         (supabase.from("meta_sync_log") as any)
           .select("status, executado_em")
           .order("executado_em", { ascending: false })
           .limit(1),
+        (supabase.from("kommo_leads") as any).select("produto, bucket, created_at").gte("created_at", since),
       ]);
       /* eslint-enable @typescript-eslint/no-explicit-any */
       if (insRes.error) {
@@ -89,6 +96,7 @@ export default function MarketingPage() {
       setInsights((insRes.data as Insight[]) || []);
       setSeguidores((segRes.data as Seguidor[]) || []);
       setSyncLog((logRes.data as SyncLog[]) || []);
+      setKommoLeads(kommoRes.error ? [] : (kommoRes.data as KommoLead[]) || []);
       setLoading(false);
     }
     load();
@@ -187,6 +195,36 @@ export default function MarketingPage() {
   );
 
   const custoSeguidorBlended = ig.novosPeriodo > 0 ? social.gasto / ig.novosPeriodo : null;
+
+  // Vendas (Kommo) — funil + custo por lead cruzando com gasto Meta por produto
+  const vendas = useMemo(() => {
+    const buckets: Record<string, number> = { novo: 0, em_atendimento: 0, qualificado: 0, ganho: 0, perdido: 0 };
+    kommoLeads.forEach((l) => {
+      if (l.bucket in buckets) buckets[l.bucket] += 1;
+    });
+    const metaGasto: Record<string, number> = {};
+    insights.forEach((r) => {
+      metaGasto[r.produto] = (metaGasto[r.produto] || 0) + (+r.gasto || 0);
+    });
+    const porProduto = (["salsa", "up", "horizon"] as const).map((p) => {
+      const ls = kommoLeads.filter((l) => l.produto === p);
+      const leads = ls.length;
+      const qualif = ls.filter((l) => l.bucket === "qualificado" || l.bucket === "ganho").length;
+      const ganhos = ls.filter((l) => l.bucket === "ganho").length;
+      const gasto = metaGasto[p] || 0;
+      return {
+        produto: p,
+        leads,
+        qualif,
+        ganhos,
+        gasto,
+        custoLead: leads > 0 ? gasto / leads : null,
+        custoQualif: qualif > 0 ? gasto / qualif : null,
+      };
+    });
+    return { buckets, porProduto, total: kommoLeads.length };
+  }, [kommoLeads, insights]);
+
   const ultimaSync = syncLog[0];
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
   const m = t.moeda;
@@ -268,6 +306,39 @@ export default function MarketingPage() {
             </div>
           ))}
       </div>
+
+      {/* VENDAS (KOMMO) */}
+      <H>Vendas — funil (Kommo)</H>
+      {vendas.total === 0 && !loading && (
+        <Aviso tom="info">
+          Sem leads do Kommo no período. Rode <code>/api/kommo/sync?backfill=1</code> para popular.
+        </Aviso>
+      )}
+      <div style={grid}>
+        <Card label="Novos" value={int(vendas.buckets.novo)} loading={loading} />
+        <Card label="Em atendimento" value={int(vendas.buckets.em_atendimento)} loading={loading} />
+        <Card label="Qualificados" value={int(vendas.buckets.qualificado)} loading={loading} accent />
+        <Card label="Ganhos" value={int(vendas.buckets.ganho)} loading={loading} accent />
+        <Card label="Perdidos" value={int(vendas.buckets.perdido)} loading={loading} />
+      </div>
+      <Panel title="Custo por lead — Meta × Kommo (por produto)">
+        <Tabela
+          head={["Produto", "Gasto Meta", "Leads", "Custo / lead", "Qualificados", "Custo / lead qualif."]}
+          rows={vendas.porProduto.map((p) => [
+            PRODUTO_LABEL[p.produto] || p.produto,
+            brl(p.gasto, m),
+            int(p.leads),
+            p.custoLead != null ? brl(p.custoLead, m) : "—",
+            int(p.qualif),
+            p.custoQualif != null ? brl(p.custoQualif, m) : "—",
+          ])}
+        />
+      </Panel>
+      <p style={muted}>
+        Funil = distribuição atual dos leads criados no período (Salsa, Up, Horizon). Custo/lead = gasto Meta do
+        produto ÷ leads do funil (inclui todas as origens, não só Meta). Qualificado = etapa QUALIFICADO/Oferta/Negociação
+        ou venda ganha.
+      </p>
 
       {/* RECONHECIMENTO */}
       <H>Reconhecimento</H>

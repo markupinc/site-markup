@@ -36,7 +36,7 @@ const num = (v?: string | number | null) => (v == null ? 0 : Number(v));
 // ---- Classificação de campanha --------------------------------------------
 
 export type Bucket = "lead" | "reconhecimento" | "social" | "trafego" | "outro";
-export type Produto = "salsa" | "up" | "outro";
+export type Produto = "salsa" | "up" | "horizon" | "outro";
 
 export function classificaBucket(objective?: string, nome?: string): Bucket {
   if (/^post do instagram/i.test(nome || "")) return "social";
@@ -50,6 +50,7 @@ export function classificaBucket(objective?: string, nome?: string): Bucket {
 export function classificaProduto(nome?: string): Produto {
   const n = nome || "";
   if (/salsa/i.test(n)) return "salsa";
+  if (/horizon/i.test(n)) return "horizon";
   if (/\bup!?\b|up\s*studios/i.test(n)) return "up";
   return "outro";
 }
