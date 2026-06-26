@@ -86,14 +86,14 @@ export async function GET(request: NextRequest) {
     date_preset: "maximum",
     limit: "500",
   });
-  const actionTypesMax = [
+  const actionTypesMax = ([
     ...new Set(
       (campMax.json?.data || []).flatMap((c: any) =>
-        (c.actions || []).map((a: any) => a.action_type)
+        (c.actions || []).map((a: any) => String(a.action_type))
       )
     ),
-  ].sort();
-  const suspeitos = actionTypesMax.filter((t: string) =>
+  ] as string[]).sort();
+  const suspeitos = actionTypesMax.filter((t) =>
     /follow|profile|visit|ig_/i.test(t)
   );
 
