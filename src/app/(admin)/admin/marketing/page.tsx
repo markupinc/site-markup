@@ -10,9 +10,6 @@ import {
   Line,
   LineChart,
   BarChart,
-  FunnelChart,
-  Funnel,
-  LabelList,
   PieChart,
   Pie,
   Cell,
@@ -27,6 +24,9 @@ import {
 const BLUE = "#00aeef";
 const GOLD = "#b8945f";
 const PIE_COLORS = ["#00aeef", "#b8945f", "#4caf7d", "#7cc7ef"];
+const BAR_BLUE = "linear-gradient(90deg, rgba(0,174,239,0.45), #00aeef)";
+const BAR_GOLD = "linear-gradient(90deg, rgba(184,148,95,0.45), #b8945f)";
+const BAR_RED = "linear-gradient(90deg, rgba(193,91,82,0.45), #c15b52)";
 
 interface Insight {
   data: string;
@@ -72,6 +72,9 @@ const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", horiz
 export default function MarketingPage() {
   const supabase = createClient();
   const [range, setRange] = useState(30);
+  const [modo, setModo] = useState<"preset" | "custom">("preset");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [insights, setInsights] = useState<Insight[]>([]);
@@ -83,16 +86,37 @@ export default function MarketingPage() {
     async function load() {
       setLoading(true);
       setErro(null);
-      const since = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
+
+      // Janela: preset (N dias até hoje) ou personalizada (datas escolhidas)
+      const hoje = new Date().toISOString().slice(0, 10);
+      let since: string;
+      let until: string;
+      if (modo === "custom") {
+        if (!dataInicio || !dataFim) {
+          setLoading(false);
+          return;
+        }
+        since = dataInicio;
+        until = dataFim;
+      } else {
+        since = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
+        until = hoje;
+      }
+      // limite superior exclusivo p/ timestamps (inclui o dia inteiro de "until")
+      const untilExcl = new Date(new Date(`${until}T00:00:00Z`).getTime() + 864e5).toISOString().slice(0, 10);
+
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const [insRes, segRes, logRes, kommoRes] = await Promise.all([
-        (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).order("data"),
-        (supabase.from("meta_seguidores") as any).select("*").gte("data", since).order("data"),
+        (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).lte("data", until).order("data"),
+        (supabase.from("meta_seguidores") as any).select("*").gte("data", since).lte("data", until).order("data"),
         (supabase.from("meta_sync_log") as any)
           .select("status, executado_em")
           .order("executado_em", { ascending: false })
           .limit(1),
-        (supabase.from("kommo_leads") as any).select("produto, bucket, created_at").gte("created_at", since),
+        (supabase.from("kommo_leads") as any)
+          .select("produto, bucket, created_at")
+          .gte("created_at", since)
+          .lt("created_at", untilExcl),
       ]);
       /* eslint-enable @typescript-eslint/no-explicit-any */
       if (insRes.error) {
@@ -107,7 +131,8 @@ export default function MarketingPage() {
       setLoading(false);
     }
     load();
-  }, [range]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, modo, dataInicio, dataFim]);
 
   // ---- Agregações (lógica inalterada) ----
   const t = useMemo(() => {
@@ -217,12 +242,16 @@ export default function MarketingPage() {
       if (l.bucket in b) b[l.bucket] += 1;
     });
 
-    const funil = [
-      { etapa: "Novos", valor: b.novo, cor: "#7cc7ef" },
-      { etapa: "Tentativa de contato", valor: b.tentativa_contato, cor: "#4db4ec" },
-      { etapa: "Em atendimento", valor: b.em_atendimento, cor: "#00aeef" },
-      { etapa: "Qualificados", valor: b.qualificado, cor: "#b8945f" },
-      { etapa: "Ganhos", valor: b.ganho, cor: "#4caf7d" },
+    const total = kommoLeads.length;
+    const pc = (v: number) => (total > 0 ? `${Math.round((v / total) * 100)}%` : "0%");
+    const funilRows = [
+      { label: "Leads", valor: total, pct: "100%", cor: BAR_BLUE },
+      { label: "Novos", valor: b.novo, pct: pc(b.novo), cor: BAR_BLUE },
+      { label: "Tentativa de contato", valor: b.tentativa_contato, pct: pc(b.tentativa_contato), cor: BAR_BLUE },
+      { label: "Em atendimento", valor: b.em_atendimento, pct: pc(b.em_atendimento), cor: BAR_BLUE },
+      { label: "Qualificados", valor: b.qualificado, pct: pc(b.qualificado), cor: BAR_BLUE },
+      { label: "Ganhos", valor: b.ganho, pct: pc(b.ganho), cor: BAR_GOLD },
+      { label: "Perdidos", valor: b.perdido, pct: pc(b.perdido), cor: BAR_RED },
     ];
 
     const metaGasto: Record<string, number> = {};
@@ -246,14 +275,13 @@ export default function MarketingPage() {
       };
     });
 
-    const total = kommoLeads.length;
     const gastoTotal = porProduto.reduce((a, p) => a + p.gasto, 0);
     const leadsPorProduto = porProduto
       .filter((p) => p.leads > 0)
       .map((p) => ({ nome: PRODUTO_LABEL[p.produto], value: p.leads }));
     return {
       b,
-      funil,
+      funilRows,
       porProduto,
       total,
       ganhos: b.ganho,
@@ -267,6 +295,17 @@ export default function MarketingPage() {
   const ultimaSync = syncLog[0];
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
   const m = t.moeda;
+
+  const onRange = (v: string) => {
+    if (v === "custom") {
+      setModo("custom");
+      if (!dataInicio) setDataInicio(new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10));
+      if (!dataFim) setDataFim(new Date().toISOString().slice(0, 10));
+    } else {
+      setModo("preset");
+      setRange(+v);
+    }
+  };
 
   return (
     <div>
@@ -288,13 +327,35 @@ export default function MarketingPage() {
                 {rel(ultimaSync.executado_em)}
               </span>
             )}
-            <select value={range} onChange={(e) => setRange(+e.target.value)} style={select}>
+            <select value={modo === "custom" ? "custom" : String(range)} onChange={(e) => onRange(e.target.value)} style={select}>
               {RANGES.map((r) => (
                 <option key={r.value} value={r.value} style={{ background: "#0c1218" }}>
                   {r.label}
                 </option>
               ))}
+              <option value="custom" style={{ background: "#0c1218" }}>
+                Personalizado…
+              </option>
             </select>
+            {modo === "custom" && (
+              <>
+                <input
+                  type="date"
+                  value={dataInicio}
+                  max={dataFim || undefined}
+                  onChange={(e) => setDataInicio(e.target.value)}
+                  style={select}
+                />
+                <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 12 }}>até</span>
+                <input
+                  type="date"
+                  value={dataFim}
+                  min={dataInicio || undefined}
+                  onChange={(e) => setDataFim(e.target.value)}
+                  style={select}
+                />
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -367,22 +428,7 @@ export default function MarketingPage() {
 
       <div style={twoCol}>
         <Panel title="Funil de vendas">
-          {vendas.total === 0 ? (
-            <Vazio loading={loading} />
-          ) : (
-            <ResponsiveContainer width="100%" height={290}>
-              <FunnelChart>
-                <Tooltip {...ttip} />
-                <Funnel dataKey="valor" data={vendas.funil} isAnimationActive>
-                  <LabelList position="right" dataKey="etapa" fill="#fff" stroke="none" fontSize={12} />
-                  <LabelList position="left" dataKey="valor" fill="rgba(255,255,255,0.65)" stroke="none" fontSize={12} />
-                  {vendas.funil.map((e, i) => (
-                    <Cell key={i} fill={e.cor} />
-                  ))}
-                </Funnel>
-              </FunnelChart>
-            </ResponsiveContainer>
-          )}
+          {vendas.total === 0 ? <Vazio loading={loading} /> : <Funil rows={vendas.funilRows} />}
         </Panel>
 
         <Panel title="Leads por produto">
@@ -642,6 +688,45 @@ function Tabela({ head, rows }: { head: string[]; rows: (string | number)[][] })
 }
 function Vazio({ loading }: { loading: boolean }) {
   return <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>{loading ? "Carregando..." : "Sem dados no período."}</p>;
+}
+
+function Funil({ rows }: { rows: Array<{ label: string; valor: number; pct: string; cor: string }> }) {
+  const max = Math.max(...rows.map((r) => r.valor), 1);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10, paddingTop: 4 }}>
+      {rows.map((r, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div
+            style={{
+              width: 124,
+              flexShrink: 0,
+              fontSize: 12.5,
+              color: "rgba(255,255,255,0.8)",
+              fontWeight: 500,
+              textAlign: "right",
+            }}
+          >
+            {r.label}
+          </div>
+          <div style={{ flex: 1, height: 26, background: "rgba(255,255,255,0.04)", borderRadius: 8, overflow: "hidden" }}>
+            <div
+              style={{
+                width: `${r.valor > 0 ? Math.max((r.valor / max) * 100, 5) : 0}%`,
+                height: "100%",
+                background: r.cor,
+                borderRadius: 8,
+                transition: "width .4s ease",
+              }}
+            />
+          </div>
+          <div style={{ width: 60, flexShrink: 0, textAlign: "right" }}>
+            <div style={{ fontFamily: "var(--font-playfair)", fontSize: 18, color: "#fff", lineHeight: 1 }}>{int(r.valor)}</div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>{r.pct}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 // ---- Helpers ----
