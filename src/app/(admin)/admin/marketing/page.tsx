@@ -10,6 +10,12 @@ import {
   Line,
   LineChart,
   BarChart,
+  FunnelChart,
+  Funnel,
+  LabelList,
+  PieChart,
+  Pie,
+  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -20,6 +26,7 @@ import {
 // ---- Identidade visual Markup ----
 const BLUE = "#00aeef";
 const GOLD = "#b8945f";
+const PIE_COLORS = ["#00aeef", "#b8945f", "#4caf7d", "#7cc7ef"];
 
 interface Insight {
   data: string;
@@ -198,10 +205,26 @@ export default function MarketingPage() {
 
   // Vendas (Kommo) — funil + custo por lead cruzando com gasto Meta por produto
   const vendas = useMemo(() => {
-    const buckets: Record<string, number> = { novo: 0, em_atendimento: 0, qualificado: 0, ganho: 0, perdido: 0 };
+    const b: Record<string, number> = {
+      novo: 0,
+      tentativa_contato: 0,
+      em_atendimento: 0,
+      qualificado: 0,
+      ganho: 0,
+      perdido: 0,
+    };
     kommoLeads.forEach((l) => {
-      if (l.bucket in buckets) buckets[l.bucket] += 1;
+      if (l.bucket in b) b[l.bucket] += 1;
     });
+
+    const funil = [
+      { etapa: "Novos", valor: b.novo, cor: "#7cc7ef" },
+      { etapa: "Tentativa de contato", valor: b.tentativa_contato, cor: "#4db4ec" },
+      { etapa: "Em atendimento", valor: b.em_atendimento, cor: "#00aeef" },
+      { etapa: "Qualificados", valor: b.qualificado, cor: "#b8945f" },
+      { etapa: "Ganhos", valor: b.ganho, cor: "#4caf7d" },
+    ];
+
     const metaGasto: Record<string, number> = {};
     insights.forEach((r) => {
       metaGasto[r.produto] = (metaGasto[r.produto] || 0) + (+r.gasto || 0);
@@ -222,7 +245,23 @@ export default function MarketingPage() {
         custoQualif: qualif > 0 ? gasto / qualif : null,
       };
     });
-    return { buckets, porProduto, total: kommoLeads.length };
+
+    const total = kommoLeads.length;
+    const gastoTotal = porProduto.reduce((a, p) => a + p.gasto, 0);
+    const leadsPorProduto = porProduto
+      .filter((p) => p.leads > 0)
+      .map((p) => ({ nome: PRODUTO_LABEL[p.produto], value: p.leads }));
+    return {
+      b,
+      funil,
+      porProduto,
+      total,
+      ganhos: b.ganho,
+      perdidos: b.perdido,
+      taxaConv: total > 0 ? (b.ganho / total) * 100 : 0,
+      custoMedio: total > 0 ? gastoTotal / total : null,
+      leadsPorProduto,
+    };
   }, [kommoLeads, insights]);
 
   const ultimaSync = syncLog[0];
@@ -315,13 +354,90 @@ export default function MarketingPage() {
         </Aviso>
       )}
       <div style={grid}>
-        <Card label="Novos" value={int(vendas.buckets.novo)} loading={loading} />
-        <Card label="Em atendimento" value={int(vendas.buckets.em_atendimento)} loading={loading} />
-        <Card label="Qualificados" value={int(vendas.buckets.qualificado)} loading={loading} accent />
-        <Card label="Ganhos" value={int(vendas.buckets.ganho)} loading={loading} accent />
-        <Card label="Perdidos" value={int(vendas.buckets.perdido)} loading={loading} />
+        <Card label="Total de leads" value={int(vendas.total)} loading={loading} accent />
+        <Card label="Ganhos" value={int(vendas.ganhos)} loading={loading} accent />
+        <Card label="Perdidos" value={int(vendas.perdidos)} loading={loading} />
+        <Card label="Taxa de conversão" value={`${vendas.taxaConv.toFixed(1)}%`} loading={loading} accent />
+        <Card
+          label="Custo médio / lead"
+          value={vendas.custoMedio != null ? brl(vendas.custoMedio, m) : "—"}
+          loading={loading}
+        />
       </div>
-      <Panel title="Custo por lead — Meta × Kommo (por produto)">
+
+      <div style={twoCol}>
+        <Panel title="Funil de vendas">
+          {vendas.total === 0 ? (
+            <Vazio loading={loading} />
+          ) : (
+            <ResponsiveContainer width="100%" height={290}>
+              <FunnelChart>
+                <Tooltip {...ttip} />
+                <Funnel dataKey="valor" data={vendas.funil} isAnimationActive>
+                  <LabelList position="right" dataKey="etapa" fill="#fff" stroke="none" fontSize={12} />
+                  <LabelList position="left" dataKey="valor" fill="rgba(255,255,255,0.65)" stroke="none" fontSize={12} />
+                  {vendas.funil.map((e, i) => (
+                    <Cell key={i} fill={e.cor} />
+                  ))}
+                </Funnel>
+              </FunnelChart>
+            </ResponsiveContainer>
+          )}
+        </Panel>
+
+        <Panel title="Leads por produto">
+          {vendas.leadsPorProduto.length === 0 ? (
+            <Vazio loading={loading} />
+          ) : (
+            <ResponsiveContainer width="100%" height={290}>
+              <PieChart>
+                <Pie
+                  data={vendas.leadsPorProduto}
+                  dataKey="value"
+                  nameKey="nome"
+                  innerRadius={62}
+                  outerRadius={98}
+                  paddingAngle={3}
+                  stroke="none"
+                >
+                  {vendas.leadsPorProduto.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip {...ttip} />
+                <Legend wrapperStyle={legend} />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
+        </Panel>
+      </div>
+
+      <Panel title="Custo por lead por produto (Meta × Kommo)">
+        {vendas.porProduto.every((p) => p.leads === 0) ? (
+          <Vazio loading={loading} />
+        ) : (
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart
+              data={vendas.porProduto.map((p) => ({
+                nome: PRODUTO_LABEL[p.produto],
+                custoLead: p.custoLead ?? 0,
+                custoQualif: p.custoQualif ?? 0,
+              }))}
+              margin={chartM}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="nome" {...axis} />
+              <YAxis {...axis} />
+              <Tooltip {...ttip} formatter={(v, n) => [brl(Number(v), m), String(n)] as [string, string]} />
+              <Legend wrapperStyle={legend} />
+              <Bar dataKey="custoLead" name="Custo / lead" fill={BLUE} radius={[5, 5, 0, 0]} maxBarSize={50} />
+              <Bar dataKey="custoQualif" name="Custo / lead qualificado" fill={GOLD} radius={[5, 5, 0, 0]} maxBarSize={50} />
+            </BarChart>
+          </ResponsiveContainer>
+        )}
+      </Panel>
+
+      <Panel title="Detalhamento por produto">
         <Tabela
           head={["Produto", "Gasto Meta", "Leads", "Custo / lead", "Qualificados", "Custo / lead qualif."]}
           rows={vendas.porProduto.map((p) => [
@@ -335,9 +451,8 @@ export default function MarketingPage() {
         />
       </Panel>
       <p style={muted}>
-        Funil = distribuição atual dos leads criados no período (Salsa, Up, Horizon). Custo/lead = gasto Meta do
-        produto ÷ leads do funil (inclui todas as origens, não só Meta). Qualificado = etapa QUALIFICADO/Oferta/Negociação
-        ou venda ganha.
+        Funil = distribuição atual por etapa dos leads criados no período. &quot;Em atendimento&quot; = Trabalhando lead;
+        &quot;Tentativa de contato&quot; = follow-ups. Custo/lead = gasto Meta do produto ÷ leads do funil (todas as origens).
       </p>
 
       {/* RECONHECIMENTO */}

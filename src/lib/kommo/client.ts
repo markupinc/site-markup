@@ -14,7 +14,13 @@ const PRODUTO: Record<number, string> = {
 };
 export const produtoFromPipeline = (pid: number) => PRODUTO[pid] || "outro";
 
-export type Bucket = "novo" | "em_atendimento" | "qualificado" | "ganho" | "perdido";
+export type Bucket =
+  | "novo"
+  | "tentativa_contato"
+  | "em_atendimento"
+  | "qualificado"
+  | "ganho"
+  | "perdido";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 async function kget(path: string): Promise<any> {
@@ -34,10 +40,14 @@ async function kget(path: string): Promise<any> {
 
 // Bucket padrão a partir do status (regra automática; o usuário pode sobrescrever no banco)
 export function bucketDefault(statusId: number, nome: string, tipo: number): Bucket {
+  const n = nome || "";
   if (statusId === 142) return "ganho";
   if (statusId === 143) return "perdido";
   if (tipo === 1) return "novo";
-  if (/qualificad|oferta feita|negocia/i.test(nome || "")) return "qualificado";
+  if (/qualificad|oferta feita|negocia/i.test(n)) return "qualificado";
+  if (/trabalhando/i.test(n)) return "em_atendimento";
+  // follow-ups: "1ª/2ª... tentativa de contato" e "2º/3º... contato"
+  if (/tentativa de contato|\d+\s*[ºªo]\s*contato/i.test(n)) return "tentativa_contato";
   return "em_atendimento";
 }
 

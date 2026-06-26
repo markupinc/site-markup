@@ -21,6 +21,7 @@ async function handle(request: NextRequest) {
   }
 
   const backfill = request.nextUrl.searchParams.get("backfill") === "1";
+  const remap = request.nextUrl.searchParams.get("remap") === "1";
   const supabase = createAdminClient();
   const agora = new Date().toISOString();
   const resultado: Record<string, unknown> = {};
@@ -32,7 +33,8 @@ async function handle(request: NextRequest) {
     const stages = await fetchStages();
     const stageRows = stages.map((s) => ({
       ...s,
-      bucket: existingBucket.get(s.status_id) || s.bucket,
+      // remap=1 reaplica os defaults novos; senão preserva o que o admin já editou
+      bucket: remap ? s.bucket : existingBucket.get(s.status_id) || s.bucket,
       atualizado_em: agora,
     }));
     await (supabase.from("kommo_pipeline_stages") as any).upsert(stageRows, { onConflict: "status_id" });
