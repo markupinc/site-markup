@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   ResponsiveContainer,
   ComposedChart,
+  Area,
   Bar,
   Line,
   LineChart,
@@ -15,6 +16,10 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+
+// ---- Identidade visual Markup ----
+const BLUE = "#00aeef";
+const GOLD = "#b8945f";
 
 interface Insight {
   data: string;
@@ -50,13 +55,6 @@ const RANGES = [
   { label: "Últimos 14 dias", value: 14 },
   { label: "Últimos 30 dias", value: 30 },
 ];
-const BUCKET_LABEL: Record<string, string> = {
-  lead: "Geração de leads",
-  reconhecimento: "Reconhecimento",
-  social: "Post do Instagram",
-  trafego: "Tráfego",
-  outro: "Outros",
-};
 const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", outro: "Outros" };
 
 export default function MarketingPage() {
@@ -96,7 +94,7 @@ export default function MarketingPage() {
     load();
   }, [range]);
 
-  // ---- Agregações ----
+  // ---- Agregações (lógica inalterada) ----
   const t = useMemo(() => {
     const s = { gasto: 0, imp: 0, clq: 0, alc: 0, leads: 0 };
     insights.forEach((r) => {
@@ -126,7 +124,6 @@ export default function MarketingPage() {
     const rows = insights.filter((r) => r.bucket === "social");
     const gasto = rows.reduce((a, r) => a + (+r.gasto || 0), 0);
     const visitas = rows.reduce((a, r) => a + (+r.visitas_perfil || 0), 0);
-    // agrega por campanha
     const m = new Map<string, { nome: string | null; gasto: number; visitas: number }>();
     rows.forEach((r) => {
       const o = m.get(r.campaign_id) || { nome: r.campaign_name, gasto: 0, visitas: 0 };
@@ -160,7 +157,6 @@ export default function MarketingPage() {
     return [...m.values()].sort((a, b) => a.data.localeCompare(b.data)).map((d) => ({ ...d, label: dia(d.data) }));
   }, [insights]);
 
-  // Instagram orgânico
   const ig = useMemo(() => {
     const rows = seguidores.filter((s) => s.plataforma === "instagram").sort((a, b) => a.data.localeCompare(b.data));
     let acc = 0;
@@ -190,45 +186,39 @@ export default function MarketingPage() {
     [seguidores]
   );
 
-  // custo por seguidor (blended, estimativa): gasto social ÷ novos seguidores no período
   const custoSeguidorBlended = ig.novosPeriodo > 0 ? social.gasto / ig.novosPeriodo : null;
-
   const ultimaSync = syncLog[0];
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
   const m = t.moeda;
 
   return (
     <div>
-      <div style={headerRow}>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 300, color: "#fff", marginBottom: 8 }}>Marketing</h1>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
-            Meta Ads + Instagram. Dados em cache, atualizados a cada sincronização.
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          {ultimaSync && (
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>
-              <span
-                style={{
-                  display: "inline-block",
-                  width: 7,
-                  height: 7,
-                  borderRadius: "50%",
-                  background: ultimaSync.status === "ok" ? "#4caf7d" : "#d9737a",
-                  marginRight: 6,
-                }}
-              />
-              sync {rel(ultimaSync.executado_em)}
-            </span>
-          )}
-          <select value={range} onChange={(e) => setRange(+e.target.value)} style={{ ...input, colorScheme: "dark" }}>
-            {RANGES.map((r) => (
-              <option key={r.value} value={r.value} style={{ background: "#1a1a1a" }}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+      {/* HERO */}
+      <div style={hero}>
+        <div style={heroStripes} />
+        <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+          <div>
+            <span style={kicker}>Meta Ads · Instagram</span>
+            <h1 style={heroTitle}>Marketing</h1>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", margin: "6px 0 0", maxWidth: 480 }}>
+              Desempenho de campanhas e crescimento social, em tempo quase real.
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            {ultimaSync && (
+              <span style={syncPill}>
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: ultimaSync.status === "ok" ? BLUE : "#d9737a", boxShadow: `0 0 8px ${ultimaSync.status === "ok" ? BLUE : "#d9737a"}` }} />
+                {rel(ultimaSync.executado_em)}
+              </span>
+            )}
+            <select value={range} onChange={(e) => setRange(+e.target.value)} style={select}>
+              {RANGES.map((r) => (
+                <option key={r.value} value={r.value} style={{ background: "#0c1218" }}>
+                  {r.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -244,176 +234,156 @@ export default function MarketingPage() {
         </Aviso>
       )}
 
-      {/* Totais gerais */}
+      {/* VISÃO GERAL */}
       <H>Visão geral</H>
       <div style={grid}>
-        <Card label={`Investimento (${m})`} value={brl(t.gasto, m)} loading={loading} />
+        <Card label={`Investimento`} value={brl(t.gasto, m)} loading={loading} accent />
         <Card label="Impressões" value={int(t.imp)} loading={loading} />
         <Card label="Cliques" value={int(t.clq)} loading={loading} />
         <Card label="CTR médio" value={`${t.ctr.toFixed(2)}%`} loading={loading} />
         <Card label="Leads (Meta)" value={int(t.leads)} loading={loading} accent />
       </div>
 
-      {/* Leads */}
+      {/* LEADS */}
       <H>Geração de leads</H>
       <div style={grid}>
-        <Card label="Leads (campanhas de lead)" value={int(lead.leads)} loading={loading} accent />
+        <Card label="Leads" sub="campanhas de lead" value={int(lead.leads)} loading={loading} accent />
         <Card label="Investimento em lead" value={brl(lead.gasto, m)} loading={loading} />
-        <Card
-          label="Custo por lead"
-          sub="só campanhas de lead"
-          value={lead.cpl != null ? brl(lead.cpl, m) : "—"}
-          loading={loading}
-          accent
-        />
+        <Card label="Custo por lead" sub="só campanhas de lead" value={lead.cpl != null ? brl(lead.cpl, m) : "—"} loading={loading} accent />
       </div>
-      <div style={{ ...grid, marginTop: 8 }}>
+      <div style={{ ...grid, marginTop: 14 }}>
         {lead.porProduto
           .filter((p) => p.produto !== "outro" || p.leads > 0)
           .map((p) => (
-            <div key={p.produto} style={cardBox(true)}>
-              <p style={cardLabel}>{PRODUTO_LABEL[p.produto]} — leads</p>
-              <p style={{ fontSize: 26, color: "#b8945f", fontWeight: 300, margin: "0 0 8px" }}>{int(p.leads)}</p>
-              <div style={{ display: "flex", gap: 20, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
-                <span>Inv.: {brl(p.gasto, m)}</span>
-                <span>CPL: {p.cpl != null ? brl(p.cpl, m) : "—"}</span>
+            <div key={p.produto} style={produtoCard}>
+              <div style={produtoTag}>{PRODUTO_LABEL[p.produto]}</div>
+              <p style={{ fontFamily: "var(--font-playfair)", fontSize: 32, color: "#fff", fontWeight: 400, margin: "10px 0 2px" }}>
+                {int(p.leads)}
+              </p>
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", margin: "0 0 12px" }}>leads</p>
+              <div style={{ display: "flex", gap: 18, fontSize: 12, color: "rgba(255,255,255,0.6)" }}>
+                <span>Inv. <b style={{ color: "#fff", fontWeight: 500 }}>{brl(p.gasto, m)}</b></span>
+                <span>CPL <b style={{ color: GOLD, fontWeight: 500 }}>{p.cpl != null ? brl(p.cpl, m) : "—"}</b></span>
               </div>
             </div>
           ))}
       </div>
 
-      {/* Reconhecimento */}
+      {/* RECONHECIMENTO */}
       <H>Reconhecimento</H>
       <div style={grid}>
         <Card label="Investimento" value={brl(reconh.gasto, m)} loading={loading} />
-        <Card label="Alcance (soma diária)" value={int(reconh.alc)} loading={loading} />
+        <Card label="Alcance" sub="soma diária" value={int(reconh.alc)} loading={loading} />
       </div>
 
-      {/* Posts do Instagram */}
-      <H>Posts do Instagram (impulsionados)</H>
+      {/* POSTS DO INSTAGRAM */}
+      <H>Posts do Instagram</H>
       <div style={grid}>
         <Card label="Investimento" value={brl(social.gasto, m)} loading={loading} />
         <Card label="Visitas ao perfil" value={int(social.visitas)} loading={loading} accent />
-        <Card
-          label="Custo por visita ao perfil"
-          value={social.custoVisita != null ? brl(social.custoVisita, m) : "—"}
-          loading={loading}
-          accent
-        />
-        <Card
-          label="Custo por seguidor"
-          sub="estimado (gasto ÷ seguidores no período)"
-          value={custoSeguidorBlended != null ? brl(custoSeguidorBlended, m) : "—"}
-          loading={loading}
-        />
+        <Card label="Custo / visita" value={social.custoVisita != null ? brl(social.custoVisita, m) : "—"} loading={loading} accent />
+        <Card label="Custo / seguidor" sub="estimado" value={custoSeguidorBlended != null ? brl(custoSeguidorBlended, m) : "—"} loading={loading} />
       </div>
-      <Section title="Custo por visita ao perfil — por post">
+      <Panel title="Custo por visita ao perfil — por post">
         {social.campanhas.length === 0 ? (
           <Vazio loading={loading} />
         ) : (
           <Tabela
-            head={["Post", "Investimento", "Visitas perfil", "Custo/visita"]}
-            rows={social.campanhas.map((c) => [
-              c.nome || "—",
-              brl(c.gasto, m),
-              int(c.visitas),
-              c.custoVisita != null ? brl(c.custoVisita, m) : "—",
-            ])}
+            head={["Post", "Investimento", "Visitas", "Custo/visita"]}
+            rows={social.campanhas.map((c) => [c.nome || "—", brl(c.gasto, m), int(c.visitas), c.custoVisita != null ? brl(c.custoVisita, m) : "—"])}
           />
         )}
-      </Section>
+      </Panel>
       <p style={muted}>
-        ⚠️ O Meta não expõe &quot;novos seguidores&quot; por campanha nesta conta — o custo por seguidor acima é uma
-        estimativa que mistura orgânico + pago. O custo por visita ao perfil é real (campo dedicado da API).
+        ⚠️ O Meta não expõe &quot;novos seguidores&quot; por campanha nesta conta — o custo por seguidor é uma estimativa
+        (mistura orgânico + pago). O custo por visita ao perfil é real (campo dedicado da API).
       </p>
 
-      {/* Gráfico investimento × leads */}
-      <Section title="Investimento e leads por dia">
+      {/* GRÁFICO INVESTIMENTO x LEADS */}
+      <Panel title="Investimento e leads por dia">
         {porDia.length === 0 ? (
           <Vazio loading={loading} />
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
+          <ResponsiveContainer width="100%" height={290}>
             <ComposedChart data={porDia} margin={chartM}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-              <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-              <YAxis yAxisId="l" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-              <YAxis yAxisId="r" orientation="right" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-              <Tooltip
-                contentStyle={tip}
-                formatter={(v, n) =>
-                  [n === "Investimento" ? brl(Number(v), m) : int(Number(v)), String(n)] as [string, string]
-                }
-              />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar yAxisId="l" dataKey="gasto" name="Investimento" fill="#b8945f" radius={[4, 4, 0, 0]} />
-              <Line yAxisId="r" dataKey="leads" name="Leads" stroke="#5b9bd5" strokeWidth={2} dot={false} />
+              <defs>{grad("gGasto", BLUE)}</defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+              <XAxis dataKey="label" {...axis} />
+              <YAxis yAxisId="l" {...axis} />
+              <YAxis yAxisId="r" orientation="right" {...axis} />
+              <Tooltip {...ttip} formatter={(v, n) => [n === "Investimento" ? brl(Number(v), m) : int(Number(v)), String(n)] as [string, string]} />
+              <Legend wrapperStyle={legend} />
+              <Bar yAxisId="l" dataKey="gasto" name="Investimento" fill="url(#gGasto)" radius={[5, 5, 0, 0]} maxBarSize={26} />
+              <Line yAxisId="r" dataKey="leads" name="Leads" stroke={GOLD} strokeWidth={2.5} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         )}
-      </Section>
+      </Panel>
 
-      {/* Instagram orgânico */}
-      <H>Instagram (orgânico)</H>
+      {/* INSTAGRAM ORGÂNICO */}
+      <H>Instagram</H>
       <div style={grid}>
-        <Card label="Seguidores (total)" value={ig.totalAtual != null ? int(ig.totalAtual) : "—"} loading={loading} accent />
-        <Card label="Novos seguidores (período)" value={int(ig.novosPeriodo)} loading={loading} accent />
-        <Card label="Visualizações (período)" value={int(ig.viewsPeriodo)} loading={loading} />
-        <Card label="Visitas ao perfil (período)" value={int(ig.visitasPeriodo)} loading={loading} />
-        <Card label="Seguidores (Facebook)" value={fbAtual != null ? int(fbAtual) : "—"} loading={loading} />
+        <Card label="Seguidores" value={ig.totalAtual != null ? int(ig.totalAtual) : "—"} loading={loading} accent />
+        <Card label="Novos seguidores" sub="no período" value={int(ig.novosPeriodo)} loading={loading} accent />
+        <Card label="Visualizações" sub="no período" value={int(ig.viewsPeriodo)} loading={loading} />
+        <Card label="Visitas ao perfil" sub="no período" value={int(ig.visitasPeriodo)} loading={loading} />
+        <Card label="Facebook" sub="seguidores" value={fbAtual != null ? int(fbAtual) : "—"} loading={loading} />
       </div>
 
       <div style={twoCol}>
-        <Section title="Evolução de seguidores no período">
+        <Panel title="Evolução de seguidores">
           {ig.serie.length === 0 ? (
             <Vazio loading={loading} />
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={250}>
               <ComposedChart data={ig.serie} margin={chartM}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <Tooltip contentStyle={tip} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey="novos" name="Novos/dia" fill="#5b9bd5" radius={[4, 4, 0, 0]} />
-                <Line dataKey="acumulado" name="Acumulado" stroke="#b8945f" strokeWidth={2} dot={false} />
+                <defs>{gradArea("gAcc", BLUE)}</defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="label" {...axis} />
+                <YAxis {...axis} />
+                <Tooltip {...ttip} />
+                <Legend wrapperStyle={legend} />
+                <Area dataKey="acumulado" name="Acumulado" stroke={BLUE} strokeWidth={2.5} fill="url(#gAcc)" />
+                <Bar dataKey="novos" name="Novos/dia" fill={GOLD} radius={[4, 4, 0, 0]} maxBarSize={20} />
               </ComposedChart>
             </ResponsiveContainer>
           )}
-        </Section>
+        </Panel>
 
-        <Section title="Alcance e visualizações por dia">
+        <Panel title="Alcance e visualizações por dia">
           {ig.serie.length === 0 ? (
             <Vazio loading={loading} />
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={250}>
               <LineChart data={ig.serie} margin={chartM}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <Tooltip contentStyle={tip} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Line dataKey="alcance" name="Alcance" stroke="#b8945f" strokeWidth={2} dot={false} />
-                <Line dataKey="views" name="Visualizações" stroke="#5b9bd5" strokeWidth={2} dot={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="label" {...axis} />
+                <YAxis {...axis} />
+                <Tooltip {...ttip} />
+                <Legend wrapperStyle={legend} />
+                <Line dataKey="alcance" name="Alcance" stroke={BLUE} strokeWidth={2.5} dot={false} />
+                <Line dataKey="views" name="Visualizações" stroke={GOLD} strokeWidth={2.5} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           )}
-        </Section>
+        </Panel>
 
-        <Section title="Visitas ao perfil por dia">
+        <Panel title="Visitas ao perfil por dia">
           {ig.serie.length === 0 ? (
             <Vazio loading={loading} />
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
+            <ResponsiveContainer width="100%" height={250}>
               <BarChart data={ig.serie} margin={chartM}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="label" stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <YAxis stroke="rgba(255,255,255,0.3)" fontSize={11} />
-                <Tooltip contentStyle={tip} />
-                <Bar dataKey="profile_views" name="Visitas ao perfil" fill="#b8945f" radius={[4, 4, 0, 0]} />
+                <defs>{grad("gVis", BLUE)}</defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis dataKey="label" {...axis} />
+                <YAxis {...axis} />
+                <Tooltip {...ttip} />
+                <Bar dataKey="profile_views" name="Visitas ao perfil" fill="url(#gVis)" radius={[4, 4, 0, 0]} maxBarSize={26} />
               </BarChart>
             </ResponsiveContainer>
           )}
-        </Section>
+        </Panel>
       </div>
 
       <p style={muted}>Números de hoje ainda consolidam na Meta (~15–30 min); dias fechados são definitivos.</p>
@@ -422,54 +392,38 @@ export default function MarketingPage() {
 }
 
 // ---- Componentes ----
-function Card({
-  label,
-  sub,
-  value,
-  loading,
-  accent,
-}: {
-  label: string;
-  sub?: string;
-  value: string;
-  loading: boolean;
-  accent?: boolean;
-}) {
+function Card({ label, sub, value, loading, accent }: { label: string; sub?: string; value: string; loading: boolean; accent?: boolean }) {
   return (
     <div style={cardBox(accent)}>
+      {accent && <div style={cardAccentBar} />}
       <p style={cardLabel}>{label}</p>
-      {sub && <p style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", margin: "-6px 0 6px" }}>{sub}</p>}
-      <p style={{ fontSize: 26, color: accent ? "#b8945f" : "#fff", fontWeight: 300, margin: 0 }}>
+      {sub && <p style={cardSub}>{sub}</p>}
+      <p style={{ fontFamily: "var(--font-playfair)", fontSize: 30, color: accent ? BLUE : "#fff", fontWeight: 400, margin: "8px 0 0", lineHeight: 1 }}>
         {loading ? "—" : value}
       </p>
     </div>
   );
 }
 function H({ children }: { children: React.ReactNode }) {
-  return <h2 style={{ fontSize: 15, fontWeight: 500, color: "#fff", margin: "32px 0 12px" }}>{children}</h2>;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "34px 0 14px" }}>
+      <span style={{ width: 3, height: 18, background: BLUE, borderRadius: 2 }} />
+      <h2 style={{ fontFamily: "var(--font-playfair)", fontSize: 19, fontWeight: 500, color: "#fff", margin: 0 }}>{children}</h2>
+    </div>
+  );
 }
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ ...cardBox(false), marginTop: 16 }}>
-      <h3 style={{ fontSize: 14, fontWeight: 500, color: "#fff", marginBottom: 16 }}>{title}</h3>
+      <h3 style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.8)", marginBottom: 18, textTransform: "uppercase", letterSpacing: "0.5px" }}>{title}</h3>
       {children}
     </div>
   );
 }
 function Aviso({ tom, children }: { tom: "erro" | "info"; children: React.ReactNode }) {
-  const c = tom === "erro" ? "217,115,122" : "184,148,95";
+  const c = tom === "erro" ? "217,115,122" : "0,174,239";
   return (
-    <div
-      style={{
-        background: `rgba(${c},0.08)`,
-        border: `1px solid rgba(${c},0.25)`,
-        borderRadius: 8,
-        padding: "12px 16px",
-        margin: "0 0 24px",
-        fontSize: 12,
-        color: "rgba(255,255,255,0.75)",
-      }}
-    >
+    <div style={{ background: `rgba(${c},0.08)`, border: `1px solid rgba(${c},0.25)`, borderRadius: 10, padding: "12px 16px", margin: "0 0 24px", fontSize: 12, color: "rgba(255,255,255,0.75)" }}>
       {children}
     </div>
   );
@@ -477,33 +431,19 @@ function Aviso({ tom, children }: { tom: "erro" | "info"; children: React.ReactN
 function Tabela({ head, rows }: { head: string[]; rows: (string | number)[][] }) {
   return (
     <div style={{ overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5 }}>
         <thead>
-          <tr style={{ color: "rgba(255,255,255,0.5)", textAlign: "left" }}>
+          <tr style={{ color: "rgba(255,255,255,0.4)", textAlign: "left" }}>
             {head.map((h, i) => (
-              <th key={i} style={{ padding: 8, fontWeight: 500, textAlign: i === 0 ? "left" : "right" }}>
-                {h}
-              </th>
+              <th key={i} style={{ padding: "8px 10px", fontWeight: 500, textAlign: i === 0 ? "left" : "right", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.4px" }}>{h}</th>
             ))}
           </tr>
         </thead>
         <tbody>
           {rows.map((r, i) => (
-            <tr key={i} style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+            <tr key={i} style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
               {r.map((c, j) => (
-                <td
-                  key={j}
-                  style={{
-                    padding: 8,
-                    color: j === 0 ? "#fff" : "rgba(255,255,255,0.85)",
-                    textAlign: j === 0 ? "left" : "right",
-                    maxWidth: j === 0 ? 280 : undefined,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                  title={String(c)}
-                >
+                <td key={j} style={{ padding: "11px 10px", color: j === 0 ? "#fff" : j === r.length - 1 ? BLUE : "rgba(255,255,255,0.8)", fontWeight: j === r.length - 1 ? 600 : 400, textAlign: j === 0 ? "left" : "right", maxWidth: j === 0 ? 300 : undefined, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={String(c)}>
                   {c}
                 </td>
               ))}
@@ -515,7 +455,7 @@ function Tabela({ head, rows }: { head: string[]; rows: (string | number)[][] })
   );
 }
 function Vazio({ loading }: { loading: boolean }) {
-  return <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{loading ? "Carregando..." : "Sem dados no período."}</p>;
+  return <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", padding: "8px 0" }}>{loading ? "Carregando..." : "Sem dados no período."}</p>;
 }
 
 // ---- Helpers ----
@@ -538,54 +478,95 @@ function rel(iso: string) {
   const h = Math.floor(min / 60);
   return h < 24 ? `há ${h}h` : `há ${Math.floor(h / 24)}d`;
 }
+const grad = (id: string, color: string) => (
+  <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stopColor={color} stopOpacity={0.95} />
+    <stop offset="100%" stopColor={color} stopOpacity={0.35} />
+  </linearGradient>
+);
+const gradArea = (id: string, color: string) => (
+  <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+    <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+  </linearGradient>
+);
 
 // ---- Estilos ----
-const cardBox = (accent?: boolean): React.CSSProperties => ({
-  background: "rgba(255,255,255,0.04)",
-  border: `1px solid ${accent ? "rgba(184,148,95,0.3)" : "rgba(255,255,255,0.08)"}`,
-  borderRadius: 12,
-  padding: 20,
-});
-const headerRow: React.CSSProperties = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "flex-start",
-  gap: 16,
+const hero: React.CSSProperties = {
+  position: "relative",
+  overflow: "hidden",
+  borderRadius: 18,
+  padding: "30px 30px 26px",
   marginBottom: 8,
-  flexWrap: "wrap",
+  background: "linear-gradient(135deg, #0c1c28 0%, #0a0a0a 65%)",
+  border: "1px solid rgba(0,174,239,0.18)",
 };
-const grid: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 16,
+const heroStripes: React.CSSProperties = {
+  position: "absolute",
+  inset: 0,
+  backgroundImage: "repeating-linear-gradient(118deg, rgba(0,174,239,0.06) 0px, rgba(0,174,239,0.06) 2px, transparent 2px, transparent 15px)",
+  maskImage: "linear-gradient(90deg, transparent 35%, black 100%)",
+  WebkitMaskImage: "linear-gradient(90deg, transparent 35%, black 100%)",
+  pointerEvents: "none",
 };
-const twoCol: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
-  gap: 16,
-};
-const cardLabel: React.CSSProperties = {
+const kicker: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: BLUE, textTransform: "uppercase", letterSpacing: "1.5px" };
+const heroTitle: React.CSSProperties = { fontFamily: "var(--font-playfair)", fontSize: 36, fontWeight: 500, color: "#fff", margin: "6px 0 0", lineHeight: 1 };
+const syncPill: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 7,
   fontSize: 11,
-  color: "rgba(255,255,255,0.5)",
-  textTransform: "uppercase",
-  letterSpacing: "0.5px",
-  marginBottom: 8,
-};
-const muted: React.CSSProperties = { fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 16 };
-const input: React.CSSProperties = {
-  padding: "10px 12px",
-  background: "rgba(255,255,255,0.06)",
+  color: "rgba(255,255,255,0.6)",
+  background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.1)",
-  borderRadius: 8,
+  borderRadius: 999,
+  padding: "6px 12px",
+};
+const select: React.CSSProperties = {
+  padding: "9px 14px",
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(0,174,239,0.25)",
+  borderRadius: 10,
   color: "#fff",
   fontSize: 13,
   outline: "none",
+  colorScheme: "dark",
 };
-const tip: React.CSSProperties = {
-  background: "#1a1a1a",
-  border: "1px solid rgba(255,255,255,0.12)",
-  borderRadius: 8,
-  fontSize: 12,
-  color: "#fff",
+const cardBox = (accent?: boolean): React.CSSProperties => ({
+  position: "relative",
+  overflow: "hidden",
+  background: accent ? "linear-gradient(160deg, rgba(0,174,239,0.10), rgba(255,255,255,0.015))" : "rgba(255,255,255,0.03)",
+  border: `1px solid ${accent ? "rgba(0,174,239,0.28)" : "rgba(255,255,255,0.07)"}`,
+  borderRadius: 14,
+  padding: 20,
+});
+const cardAccentBar: React.CSSProperties = { position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, ${BLUE}, transparent)` };
+const grid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(178px, 1fr))", gap: 14 };
+const twoCol: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))", gap: 16 };
+const cardLabel: React.CSSProperties = { fontSize: 11, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.6px", margin: 0 };
+const cardSub: React.CSSProperties = { fontSize: 10, color: "rgba(255,255,255,0.3)", margin: "3px 0 0" };
+const produtoCard: React.CSSProperties = {
+  background: "rgba(255,255,255,0.03)",
+  border: "1px solid rgba(255,255,255,0.07)",
+  borderRadius: 14,
+  padding: 20,
 };
-const chartM = { top: 8, right: 8, left: 0, bottom: 0 };
+const produtoTag: React.CSSProperties = {
+  display: "inline-block",
+  fontSize: 11,
+  fontWeight: 600,
+  color: BLUE,
+  background: "rgba(0,174,239,0.12)",
+  border: "1px solid rgba(0,174,239,0.25)",
+  borderRadius: 999,
+  padding: "3px 12px",
+  letterSpacing: "0.3px",
+};
+const muted: React.CSSProperties = { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 18, lineHeight: 1.6 };
+const axis = { stroke: "rgba(255,255,255,0.25)", fontSize: 11, tickLine: false } as const;
+const legend = { fontSize: 12 } as const;
+const ttip = {
+  contentStyle: { background: "#0c1218", border: "1px solid rgba(0,174,239,0.25)", borderRadius: 10, fontSize: 12, color: "#fff" },
+  cursor: { fill: "rgba(0,174,239,0.06)" },
+} as const;
+const chartM = { top: 10, right: 10, left: 0, bottom: 0 };
