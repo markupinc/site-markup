@@ -1,0 +1,6 @@
+#;Apartamento;Torre;Tipo;Matrícula (CRI);I. municipal;Área (m²);Empreendimento;Valor (R$);Desconto (R$);Venda (R$);Situação
+1;101;A;Residencial;;;75,50;EXEMPLO RESIDENCIAL;500.000,00;0,00;0,00;Disponível
+2;102;A;Residencial;;;75,50;EXEMPLO RESIDENCIAL;500.000,00;25.000,00;475.000,00;Vendido
+3;103;A;Residencial;;;80,00;EXEMPLO RESIDENCIAL;520.000,00;0,00;0,00;Reserva técnica
+4;"LOJA 01";B;Comercial;;;45,00;EXEMPLO COMERCIAL;300.000,00;0,00;300.000,00;Vendido
+5;202;B;Comercial;;;60,00;EXEMPLO COMERCIAL;420.000,00;0,00;0,00;Disponível
