@@ -21,10 +21,11 @@ interface Emp {
   ordem: number;
 }
 
+// Paleta da marca: azul (vendida), dourado (reservada), navy/slate (disponível), cinza (outros)
 const COR = {
   vendida: "#00aeef",
-  reservada: "#e0a23b",
-  disponivel: "#3fae7a",
+  reservada: "#b8945f",
+  disponivel: "#3a4d6d",
   outros: "#9aa3ad",
 };
 const LABEL = { vendida: "Vendidas", reservada: "Reservadas", disponivel: "Disponíveis", outros: "Outros" };
