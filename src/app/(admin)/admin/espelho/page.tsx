@@ -22,7 +22,7 @@ interface Emp {
 }
 
 const COR = {
-  vendida: "#0098d4",
+  vendida: "#00aeef",
   reservada: "#e0a23b",
   disponivel: "#3fae7a",
   outros: "#9aa3ad",
@@ -202,7 +202,7 @@ function EmpCard({
         </div>
         <div style={{ marginLeft: "auto", textAlign: "right" }}>
           <div style={{ fontSize: 11, color: "#8a93a0" }}>VGV vendido</div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: "#0098d4" }}>{fmtBRL(a.vgv)}</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#00aeef" }}>{fmtBRL(a.vgv)}</div>
         </div>
       </div>
 
@@ -249,7 +249,7 @@ function EmpCard({
             <XAxis dataKey="label" stroke="#9aa3ad" fontSize={10} tickLine={false} />
             <YAxis stroke="#9aa3ad" fontSize={10} tickLine={false} width={32} unit="%" />
             <Tooltip formatter={(v) => [`${Number(v).toFixed(1)}%`, "% vendido"] as [string, string]} />
-            <Line dataKey="pct" stroke="#0098d4" strokeWidth={2} dot={false} />
+            <Line dataKey="pct" stroke="#00aeef" strokeWidth={2} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>
@@ -258,7 +258,7 @@ function EmpCard({
       {temAnterior && (
         <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 6 }}>
           <Comp icone="🎉" label="Novas vendas" itens={comp.novasVendas} cor={COR.vendida} />
-          <Comp icone="🔄" label="Reserva → Venda" itens={comp.resParaVenda} cor="#0098d4" />
+          <Comp icone="🔄" label="Reserva → Venda" itens={comp.resParaVenda} cor="#00aeef" />
           <Comp icone="⚠️" label="Vendas que caíram" itens={comp.vendasCairam} cor="#d9534f" />
           <Comp icone="📉" label="Reserva → Disponível" itens={comp.resParaDispo} cor={COR.disponivel} />
         </div>
@@ -304,6 +304,9 @@ function ImportPanel({ onDone, emps, onLogos }: { onDone: () => void; emps: Emp[
   const supabase = createClient();
   const [data, setData] = useState(new Date().toISOString().slice(0, 10));
   const [texto, setTexto] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [drag, setDrag] = useState(false);
+  const [colar, setColar] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
@@ -314,7 +317,11 @@ function ImportPanel({ onDone, emps, onLogos }: { onDone: () => void; emps: Emp[
     let t = new TextDecoder("utf-8", { fatal: false }).decode(buf);
     if (t.includes("�")) t = new TextDecoder("windows-1252").decode(buf); // fallback Latin-1
     setTexto(t);
+    setFileName(file.name);
+    setErro(null);
+    setMsg(null);
   }
+  const linhas = texto ? texto.split("\n").filter((l) => l.trim()).length - 1 : 0;
 
   async function importar() {
     setEnviando(true);
@@ -349,23 +356,56 @@ function ImportPanel({ onDone, emps, onLogos }: { onDone: () => void; emps: Emp[
   return (
     <div style={{ ...card, marginBottom: 18 }}>
       <h2 style={secTitle}>Importar espelho (CSV do Trilote)</h2>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center", marginBottom: 12 }}>
-        <label style={{ fontSize: 13, color: "#3a4453" }}>Data do espelho:</label>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 14, flexWrap: "wrap" }}>
+        <label style={{ fontSize: 13, color: "#3a4453", fontWeight: 500 }}>Data do espelho</label>
         <input type="date" value={data} onChange={(e) => setData(e.target.value)} style={inputLight} />
-        <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && lerArquivo(e.target.files[0])} style={{ fontSize: 13 }} />
       </div>
-      <textarea
-        value={texto}
-        onChange={(e) => setTexto(e.target.value)}
-        placeholder="…ou cole aqui o conteúdo do CSV"
-        style={{ width: "100%", height: 90, padding: 10, borderRadius: 8, border: "1px solid #d6dbe2", fontSize: 12, fontFamily: "monospace", resize: "vertical" }}
-      />
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 10 }}>
-        <button onClick={importar} disabled={enviando || !texto} style={{ ...btnPrimary, opacity: enviando || !texto ? 0.6 : 1 }}>
-          {enviando ? "Importando…" : "Importar"}
+
+      <div
+        onClick={() => fileRef.current?.click()}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) lerArquivo(f); }}
+        style={{ ...dropzone, borderColor: drag ? "#00aeef" : "#cfd6df", background: drag ? "rgba(0,174,239,0.06)" : "#f8fafc" }}
+      >
+        <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && lerArquivo(e.target.files[0])} style={{ display: "none" }} />
+        {fileName ? (
+          <>
+            <div style={{ fontSize: 30, marginBottom: 6 }}>📄</div>
+            <div style={{ fontWeight: 600, color: "#0c1c3a" }}>{fileName}</div>
+            <div style={{ fontSize: 12, color: "#5b6573", marginTop: 2 }}>{linhas.toLocaleString("pt-BR")} linhas · clique para trocar</div>
+          </>
+        ) : (
+          <>
+            <div style={{ fontSize: 30, marginBottom: 6 }}>⬆️</div>
+            <div style={{ fontWeight: 600, color: "#0c1c3a" }}>Arraste o CSV aqui ou clique para selecionar</div>
+            <div style={{ fontSize: 12, color: "#5b6573", marginTop: 2 }}>Relatório de Apartamentos exportado do Trilote (.csv)</div>
+          </>
+        )}
+      </div>
+
+      <button onClick={() => setColar((c) => !c)} style={linkBtn}>
+        {colar ? "Esconder" : "ou colar o conteúdo manualmente"}
+      </button>
+      {colar && (
+        <textarea
+          value={texto}
+          onChange={(e) => { setTexto(e.target.value); setFileName(""); }}
+          placeholder="Cole aqui o conteúdo do CSV"
+          style={{ width: "100%", height: 100, padding: 10, borderRadius: 8, border: "1px solid #d6dbe2", fontSize: 12, fontFamily: "monospace", resize: "vertical", marginTop: 8 }}
+        />
+      )}
+
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 14 }}>
+        <button
+          onClick={importar}
+          disabled={enviando || !texto}
+          style={{ ...btnPrimary, padding: "11px 26px", opacity: enviando || !texto ? 0.5 : 1, cursor: enviando || !texto ? "default" : "pointer" }}
+        >
+          {enviando ? "Importando…" : `Importar${linhas > 0 ? ` (${linhas.toLocaleString("pt-BR")} un.)` : ""}`}
         </button>
-        {msg && <span style={{ fontSize: 12, color: "#2e7d52" }}>{msg}</span>}
-        {erro && <span style={{ fontSize: 12, color: "#d9534f" }}>{erro}</span>}
+        {msg && <span style={{ fontSize: 12.5, color: "#2e7d52" }}>{msg}</span>}
+        {erro && <span style={{ fontSize: 12.5, color: "#d9534f" }}>{erro}</span>}
       </div>
 
       {emps.length > 0 && (
@@ -450,6 +490,8 @@ const selectLight: React.CSSProperties = { padding: "9px 12px", background: "rgb
 const inputLight: React.CSSProperties = { padding: "8px 10px", background: "#fff", border: "1px solid #d6dbe2", borderRadius: 8, color: "#1a2332", fontSize: 13, outline: "none" };
 const btnPrimary: React.CSSProperties = { padding: "9px 18px", background: "#00aeef", color: "#fff", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer" };
 const btnGhost: React.CSSProperties = { padding: "9px 16px", background: "rgba(255,255,255,0.12)", color: "#fff", border: "1px solid rgba(255,255,255,0.25)", borderRadius: 9, fontSize: 13, fontWeight: 500, cursor: "pointer" };
+const dropzone: React.CSSProperties = { border: "2px dashed #cfd6df", borderRadius: 12, padding: "30px 20px", textAlign: "center", cursor: "pointer", transition: "all .15s ease" };
+const linkBtn: React.CSSProperties = { background: "none", border: "none", color: "#00aeef", fontSize: 12.5, cursor: "pointer", padding: "10px 0 0", textDecoration: "underline" };
 
 const printCSS = `
 @media print {
