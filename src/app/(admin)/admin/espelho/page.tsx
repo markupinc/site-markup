@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
 
 interface Unidade {
   data: string;
@@ -76,15 +76,17 @@ export default function EspelhoPage() {
 
   const logoDe = (nome: string) => emps.find((e) => e.nome === nome)?.logo_url || null;
 
-  // série de % vendido por dia, por empreendimento
+  // série por dia (quebra por status), por empreendimento
   const serie = useMemo(() => {
-    const porDiaEmp = new Map<string, Map<string, { v: number; t: number }>>();
+    const porDiaEmp = new Map<string, Map<string, { v: number; r: number; d: number; total: number }>>();
     unidades.forEach((u) => {
       if (!porDiaEmp.has(u.empreendimento)) porDiaEmp.set(u.empreendimento, new Map());
       const m = porDiaEmp.get(u.empreendimento)!;
-      const o = m.get(u.data) || { v: 0, t: 0 };
-      o.t += 1;
+      const o = m.get(u.data) || { v: 0, r: 0, d: 0, total: 0 };
+      o.total += 1;
       if (u.status === "vendida") o.v += 1;
+      else if (u.status === "reservada") o.r += 1;
+      else if (u.status === "disponivel") o.d += 1;
       m.set(u.data, o);
     });
     return porDiaEmp;
@@ -151,6 +153,7 @@ export default function EspelhoPage() {
                 anterior={doDiaAnterior.filter((u) => u.empreendimento === nome)}
                 temAnterior={!!dataAnterior}
                 serie={serie.get(nome)}
+                dataAtual={dataAtual}
               />
             ))}
           </div>
@@ -168,13 +171,15 @@ function EmpCard({
   anterior,
   temAnterior,
   serie,
+  dataAtual,
 }: {
   nome: string;
   logo: string | null;
   unidades: Unidade[];
   anterior: Unidade[];
   temAnterior: boolean;
-  serie?: Map<string, { v: number; t: number }>;
+  serie?: Map<string, { v: number; r: number; d: number; total: number }>;
+  dataAtual: string;
 }) {
   const [aberto, setAberto] = useState<string | null>(null);
   const a = agrega(unidades);
@@ -185,7 +190,7 @@ function EmpCard({
   const evol = serie
     ? [...serie.entries()]
         .sort((x, y) => x[0].localeCompare(y[0]))
-        .map(([d, o]) => ({ label: fmtDataCurta(d), pct: o.t > 0 ? (o.v / o.t) * 100 : 0 }))
+        .map(([d, o]) => ({ data: d, label: fmtDataCurta(d), vendidas: o.v, reservas: o.r, disponiveis: o.d }))
     : [];
   const blocos: Array<"vendida" | "reservada" | "disponivel" | "outros"> = ["vendida", "reservada", "disponivel"];
   if (a.outros > 0) blocos.push("outros");
@@ -235,25 +240,41 @@ function EmpCard({
         </div>
       )}
 
-      {/* Donut + evolução */}
-      <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 12, marginTop: 16, alignItems: "center" }} className="esp-charts">
-        <ResponsiveContainer width="100%" height={120}>
+      {/* Donut */}
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+        <ResponsiveContainer width={150} height={140}>
           <PieChart>
-            <Pie data={donut} dataKey="value" nameKey="nome" innerRadius={32} outerRadius={52} paddingAngle={2} stroke="none">
+            <Pie data={donut} dataKey="value" nameKey="nome" innerRadius={38} outerRadius={62} paddingAngle={2} stroke="none">
               {donut.map((d, i) => <Cell key={i} fill={d.cor} />)}
             </Pie>
             <Tooltip />
           </PieChart>
         </ResponsiveContainer>
-        <ResponsiveContainer width="100%" height={120}>
-          <LineChart data={evol} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
-            <XAxis dataKey="label" stroke="#9aa3ad" fontSize={10} tickLine={false} />
-            <YAxis stroke="#9aa3ad" fontSize={10} tickLine={false} width={32} unit="%" />
-            <Tooltip formatter={(v) => [`${Number(v).toFixed(1)}%`, "% vendido"] as [string, string]} />
-            <Line dataKey="pct" stroke="#00aeef" strokeWidth={2} dot={false} />
-          </LineChart>
-        </ResponsiveContainer>
       </div>
+
+      {/* Evolução (3 situações) */}
+      <div style={evolBox}>
+        <div style={evolTitle}>Evolução</div>
+        {evol.length < 2 ? (
+          <p style={{ fontSize: 12, color: "#8a93a0", padding: "6px 0" }}>Importe pelo menos 2 dias para ver a evolução.</p>
+        ) : (
+          <ResponsiveContainer width="100%" height={190}>
+            <LineChart data={evol} margin={{ top: 10, right: 14, left: -16, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#eef1f5" />
+              <XAxis dataKey="label" stroke="#9aa3ad" fontSize={11} tickLine={false} />
+              <YAxis stroke="#9aa3ad" fontSize={11} tickLine={false} width={30} />
+              <Tooltip />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line dataKey="vendidas" name="Vendidas" stroke={COR.vendida} strokeWidth={2.5} dot={{ r: 2 }} />
+              <Line dataKey="reservas" name="Reservadas" stroke={COR.reservada} strokeWidth={2.5} dot={{ r: 2 }} />
+              <Line dataKey="disponiveis" name="Disponíveis" stroke={COR.disponivel} strokeWidth={2.5} dot={{ r: 2 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+
+      {/* Histórico */}
+      {evol.length > 0 && <Historico evol={evol} atual={dataAtual} />}
 
       {/* Comparações vs dia anterior */}
       {temAnterior && (
@@ -275,6 +296,46 @@ function Comp({ icone, label, itens, cor }: { icone: string; label: string; iten
       <span>{icone}</span>
       <b style={{ color: cor }}>{label} ({itens.length}):</b>
       <span style={{ color: "#5b6573" }}>{itens.slice(0, 12).join(", ")}{itens.length > 12 ? "…" : ""}</span>
+    </div>
+  );
+}
+
+function Historico({ evol, atual }: { evol: Array<{ data: string; vendidas: number; reservas: number; disponiveis: number }>; atual: string }) {
+  return (
+    <div style={{ marginTop: 14, borderTop: "1px solid #eef1f5", paddingTop: 12 }}>
+      <div style={evolTitle}>Histórico</div>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        {evol.map((e, i) => {
+          const prev = evol[i - 1];
+          const delta = prev ? e.vendidas - prev.vendidas : null;
+          const isAtual = e.data === atual;
+          return (
+            <div
+              key={e.data}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: 12.5,
+                padding: "6px 8px",
+                borderRadius: 6,
+                color: isAtual ? "#0c1c3a" : "#8a93a0",
+                fontWeight: isAtual ? 700 : 400,
+                background: isAtual ? "rgba(0,174,239,0.07)" : "transparent",
+              }}
+            >
+              <span>{fmtData(e.data)}{isAtual ? " ●" : ""}</span>
+              <span>
+                {e.vendidas} vend{" "}
+                {delta != null ? (
+                  delta > 0 ? <span style={{ color: "#2e7d52" }}>▲{delta}</span> : delta < 0 ? <span style={{ color: "#d9534f" }}>▼{Math.abs(delta)}</span> : <span>—</span>
+                ) : null}
+                {" · "}
+                {e.reservas} res · {e.disponiveis} disp
+              </span>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -482,6 +543,8 @@ const kicker: React.CSSProperties = { fontSize: 11, fontWeight: 600, color: "#00
 const heroTitle: React.CSSProperties = { fontFamily: "var(--font-playfair)", fontSize: 28, fontWeight: 500, color: "#fff", margin: "4px 0 0" };
 const card: React.CSSProperties = { background: "#fff", borderRadius: 14, padding: 20, boxShadow: "0 1px 3px rgba(12,28,58,0.08)" };
 const secTitle: React.CSSProperties = { fontSize: 14, fontWeight: 700, color: "#0c1c3a", margin: "0 0 16px", textTransform: "uppercase", letterSpacing: "0.5px" };
+const evolBox: React.CSSProperties = { marginTop: 14, border: "1px solid #eef1f5", borderRadius: 10, padding: 14 };
+const evolTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "#5b6573", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 };
 const consolidadoGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 16, marginBottom: 16 };
 const empGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 18 };
 const bloco: React.CSSProperties = { background: "#fff", border: "1.5px solid #e6e9ee", borderRadius: 10, padding: "10px 8px", cursor: "pointer", textAlign: "center" };
