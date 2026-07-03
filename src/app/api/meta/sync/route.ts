@@ -39,6 +39,32 @@ async function handle(request: NextRequest) {
   const hoje = agora.slice(0, 10);
   const resultado: Record<string, unknown> = {};
 
+  // Backfill histórico de anúncios (por janelas de ~30 dias) — ?desde=YYYY-MM-DD
+  const desde = request.nextUrl.searchParams.get("desde");
+  if (desde) {
+    try {
+      const janelas = chunks(desde, hoje);
+      let linhas = 0;
+      for (const j of janelas) {
+        const insights = await fetchCampaignInsights("", j);
+        if (insights.length > 0) {
+          const { error } = await (supabase.from("meta_campanha_insights") as any).upsert(
+            insights.map((r) => ({ ...r, atualizado_em: agora })),
+            { onConflict: "data,campaign_id" }
+          );
+          if (error) throw new Error(error.message);
+          linhas += insights.length;
+        }
+      }
+      await log(supabase, "backfill-anuncios", "ok", `${janelas.length} janelas, ${linhas} linhas`, linhas);
+      return NextResponse.json({ ok: true, desde, ate: hoje, janelas: janelas.length, linhas });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      await log(supabase, "backfill-anuncios", "erro", msg, 0);
+      return NextResponse.json({ ok: false, error: msg }, { status: err instanceof MetaConfigError ? 503 : 200 });
+    }
+  }
+
   // ---- Anúncios (insights por campanha) ----
   try {
     const insights = await fetchCampaignInsights(preset);
@@ -137,6 +163,21 @@ async function log(
     .insert({ tipo, status, mensagem, linhas_afetadas: linhas })
     .then(() => {})
     .catch(() => {});
+}
+
+// Janelas de ~30 dias entre duas datas (YYYY-MM-DD), para o backfill histórico
+function chunks(desde: string, ate: string): Array<{ since: string; until: string }> {
+  const out: Array<{ since: string; until: string }> = [];
+  const dia = 86400_000;
+  let s = new Date(`${desde}T00:00:00Z`).getTime();
+  const end = new Date(`${ate}T00:00:00Z`).getTime();
+  const step = 30 * dia;
+  while (s <= end) {
+    const u = Math.min(s + step - dia, end);
+    out.push({ since: new Date(s).toISOString().slice(0, 10), until: new Date(u).toISOString().slice(0, 10) });
+    s = u + dia;
+  }
+  return out;
 }
 
 export async function GET(request: NextRequest) {

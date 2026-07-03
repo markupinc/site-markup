@@ -91,7 +91,10 @@ export interface CampanhaInsight {
   moeda: string;
 }
 
-export async function fetchCampaignInsights(datePreset = "last_30d"): Promise<CampanhaInsight[]> {
+export async function fetchCampaignInsights(
+  datePreset = "last_30d",
+  timeRange?: { since: string; until: string }
+): Promise<CampanhaInsight[]> {
   const account = requireEnv("META_AD_ACCOUNT_ID");
   const fields = [
     "campaign_id",
@@ -117,9 +120,10 @@ export async function fetchCampaignInsights(datePreset = "last_30d"): Promise<Ca
       level: "campaign",
       fields,
       time_increment: "1",
-      date_preset: datePreset,
       limit: "200",
     };
+    if (timeRange) params.time_range = JSON.stringify(timeRange);
+    else params.date_preset = datePreset;
     if (after) params.after = after;
     const page = await graphGet(`${account}/insights`, params);
     for (const r of page.data || []) {
