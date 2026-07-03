@@ -63,16 +63,18 @@ interface KommoLead {
 }
 
 const RANGES = [
-  { label: "Últimos 7 dias", value: 7 },
-  { label: "Últimos 14 dias", value: 14 },
-  { label: "Últimos 30 dias", value: 30 },
+  { label: "Últimos 7 dias", value: "7" },
+  { label: "Últimos 14 dias", value: "14" },
+  { label: "Últimos 30 dias", value: "30" },
+  { label: "Últimos 90 dias", value: "90" },
+  { label: "Mês passado", value: "mes_passado" },
+  { label: "Máximo", value: "maximo" },
 ];
 const PRODUTO_LABEL: Record<string, string> = { salsa: "Salsa", up: "Up!", horizon: "Horizon", outro: "Outros" };
 
 export default function MarketingPage() {
   const supabase = createClient();
-  const [range, setRange] = useState(30);
-  const [modo, setModo] = useState<"preset" | "custom">("preset");
+  const [periodo, setPeriodo] = useState("30");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [loading, setLoading] = useState(true);
@@ -89,25 +91,33 @@ export default function MarketingPage() {
 
       // Janela: preset (N dias até hoje) ou personalizada (datas escolhidas)
       const hoje = new Date().toISOString().slice(0, 10);
+      const fmtLocal = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
       let since: string;
-      let until: string;
-      if (modo === "custom") {
+      let until = hoje;
+      if (periodo === "custom") {
         if (!dataInicio || !dataFim) {
           setLoading(false);
           return;
         }
         since = dataInicio;
         until = dataFim;
+      } else if (periodo === "maximo") {
+        since = "2020-01-01";
+      } else if (periodo === "mes_passado") {
+        const d = new Date();
+        const ultimo = new Date(d.getFullYear(), d.getMonth(), 0); // último dia do mês passado
+        const primeiro = new Date(ultimo.getFullYear(), ultimo.getMonth(), 1);
+        since = fmtLocal(primeiro);
+        until = fmtLocal(ultimo);
       } else {
-        since = new Date(Date.now() - range * 864e5).toISOString().slice(0, 10);
-        until = hoje;
+        since = new Date(Date.now() - Number(periodo) * 864e5).toISOString().slice(0, 10);
       }
       // limite superior exclusivo p/ timestamps (inclui o dia inteiro de "until")
       const untilExcl = new Date(new Date(`${until}T00:00:00Z`).getTime() + 864e5).toISOString().slice(0, 10);
 
       /* eslint-disable @typescript-eslint/no-explicit-any */
       const [insRes, segRes, logRes, kommoRes] = await Promise.all([
-        (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).lte("data", until).order("data"),
+        (supabase.from("meta_campanha_insights") as any).select("*").gte("data", since).lte("data", until).order("data").limit(20000),
         (supabase.from("meta_seguidores") as any).select("*").gte("data", since).lte("data", until).order("data"),
         (supabase.from("meta_sync_log") as any)
           .select("status, executado_em")
@@ -116,7 +126,8 @@ export default function MarketingPage() {
         (supabase.from("kommo_leads") as any)
           .select("produto, bucket, created_at")
           .gte("created_at", since)
-          .lt("created_at", untilExcl),
+          .lt("created_at", untilExcl)
+          .limit(20000),
       ]);
       /* eslint-enable @typescript-eslint/no-explicit-any */
       if (insRes.error) {
@@ -132,7 +143,7 @@ export default function MarketingPage() {
     }
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [range, modo, dataInicio, dataFim]);
+  }, [periodo, dataInicio, dataFim]);
 
   // ---- Agregações (lógica inalterada) ----
   const t = useMemo(() => {
@@ -296,14 +307,11 @@ export default function MarketingPage() {
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
   const m = t.moeda;
 
-  const onRange = (v: string) => {
+  const onPeriodo = (v: string) => {
+    setPeriodo(v);
     if (v === "custom") {
-      setModo("custom");
       if (!dataInicio) setDataInicio(new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10));
       if (!dataFim) setDataFim(new Date().toISOString().slice(0, 10));
-    } else {
-      setModo("preset");
-      setRange(+v);
     }
   };
 
@@ -327,7 +335,7 @@ export default function MarketingPage() {
                 {rel(ultimaSync.executado_em)}
               </span>
             )}
-            <select value={modo === "custom" ? "custom" : String(range)} onChange={(e) => onRange(e.target.value)} style={select}>
+            <select value={periodo} onChange={(e) => onPeriodo(e.target.value)} style={select}>
               {RANGES.map((r) => (
                 <option key={r.value} value={r.value} style={{ background: "#0c1218" }}>
                   {r.label}
@@ -337,7 +345,7 @@ export default function MarketingPage() {
                 Personalizado…
               </option>
             </select>
-            {modo === "custom" && (
+            {periodo === "custom" && (
               <>
                 <input
                   type="date"
