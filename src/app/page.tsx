@@ -56,9 +56,9 @@ const magicLines = [
 ];
 
 const stats = [
-  { target: 15, suffix: "", label: "anos de experiência" },
+  { target: 15, suffix: "", label: "anos de experiência em desenv. imob." },
   { target: 200, suffix: "+", label: "investidores" },
-  { target: 2, suffix: "", label: "empreendimentos" },
+  { target: 3, suffix: "", label: "empreendimentos" },
   { target: 500, suffix: "+", label: "unid. em desenvolvimento" },
 ];
 
