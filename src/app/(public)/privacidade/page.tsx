@@ -79,8 +79,8 @@ export default function PrivacidadePage() {
           {/* Introdução */}
           <h2 style={sectionTitleStyle}>1. Introdução</h2>
           <p style={paragraphStyle}>
-            A Markup Incorporações LTDA, inscrita no CNPJ sob o número [a
-            definir], com sede na cidade de Maceió, Estado de Alagoas, está
+            A Markup Incorporações LTDA, inscrita no CNPJ sob o número
+            21.417.304/0001-29, com sede na cidade de Maceió, Estado de Alagoas, está
             comprometida com a proteção da privacidade e dos dados pessoais de
             seus usuários, em conformidade com a Lei Geral de Proteção de Dados
             Pessoais (LGPD — Lei nº 13.709/2018) e demais legislações
@@ -373,6 +373,46 @@ export default function PrivacidadePage() {
           <p style={paragraphStyle}>
             A continuidade do uso do site após a publicação de alterações nesta
             política constitui a aceitação das mesmas.
+          </p>
+
+          {/* Aplicativo */}
+          <h2 style={sectionTitleStyle}>
+            9. Aplicativo Markup Incorporações (iOS e Android)
+          </h2>
+          <p style={paragraphStyle}>
+            Além do site, a Markup Incorporações disponibiliza um aplicativo
+            móvel para apresentação de seus empreendimentos e materiais
+            institucionais. O aplicativo não exige cadastro nem login para uso e
+            coleta apenas o mínimo necessário para o seu funcionamento:
+          </p>
+          <ul style={listStyle}>
+            <li>
+              <strong>Identificador de notificações (token de push):</strong>{" "}
+              caso o usuário autorize o recebimento de notificações, um
+              identificador anônimo do aparelho é registrado para permitir o
+              envio de avisos sobre lançamentos e novidades. Esse identificador
+              não revela nome, telefone, e-mail ou localização.
+            </li>
+            <li>
+              <strong>Plataforma do aparelho (iOS ou Android):</strong>{" "}
+              registrada junto com o identificador acima, apenas para a correta
+              entrega das notificações.
+            </li>
+          </ul>
+          <p style={paragraphStyle}>
+            O aplicativo não coleta: nome, CPF, e-mail, telefone, contatos,
+            fotos, localização precisa ou qualquer dado sensível. O identificador
+            de notificações é processado pelos serviços de notificação das
+            plataformas (Apple Push Notification service e Firebase Cloud
+            Messaging, via Expo) exclusivamente para a entrega das mensagens, e
+            identificadores inválidos ou de aparelhos que desativaram as
+            notificações são removidos automaticamente.
+          </p>
+          <p style={paragraphStyle}>
+            O usuário pode, a qualquer momento, desativar as notificações nas
+            configurações do aparelho — o que interrompe o uso do identificador —
+            ou solicitar informações e exclusão de dados pelo e-mail indicado na
+            seção 7 desta política.
           </p>
         </div>
       </section>
