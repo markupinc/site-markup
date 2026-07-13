@@ -30,42 +30,109 @@ const COR = {
 };
 const LABEL = { vendida: "Vendidas", reservada: "Reservadas", disponivel: "Disponíveis", outros: "Outros" };
 
+const PERIODOS = [
+  { label: "Hoje", value: "hoje" },
+  { label: "Ontem", value: "ontem" },
+  { label: "Últimos 7 dias", value: "7" },
+  { label: "Este mês", value: "este_mes" },
+  { label: "Mês passado", value: "mes_passado" },
+  { label: "Últimos 90 dias", value: "90" },
+];
+
+const fmtLocal = (dt: Date) =>
+  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+
+function rangeDoPeriodo(periodo: string, ini: string, fim: string): { since: string; until: string } {
+  const hoje = new Date();
+  const hojeStr = fmtLocal(hoje);
+  if (periodo === "hoje") return { since: hojeStr, until: hojeStr };
+  if (periodo === "ontem") {
+    const o = fmtLocal(new Date(hoje.getTime() - 864e5));
+    return { since: o, until: o };
+  }
+  if (periodo === "este_mes") {
+    return { since: fmtLocal(new Date(hoje.getFullYear(), hoje.getMonth(), 1)), until: hojeStr };
+  }
+  if (periodo === "mes_passado") {
+    const ultimo = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+    const primeiro = new Date(ultimo.getFullYear(), ultimo.getMonth(), 1);
+    return { since: fmtLocal(primeiro), until: fmtLocal(ultimo) };
+  }
+  if (periodo === "custom") return { since: ini, until: fim };
+  const n = Number(periodo) || 90;
+  return { since: fmtLocal(new Date(hoje.getTime() - n * 864e5)), until: hojeStr };
+}
+
+interface SerieRow {
+  data: string;
+  empreendimento: string;
+  status: Unidade["status"];
+}
+
 export default function EspelhoPage() {
   const supabase = createClient();
-  const [unidades, setUnidades] = useState<Unidade[]>([]);
+  const [serieRows, setSerieRows] = useState<SerieRow[]>([]);
+  const [detalhe, setDetalhe] = useState<Unidade[]>([]);
   const [emps, setEmps] = useState<Emp[]>([]);
   const [loading, setLoading] = useState(true);
+  const [periodo, setPeriodo] = useState("90");
+  const [dataInicio, setDataInicio] = useState("");
+  const [dataFim, setDataFim] = useState("");
   const [dataSel, setDataSel] = useState<string>("");
   const [showImport, setShowImport] = useState(false);
 
+  const { since, until } = rangeDoPeriodo(periodo, dataInicio, dataFim);
+
+  // 1) Série leve do período (só data/empreendimento/status) + empreendimentos
   async function load() {
+    if (periodo === "custom" && (!dataInicio || !dataFim)) return;
     setLoading(true);
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    const [uRes, eRes] = await Promise.all([
+    const [sRes, eRes] = await Promise.all([
       (supabase.from("espelho_unidades") as any)
-        .select("data, empreendimento, apartamento, torre, tipo, area_m2, valor, venda, status")
+        .select("data, empreendimento, status")
+        .gte("data", since)
+        .lte("data", until)
         .order("data", { ascending: false })
-        .limit(8000),
+        .limit(80000),
       (supabase.from("espelho_empreendimentos") as any).select("*").order("ordem"),
     ]);
     /* eslint-enable @typescript-eslint/no-explicit-any */
-    const u = (uRes.data as Unidade[]) || [];
-    setUnidades(u);
+    setSerieRows((sRes.data as SerieRow[]) || []);
     setEmps((eRes.data as Emp[]) || []);
-    setDataSel((prev) => prev || u[0]?.data || "");
     setLoading(false);
   }
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [periodo, dataInicio, dataFim]);
 
-  const datas = useMemo(() => [...new Set(unidades.map((u) => u.data))].sort((a, b) => b.localeCompare(a)), [unidades]);
-  const dataAtual = dataSel || datas[0] || "";
+  const datas = useMemo(() => [...new Set(serieRows.map((r) => r.data))].sort((a, b) => b.localeCompare(a)), [serieRows]);
+  const dataAtual = datas.includes(dataSel) ? dataSel : datas[0] || "";
   const dataAnterior = datas[datas.indexOf(dataAtual) + 1] || "";
 
-  const doDia = useMemo(() => unidades.filter((u) => u.data === dataAtual), [unidades, dataAtual]);
-  const doDiaAnterior = useMemo(() => unidades.filter((u) => u.data === dataAnterior), [unidades, dataAnterior]);
+  // 2) Detalhe completo só dos 2 dias exibidos (posição atual + anterior)
+  useEffect(() => {
+    async function loadDetalhe() {
+      if (!dataAtual) {
+        setDetalhe([]);
+        return;
+      }
+      const alvo = [dataAtual, dataAnterior].filter(Boolean);
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      const { data } = await (supabase.from("espelho_unidades") as any)
+        .select("data, empreendimento, apartamento, torre, tipo, area_m2, valor, venda, status")
+        .in("data", alvo)
+        .limit(20000);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
+      setDetalhe((data as Unidade[]) || []);
+    }
+    loadDetalhe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataAtual, dataAnterior]);
+
+  const doDia = useMemo(() => detalhe.filter((u) => u.data === dataAtual), [detalhe, dataAtual]);
+  const doDiaAnterior = useMemo(() => detalhe.filter((u) => u.data === dataAnterior), [detalhe, dataAnterior]);
 
   const empNomes = useMemo(() => {
     const set = new Set(doDia.map((u) => u.empreendimento));
@@ -76,10 +143,10 @@ export default function EspelhoPage() {
 
   const logoDe = (nome: string) => emps.find((e) => e.nome === nome)?.logo_url || null;
 
-  // série por dia (quebra por status), por empreendimento
+  // Série por dia (quebra por status), por empreendimento — dentro do período
   const serie = useMemo(() => {
     const porDiaEmp = new Map<string, Map<string, { v: number; r: number; d: number; total: number }>>();
-    unidades.forEach((u) => {
+    serieRows.forEach((u) => {
       if (!porDiaEmp.has(u.empreendimento)) porDiaEmp.set(u.empreendimento, new Map());
       const m = porDiaEmp.get(u.empreendimento)!;
       const o = m.get(u.data) || { v: 0, r: 0, d: 0, total: 0 };
@@ -90,9 +157,33 @@ export default function EspelhoPage() {
       m.set(u.data, o);
     });
     return porDiaEmp;
-  }, [unidades]);
+  }, [serieRows]);
+
+  // Série consolidada (todos os empreendimentos) — alimenta o gráfico geral
+  const serieGeral = useMemo(() => {
+    const m = new Map<string, { v: number; r: number; d: number }>();
+    serieRows.forEach((u) => {
+      const o = m.get(u.data) || { v: 0, r: 0, d: 0 };
+      if (u.status === "vendida") o.v += 1;
+      else if (u.status === "reservada") o.r += 1;
+      else if (u.status === "disponivel") o.d += 1;
+      m.set(u.data, o);
+    });
+    return [...m.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([d, o]) => ({ data: d, label: fmtDataCurta(d), vendidas: o.v, reservas: o.r, disponiveis: o.d }));
+  }, [serieRows]);
 
   const consolidado = useMemo(() => agrega(doDia), [doDia]);
+
+  const onPeriodo = (v: string) => {
+    setPeriodo(v);
+    setDataSel("");
+    if (v === "custom") {
+      if (!dataInicio) setDataInicio(fmtLocal(new Date(Date.now() - 30 * 864e5)));
+      if (!dataFim) setDataFim(fmtLocal(new Date()));
+    }
+  };
 
   if (loading) return <div style={{ padding: 40, color: "#fff" }}>Carregando…</div>;
 
@@ -108,10 +199,28 @@ export default function EspelhoPage() {
           {dataAtual && <p style={{ margin: "4px 0 0", fontSize: 13, color: "rgba(255,255,255,0.6)" }}>Posição de {fmtData(dataAtual)}</p>}
         </div>
         <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }} className="esp-noprint">
+          <select value={periodo} onChange={(e) => onPeriodo(e.target.value)} style={selectLight} title="Período do gráfico e do histórico">
+            {PERIODOS.map((p) => (
+              <option key={p.value} value={p.value} style={{ background: "#0c1c3a" }}>
+                {p.label}
+              </option>
+            ))}
+            <option value="custom" style={{ background: "#0c1c3a" }}>
+              Personalizado…
+            </option>
+          </select>
+          {periodo === "custom" && (
+            <>
+              <input type="date" value={dataInicio} max={dataFim || undefined} onChange={(e) => setDataInicio(e.target.value)} style={selectLight} />
+              <input type="date" value={dataFim} min={dataInicio || undefined} onChange={(e) => setDataFim(e.target.value)} style={selectLight} />
+            </>
+          )}
           {datas.length > 0 && (
-            <select value={dataAtual} onChange={(e) => setDataSel(e.target.value)} style={selectLight}>
+            <select value={dataAtual} onChange={(e) => setDataSel(e.target.value)} style={selectLight} title="Posição exibida nos cards">
               {datas.map((d) => (
-                <option key={d} value={d}>{fmtData(d)}</option>
+                <option key={d} value={d} style={{ background: "#0c1c3a" }}>
+                  {fmtData(d)}
+                </option>
               ))}
             </select>
           )}
@@ -140,6 +249,31 @@ export default function EspelhoPage() {
               <Stat label="VGV vendido" valor={fmtBRL(consolidado.vgv)} cor="#0c1c3a" destaque />
             </div>
             <Barra a={consolidado} />
+
+            {/* Evolução consolidada no período */}
+            <div style={{ ...evolBox, marginTop: 18 }}>
+              <div style={evolTitle}>
+                Evolução no período{serieGeral.length > 0 ? ` · ${serieGeral.length} dia${serieGeral.length > 1 ? "s" : ""}` : ""}
+              </div>
+              {serieGeral.length < 2 ? (
+                <p style={{ fontSize: 12, color: "#8a93a0", padding: "6px 0" }}>
+                  Selecione um período com pelo menos 2 dias importados para ver a evolução.
+                </p>
+              ) : (
+                <ResponsiveContainer width="100%" height={230}>
+                  <LineChart data={serieGeral} margin={{ top: 10, right: 14, left: -12, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#eef1f5" />
+                    <XAxis dataKey="label" stroke="#9aa3ad" fontSize={11} tickLine={false} />
+                    <YAxis stroke="#9aa3ad" fontSize={11} tickLine={false} width={34} />
+                    <Tooltip />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
+                    <Line dataKey="vendidas" name="Vendidas" stroke={COR.vendida} strokeWidth={2.5} dot={{ r: 2 }} />
+                    <Line dataKey="reservas" name="Reservadas" stroke={COR.reservada} strokeWidth={2.5} dot={{ r: 2 }} />
+                    <Line dataKey="disponiveis" name="Disponíveis" stroke={COR.disponivel} strokeWidth={2.5} dot={{ r: 2 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              )}
+            </div>
           </div>
 
           {/* Cards por empreendimento */}
