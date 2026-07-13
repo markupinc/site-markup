@@ -35,7 +35,7 @@ export default async function CorretorDashboardPage() {
   const corretorId = await getCorretorId();
   const supabase = createAdminClient();
 
-  const [empRes, corretorRes] = await Promise.all([
+  const [empRes, corretorRes, tabRes] = await Promise.all([
     supabase
       .from("empreendimentos")
       .select("id, slug, nome, bairro, cidade, estado, status, imagem_destaque_url")
@@ -48,10 +48,17 @@ export default async function CorretorDashboardPage() {
           .eq("id", corretorId)
           .maybeSingle<{ nome: string }>()
       : Promise.resolve({ data: null }),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase.from("tabelas_precos") as any)
+      .select("slug, nome, empreendimento, entrega_prevista")
+      .eq("publicada", true)
+      .order("created_at", { ascending: false }),
   ]);
 
   const empreendimentos = (empRes.data as Empreendimento[]) || [];
   const nome = corretorRes.data?.nome || "";
+  const tabelas =
+    (tabRes.data as { slug: string; nome: string; empreendimento: string; entrega_prevista: string | null }[]) || [];
 
   return (
     <>
@@ -83,6 +90,78 @@ export default async function CorretorDashboardPage() {
       </section>
 
       <CorretorHeader nome={nome} />
+
+      {/* Tabelas de Preços publicadas */}
+      {tabelas.length > 0 && (
+        <section style={{ backgroundColor: "#ffffff", padding: "40px 20px 0" }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+            <h2
+              style={{
+                fontFamily: "var(--font-playfair)",
+                fontSize: "24px",
+                color: "#1a1a1a",
+                fontWeight: 400,
+                marginBottom: "6px",
+              }}
+            >
+              Tabelas de Preços
+            </h2>
+            <p style={{ fontSize: "13px", color: "#8a7d72", marginBottom: "20px" }}>
+              Valores e condições de pagamento atualizados. Abra para filtrar por disponibilidade ou gerar o PDF.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                gap: "14px",
+              }}
+            >
+              {tabelas.map((t) => (
+                <Link
+                  key={t.slug}
+                  href={`/tabela/${t.slug}`}
+                  style={{
+                    display: "block",
+                    padding: "18px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(0,0,0,0.08)",
+                    backgroundColor: "#fafbfc",
+                    textDecoration: "none",
+                    transition: "all 0.2s",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      color: "#00aeef",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px",
+                    }}
+                  >
+                    Tabela {t.nome}
+                  </span>
+                  <p
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: 600,
+                      color: "#1a1a1a",
+                      margin: "6px 0 4px",
+                    }}
+                  >
+                    {t.empreendimento}
+                  </p>
+                  {t.entrega_prevista && (
+                    <p style={{ fontSize: "12px", color: "#8a7d72", margin: 0 }}>
+                      Entrega: {t.entrega_prevista}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <main style={{ backgroundColor: "#ffffff", minHeight: "60vh" }}>
         <section

@@ -16,6 +16,7 @@ import {
   GraduationCap,
   TrendingUp,
   LayoutGrid,
+  Table2,
 } from "lucide-react";
 
 const navItems = [
@@ -23,6 +24,7 @@ const navItems = [
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
   { label: "Marketing", href: "/admin/marketing", icon: TrendingUp },
   { label: "Espelho de Vendas", href: "/admin/espelho", icon: LayoutGrid },
+  { label: "Tabelas de Preços", href: "/admin/tabelas", icon: Table2 },
   { label: "Empreendimentos", href: "/admin/empreendimentos", icon: Building2 },
   { label: "Blog", href: "/admin/blog", icon: FileText },
   { label: "Leads", href: "/admin/leads", icon: Users },
