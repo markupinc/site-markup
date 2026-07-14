@@ -12,7 +12,7 @@ import {
   MODELOS,
   STATUS_LABEL,
 } from "@/lib/tabelas/calc";
-import { parsePrecosCSV } from "@/lib/tabelas/csv";
+import { linhasDoArquivo, parsePlanilhaPrecos } from "@/lib/tabelas/planilha";
 
 const BLUE = "#00aeef";
 const BASE_URL = "https://markupincorporacoes.com.br";
@@ -195,27 +195,31 @@ function Editor({ tabela, emps, onSaved }: { tabela: Tabela; emps: string[]; onS
   async function enviarPlanilha(file: File) {
     setUpErr("");
     setUpMsg("");
-    const buf = await file.arrayBuffer();
-    let texto = new TextDecoder("utf-8", { fatal: false }).decode(buf);
-    if (texto.includes("�")) texto = new TextDecoder("windows-1252").decode(buf);
+    try {
+      const rows = await linhasDoArquivo(file);
+      const r = parsePlanilhaPrecos(rows);
+      if (r.erro) return setUpErr(r.erro);
 
-    const r = parsePrecosCSV(texto);
-    if (r.erro) return setUpErr(r.erro);
+      /* eslint-disable @typescript-eslint/no-explicit-any */
+      await (supabase.from("tabela_unidades") as any).delete().eq("tabela_id", t.id);
+      const { error } = await (supabase.from("tabela_unidades") as any).insert(
+        r.unidades.map((u, i) => ({ tabela_id: t.id, ordem: i, ...u }))
+      );
+      if (error) return setUpErr(error.message);
+      await (supabase.from("tabelas_precos") as any)
+        .update({ unidades_atualizadas_em: new Date().toISOString() })
+        .eq("id", t.id);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
 
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    await (supabase.from("tabela_unidades") as any).delete().eq("tabela_id", t.id);
-    const { error } = await (supabase.from("tabela_unidades") as any).insert(
-      r.unidades.map((u, i) => ({ tabela_id: t.id, ordem: i, ...u }))
-    );
-    if (error) return setUpErr(error.message);
-    await (supabase.from("tabelas_precos") as any)
-      .update({ unidades_atualizadas_em: new Date().toISOString() })
-      .eq("id", t.id);
-    /* eslint-enable @typescript-eslint/no-explicit-any */
-
-    setUpMsg(`${r.unidades.length} unidades importadas · colunas usadas: ${r.colunas.unidade} / ${r.colunas.area} / ${r.colunas.valor}`);
-    await carregarUnidades();
-    onSaved();
+      setUpMsg(
+        `${r.unidades.length} unidades importadas · cabeçalho na linha ${r.linhaCabecalho} · colunas: ${r.colunas.unidade} / ${r.colunas.area} / ${r.colunas.valor}` +
+          (r.duplicadas > 0 ? ` · ${r.duplicadas} duplicada(s) ignorada(s)` : "")
+      );
+      await carregarUnidades();
+      onSaved();
+    } catch (e) {
+      setUpErr(e instanceof Error ? e.message : "Não consegui ler o arquivo.");
+    }
   }
 
   async function salvar() {
@@ -302,13 +306,20 @@ function Editor({ tabela, emps, onSaved }: { tabela: Tabela; emps: string[]; onS
         onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files?.[0]; if (f) enviarPlanilha(f); }}
         style={{ ...dropzone, borderColor: drag ? BLUE : "rgba(255,255,255,0.15)", background: drag ? "rgba(0,174,239,0.06)" : "rgba(255,255,255,0.02)" }}
       >
-        <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={(e) => e.target.files?.[0] && enviarPlanilha(e.target.files[0])} style={{ display: "none" }} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          onChange={(e) => e.target.files?.[0] && enviarPlanilha(e.target.files[0])}
+          style={{ display: "none" }}
+        />
         <div style={{ fontSize: 22, marginBottom: 4 }}>📄</div>
         <div style={{ color: "#fff", fontWeight: 600, fontSize: 13 }}>
-          {unidades.length > 0 ? "Atualizar planilha de preços (CSV)" : "Enviar planilha de preços (CSV)"}
+          {unidades.length > 0 ? "Atualizar planilha de preços (.xlsx / .csv)" : "Enviar planilha de preços (.xlsx / .csv)"}
         </div>
         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 3 }}>
-          Arraste ou clique · precisa ter colunas de <b>Unidade</b>, <b>Área</b> e <b>Valor</b> · substitui os preços atuais
+          Arraste ou clique · acha o <b>cabeçalho</b> sozinho (mesmo que não seja a 1ª linha) e entende números BR e US ·
+          substitui os preços atuais
         </div>
       </div>
       {upMsg && <p style={{ fontSize: 11.5, color: "#4caf7d", marginTop: 8 }}>{upMsg}</p>}
