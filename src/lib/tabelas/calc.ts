@@ -26,7 +26,8 @@ export interface UnidadeTabela {
   tipo: string | null;
   area_m2: number | null;
   valor: number | null;
-  status: string;
+  /** Não vem do upload de preços — é cruzado com o Espelho de Vendas (snapshot mais recente). */
+  status?: string;
 }
 
 export interface Coluna {

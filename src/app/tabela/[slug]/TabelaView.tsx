@@ -22,12 +22,12 @@ const COR_STATUS: Record<string, string> = {
 interface Tabela {
   empreendimento: string;
   nome: string;
-  data_espelho: string;
   entrega_prevista: string | null;
   localizacao: string | null;
   incorporadora: string | null;
   mostrar_valor_m2: boolean;
   observacoes: string | null;
+  unidades_atualizadas_em: string | null;
 }
 
 const FILTROS = [
@@ -41,10 +41,12 @@ export default function TabelaView({
   tabela,
   componentes,
   unidades,
+  statusEm,
 }: {
   tabela: Tabela;
   componentes: Componente[];
   unidades: UnidadeTabela[];
+  statusEm: string | null;
 }) {
   const [filtro, setFiltro] = useState("todas");
   const colunas = useMemo(() => montarColunas(componentes), [componentes]);
@@ -59,7 +61,9 @@ export default function TabelaView({
 
   const contagem = useMemo(() => {
     const c: Record<string, number> = { todas: unidades.length };
-    unidades.forEach((u) => (c[u.status] = (c[u.status] || 0) + 1));
+    unidades.forEach((u) => {
+      if (u.status) c[u.status] = (c[u.status] || 0) + 1;
+    });
     return c;
   }, [unidades]);
 
@@ -139,9 +143,13 @@ export default function TabelaView({
                       </td>
                     ))}
                     <td style={td}>
-                      <span style={{ ...badge, background: `${COR_STATUS[u.status] || "#9aa3ad"}18`, color: COR_STATUS[u.status] || "#9aa3ad", border: `1px solid ${COR_STATUS[u.status] || "#9aa3ad"}40` }}>
-                        {STATUS_LABEL[u.status] || u.status}
-                      </span>
+                      {u.status ? (
+                        <span style={{ ...badge, background: `${COR_STATUS[u.status] || "#9aa3ad"}18`, color: COR_STATUS[u.status] || "#9aa3ad", border: `1px solid ${COR_STATUS[u.status] || "#9aa3ad"}40` }}>
+                          {STATUS_LABEL[u.status] || u.status}
+                        </span>
+                      ) : (
+                        <span style={{ color: "#9aa3ad", fontSize: 11 }}>—</span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -162,8 +170,9 @@ export default function TabelaView({
         <p style={{ fontSize: 12, color: "#5b6573", marginTop: 16, lineHeight: 1.6 }}>{tabela.observacoes}</p>
       )}
       <p style={{ fontSize: 11, color: "#8a93a0", marginTop: 16, lineHeight: 1.6 }}>
-        Valores sujeitos a alteração sem aviso prévio. Tabela {tabela.nome} · posição de{" "}
-        {tabela.data_espelho.split("-").reverse().join("/")}. Não constitui proposta comercial.
+        Valores sujeitos a alteração sem aviso prévio. Não constitui proposta comercial. Tabela {tabela.nome}
+        {tabela.unidades_atualizadas_em && ` · preços de ${new Date(tabela.unidades_atualizadas_em).toLocaleDateString("pt-BR")}`}
+        {statusEm && ` · disponibilidade de ${statusEm.split("-").reverse().join("/")}`}.
         <br />© {new Date().getFullYear()} {tabela.incorporadora || "Markup Incorporações"} · Maceió/AL
       </p>
     </div>
