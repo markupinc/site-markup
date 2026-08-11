@@ -246,9 +246,32 @@ export default function EspelhoPage() {
               <Stat label="Reservadas" valor={fmtInt(consolidado.reservada)} cor={COR.reservada} />
               <Stat label="Disponíveis" valor={fmtInt(consolidado.disponivel)} cor={COR.disponivel} />
               <Stat label="% vendido" valor={`${consolidado.pct.toFixed(1)}%`} cor="#0c1c3a" destaque />
-              <Stat label="VGV vendido" valor={fmtBRL(consolidado.vgv)} cor="#0c1c3a" destaque />
             </div>
             <Barra a={consolidado} />
+
+            {/* VGV: vendido x total */}
+            <div style={vgvBox}>
+              <div style={vgvRow}>
+                <div>
+                  <div style={vgvLabel}>VGV vendido</div>
+                  <div style={{ ...vgvValor, color: COR.vendida }}>{fmtBRL(consolidado.vgv)}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={vgvLabel}>% do VGV vendido</div>
+                  <div style={{ ...vgvValor, color: "#0c1c3a" }}>{consolidado.pctVgv.toFixed(1)}%</div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={vgvLabel}>VGV total</div>
+                  <div style={{ ...vgvValor, color: "#0c1c3a" }}>{fmtBRL(consolidado.vgvTotal)}</div>
+                </div>
+              </div>
+              <div style={vgvTrack}>
+                <div style={{ width: `${Math.min(100, consolidado.pctVgv)}%`, height: "100%", background: COR.vendida }} />
+              </div>
+              <div style={{ fontSize: 11, color: "#8a93a0", marginTop: 6 }}>
+                VGV total pelo valor de tabela · VGV vendido pelo valor efetivo da venda
+              </div>
+            </div>
 
             {/* Evolução consolidada no período */}
             <div style={{ ...evolBox, marginTop: 18 }}>
@@ -343,10 +366,18 @@ function EmpCard({
         <div style={{ marginLeft: "auto", textAlign: "right" }}>
           <div style={{ fontSize: 11, color: "#8a93a0" }}>VGV vendido</div>
           <div style={{ fontSize: 15, fontWeight: 700, color: "#00aeef" }}>{fmtBRL(a.vgv)}</div>
+          <div style={{ fontSize: 11, color: "#5b6573", marginTop: 2 }}>
+            de {fmtBRL(a.vgvTotal)} · <b style={{ color: "#0c1c3a" }}>{a.pctVgv.toFixed(1)}%</b>
+          </div>
         </div>
       </div>
 
       <Barra a={a} />
+
+      {/* VGV vendido sobre o VGV total */}
+      <div style={{ ...vgvTrack, marginTop: 8 }} title={`${a.pctVgv.toFixed(1)}% do VGV total vendido`}>
+        <div style={{ width: `${Math.min(100, a.pctVgv)}%`, height: "100%", background: COR.vendida }} />
+      </div>
 
       {/* Blocos clicáveis */}
       <div style={{ display: "grid", gridTemplateColumns: `repeat(${blocos.length}, 1fr)`, gap: 8, marginTop: 14 }}>
@@ -626,13 +657,17 @@ function ImportPanel({ onDone, emps, onLogos }: { onDone: () => void; emps: Emp[
 
 // ---------- helpers ----------
 function agrega(us: Unidade[]) {
-  const r = { vendida: 0, reservada: 0, disponivel: 0, outros: 0, total: 0, vgv: 0, pct: 0 };
+  const r = { vendida: 0, reservada: 0, disponivel: 0, outros: 0, total: 0, vgv: 0, vgvTotal: 0, pct: 0, pctVgv: 0 };
   us.forEach((u) => {
     r[u.status] += 1;
     r.total += 1;
-    if (u.status === "vendida") r.vgv += +(u.venda || 0);
+    // VGV total = valor de tabela de todas as unidades (fallback: valor da venda)
+    r.vgvTotal += +(u.valor || 0) || +(u.venda || 0);
+    // VGV vendido = valor efetivo das vendidas (fallback: tabela, se a venda não veio no CSV)
+    if (u.status === "vendida") r.vgv += +(u.venda || 0) || +(u.valor || 0);
   });
   r.pct = r.total > 0 ? (r.vendida / r.total) * 100 : 0;
+  r.pctVgv = r.vgvTotal > 0 ? (r.vgv / r.vgvTotal) * 100 : 0;
   return r;
 }
 function comparar(atual: Unidade[], anterior: Unidade[]) {
@@ -680,6 +715,11 @@ const secTitle: React.CSSProperties = { fontSize: 14, fontWeight: 700, color: "#
 const evolBox: React.CSSProperties = { marginTop: 14, border: "1px solid #eef1f5", borderRadius: 10, padding: 14 };
 const evolTitle: React.CSSProperties = { fontSize: 11, fontWeight: 700, color: "#5b6573", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 };
 const consolidadoGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: 16, marginBottom: 16 };
+const vgvBox: React.CSSProperties = { marginTop: 16, border: "1px solid #eef1f5", borderRadius: 10, padding: 14 };
+const vgvRow: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 10 };
+const vgvLabel: React.CSSProperties = { fontSize: 11, color: "#8a93a0", textTransform: "uppercase", letterSpacing: "0.4px" };
+const vgvValor: React.CSSProperties = { fontSize: 20, fontWeight: 700, fontFamily: "var(--font-playfair)", marginTop: 2 };
+const vgvTrack: React.CSSProperties = { display: "flex", height: 8, borderRadius: 6, overflow: "hidden", background: "#eef1f5" };
 const empGrid: React.CSSProperties = { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(440px, 1fr))", gap: 18 };
 const bloco: React.CSSProperties = { background: "#fff", border: "1.5px solid #e6e9ee", borderRadius: 10, padding: "10px 8px", cursor: "pointer", textAlign: "center" };
 const lista: React.CSSProperties = { marginTop: 10, maxHeight: 200, overflowY: "auto", border: "1px solid #eef1f5", borderRadius: 8 };
