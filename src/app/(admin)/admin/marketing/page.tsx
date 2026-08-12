@@ -95,18 +95,34 @@ export default function MarketingPage() {
   const [distLoading, setDistLoading] = useState(true);
   const [distSyncing, setDistSyncing] = useState(false);
   const [distMsg, setDistMsg] = useState<{ texto: string; erro: boolean } | null>(null);
+  const [tagCfg, setTagCfg] = useState<Map<string, boolean>>(new Map());
+  const [showTags, setShowTags] = useState(false);
 
   // Distribuição (Kommo): acumulado geral — independe do período selecionado
   async function loadDist() {
     setDistLoading(true);
     /* eslint-disable @typescript-eslint/no-explicit-any */
-    const res = await (supabase.from("kommo_distribuicao_leads") as any)
-      .select("id, pipeline_nome, status_nome, responsavel_nome, tags, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50000);
-    /* eslint-enable @typescript-eslint/no-explicit-any */
+    const [res, tagsRes] = await Promise.all([
+      (supabase.from("kommo_distribuicao_leads") as any)
+        .select("id, pipeline_nome, status_nome, responsavel_nome, tags, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50000),
+      (supabase.from("kommo_distribuicao_tags") as any).select("tag, imobiliaria"),
+    ]);
     setDistLeads(res.error ? [] : (res.data as DistLead[]) || []);
+    setTagCfg(new Map(((tagsRes.data as any[]) || []).map((t) => [t.tag as string, !!t.imobiliaria])));
+    /* eslint-enable @typescript-eslint/no-explicit-any */
     setDistLoading(false);
+  }
+
+  async function toggleTag(tag: string, val: boolean) {
+    setTagCfg((prev) => new Map(prev).set(tag, val)); // otimista
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    await (supabase.from("kommo_distribuicao_tags") as any).upsert(
+      { tag, imobiliaria: val, atualizado_em: new Date().toISOString() },
+      { onConflict: "tag" }
+    );
+    /* eslint-enable @typescript-eslint/no-explicit-any */
   }
   useEffect(() => {
     loadDist();
@@ -385,17 +401,32 @@ export default function MarketingPage() {
       if (dia === ontemS) ontem += 1;
       if (dia && dia >= corte7) d7 += 1;
     }
-    const imobs = new Set(distLeads.flatMap((l) => l.tags || []));
+    // Só tags marcadas como imobiliária contam; sem nenhuma marcada, todas contam (fallback)
+    const marcadas = new Set([...tagCfg.entries()].filter(([, v]) => v).map(([k]) => k));
+    const filtroAtivo = marcadas.size > 0;
+    const imobDe = (l: DistLead) => {
+      const ts = (l.tags || []).filter((t) => !filtroAtivo || marcadas.has(t));
+      return ts.length > 0 ? ts : ["Sem imobiliária"];
+    };
+    const imobs = new Set(distLeads.flatMap((l) => (l.tags || []).filter((t) => !filtroAtivo || marcadas.has(t))));
     return {
       total: distLeads.length,
       hoje,
       ontem,
       d7,
       imobs: imobs.size,
+      filtroAtivo,
       porEmp: agrupa((l) => [empDe(l)]),
-      porImob: agrupa((l) => (l.tags && l.tags.length > 0 ? l.tags : ["Sem tag"])),
+      porImob: agrupa(imobDe),
       porResp: agrupa((l) => [l.responsavel_nome || "Sem responsável"]),
     };
+  }, [distLeads, tagCfg]);
+
+  // Todas as tags vistas nos leads (para o painel de configuração), com contagem
+  const todasTags = useMemo(() => {
+    const m = new Map<string, number>();
+    distLeads.forEach((l) => (l.tags || []).forEach((t) => m.set(t, (m.get(t) || 0) + 1)));
+    return [...m.entries()].sort((a, b) => b[1] - a[1]);
   }, [distLeads]);
 
   const ultimaSync = syncLog[0];
@@ -519,10 +550,53 @@ export default function MarketingPage() {
         <button onClick={sincronizarDist} disabled={distSyncing} style={{ ...distBtn, opacity: distSyncing ? 0.6 : 1 }}>
           {distSyncing ? "Sincronizando…" : "Sincronizar"}
         </button>
+        <button onClick={() => setShowTags((s) => !s)} style={{ ...distBtn, ...(showTags ? { background: "rgba(0,174,239,0.28)" } : {}) }}>
+          Tags {dist.filtroAtivo ? `(${[...tagCfg.values()].filter(Boolean).length})` : "(todas)"}
+        </button>
         {distMsg && (
           <span style={{ fontSize: 11, color: distMsg.erro ? "#d9737a" : "rgba(255,255,255,0.5)" }}>{distMsg.texto}</span>
         )}
       </div>
+      {showTags && (
+        <Panel title="Quais tags são imobiliárias?">
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: "0 0 14px" }}>
+            Marque as tags que representam imobiliárias — só elas entram no ranking &quot;Leads por imobiliária&quot;.
+            {!dist.filtroAtivo && " Enquanto nenhuma estiver marcada, todas as tags contam."}
+          </p>
+          {todasTags.length === 0 ? (
+            <Vazio loading={distLoading} />
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
+              {todasTags.map(([tag, qtd]) => {
+                const on = tagCfg.get(tag) === true;
+                return (
+                  <label
+                    key={tag}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "8px 12px",
+                      borderRadius: 9,
+                      cursor: "pointer",
+                      fontSize: 12.5,
+                      background: on ? "rgba(0,174,239,0.10)" : "rgba(255,255,255,0.03)",
+                      border: `1px solid ${on ? "rgba(0,174,239,0.35)" : "rgba(255,255,255,0.08)"}`,
+                      color: on ? "#fff" : "rgba(255,255,255,0.65)",
+                    }}
+                  >
+                    <input type="checkbox" checked={on} onChange={(e) => toggleTag(tag, e.target.checked)} style={{ accentColor: BLUE }} />
+                    <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={tag}>
+                      {tag}
+                    </span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{int(qtd)}</span>
+                  </label>
+                );
+              })}
+            </div>
+          )}
+        </Panel>
+      )}
       {!distLoading && distLeads.length === 0 && (
         <Aviso tom="info">
           Sem leads de distribuição ainda. Clique em <b>Sincronizar</b> acima (a primeira carga puxa tudo) ou rode{" "}
@@ -534,7 +608,7 @@ export default function MarketingPage() {
         <Card label="Ontem" sub="leads gerados" value={int(dist.ontem)} loading={distLoading} accent />
         <Card label="Últimos 7 dias" sub="acumulado" value={int(dist.d7)} loading={distLoading} accent />
         <Card label="Hoje" sub="parcial" value={int(dist.hoje)} loading={distLoading} />
-        <Card label="Imobiliárias" sub="com leads (tags)" value={int(dist.imobs)} loading={distLoading} />
+        <Card label="Imobiliárias" sub={dist.filtroAtivo ? "tags marcadas com leads" : "todas as tags"} value={int(dist.imobs)} loading={distLoading} />
       </div>
       <div style={twoCol}>
         <Panel title="Leads por empreendimento">
@@ -567,8 +641,9 @@ export default function MarketingPage() {
         )}
       </div>
       <p style={muted}>
-        Distribuição = funil de distribuição do Kommo (empreendimento pelo funil/estágio; imobiliária pela tag do lead).
-        Números acumulados — não seguem o período selecionado no topo. &quot;Ontem&quot; e &quot;7 dias&quot; usam a data de criação do lead.
+        Distribuição = funil de distribuição do Kommo (empreendimento pelo funil/estágio; imobiliária pela tag do lead —
+        configure quais tags contam no botão &quot;Tags&quot;). Números acumulados — não seguem o período selecionado no topo.
+        &quot;Ontem&quot; e &quot;7 dias&quot; usam a data de criação do lead.
       </p>
 
       {/* VENDAS (KOMMO) */}
