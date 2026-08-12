@@ -101,6 +101,94 @@ function fonteFromNome(nome?: string): string {
   return "outro";
 }
 
+// ---------- Funil de DISTRIBUIÇÃO (leads para imobiliárias) ----------
+// Funis identificados pelo nome (contém "distribui"); estágio/funil = empreendimento,
+// tags do lead = imobiliária.
+
+const normNome = (s: string) =>
+  (s || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+
+export interface DistribPipeline {
+  id: number;
+  nome: string;
+  statuses: { id: number; nome: string }[];
+}
+
+export async function fetchDistribPipelines(): Promise<DistribPipeline[]> {
+  const json = await kget("leads/pipelines");
+  const out: DistribPipeline[] = [];
+  for (const p of json?._embedded?.pipelines || []) {
+    if (!normNome(p.name).includes("distribui")) continue;
+    out.push({
+      id: p.id,
+      nome: p.name,
+      statuses: (p._embedded?.statuses || []).map((s: any) => ({ id: s.id, nome: s.name })),
+    });
+  }
+  return out;
+}
+
+/** Mapa id → nome dos usuários da conta (responsáveis). */
+export async function fetchUsersMap(): Promise<Map<number, string>> {
+  const map = new Map<number, string>();
+  let page = 1;
+  for (;;) {
+    const json = await kget(`users?limit=250&page=${page}`);
+    const users = json?._embedded?.users || [];
+    for (const u of users) map.set(u.id, u.name || `#${u.id}`);
+    if (users.length < 250) break;
+    page++;
+    if (page > 10) break;
+  }
+  return map;
+}
+
+export interface KommoDistribLead {
+  id: number;
+  pipeline_id: number;
+  status_id: number;
+  responsavel_id: number | null;
+  tags: string[];
+  nome: string | null;
+  valor: number;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+/** Leads dos funis de distribuição, com tags. updatedFrom (epoch s) p/ incremental. */
+export async function fetchDistribLeads(pipelineIds: number[], updatedFrom?: number): Promise<KommoDistribLead[]> {
+  const out: KommoDistribLead[] = [];
+  const limit = 250;
+  const pipeFilter = pipelineIds.map((id, i) => `filter[pipeline_id][${i}]=${id}`).join("&");
+  let page = 1;
+  for (;;) {
+    let path = `leads?limit=${limit}&page=${page}&${pipeFilter}&order[updated_at]=desc`;
+    if (updatedFrom) path += `&filter[updated_at][from]=${updatedFrom}`;
+    const json = await kget(path);
+    const leads = json?._embedded?.leads || [];
+    for (const l of leads) {
+      out.push({
+        id: l.id,
+        pipeline_id: l.pipeline_id,
+        status_id: l.status_id,
+        responsavel_id: l.responsible_user_id ?? null,
+        tags: (l._embedded?.tags || []).map((t: any) => t.name).filter(Boolean),
+        nome: l.name ?? null,
+        valor: Number(l.price) || 0,
+        created_at: tsIso(l.created_at),
+        updated_at: tsIso(l.updated_at),
+      });
+    }
+    if (leads.length < limit) break;
+    page++;
+    if (page > 200) break; // trava de segurança (~50k leads)
+  }
+  return out;
+}
+
 /** Leads dos funis de venda. updatedFrom (epoch s) p/ incremental; sem ele = backfill total. */
 export async function fetchSalesLeads(updatedFrom?: number): Promise<KommoLead[]> {
   const out: KommoLead[] = [];
