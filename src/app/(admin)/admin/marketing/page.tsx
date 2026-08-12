@@ -61,6 +61,14 @@ interface KommoLead {
   bucket: string;
   created_at: string | null;
 }
+interface DistLead {
+  id: number;
+  pipeline_nome: string | null;
+  status_nome: string | null;
+  responsavel_nome: string | null;
+  tags: string[] | null;
+  created_at: string | null;
+}
 
 const RANGES = [
   { label: "Últimos 7 dias", value: "7" },
@@ -83,6 +91,47 @@ export default function MarketingPage() {
   const [seguidores, setSeguidores] = useState<Seguidor[]>([]);
   const [syncLog, setSyncLog] = useState<SyncLog[]>([]);
   const [kommoLeads, setKommoLeads] = useState<KommoLead[]>([]);
+  const [distLeads, setDistLeads] = useState<DistLead[]>([]);
+  const [distLoading, setDistLoading] = useState(true);
+  const [distSyncing, setDistSyncing] = useState(false);
+  const [distMsg, setDistMsg] = useState<{ texto: string; erro: boolean } | null>(null);
+
+  // Distribuição (Kommo): acumulado geral — independe do período selecionado
+  async function loadDist() {
+    setDistLoading(true);
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const res = await (supabase.from("kommo_distribuicao_leads") as any)
+      .select("id, pipeline_nome, status_nome, responsavel_nome, tags, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50000);
+    /* eslint-enable @typescript-eslint/no-explicit-any */
+    setDistLeads(res.error ? [] : (res.data as DistLead[]) || []);
+    setDistLoading(false);
+  }
+  useEffect(() => {
+    loadDist();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function sincronizarDist() {
+    setDistSyncing(true);
+    setDistMsg(null);
+    try {
+      // primeira carga = backfill completo; depois, incremental
+      const backfill = distLeads.length === 0 ? "?backfill=1" : "";
+      const res = await fetch(`/api/kommo/distribuicao/sync${backfill}`, { method: "POST" });
+      const json = await res.json();
+      if (json.ok) {
+        setDistMsg({ texto: `sincronizado: ${int(json.leads)} leads`, erro: false });
+        loadDist();
+      } else {
+        setDistMsg({ texto: json.error || "falha ao sincronizar", erro: true });
+      }
+    } catch (e) {
+      setDistMsg({ texto: e instanceof Error ? e.message : "erro de rede", erro: true });
+    }
+    setDistSyncing(false);
+  }
 
   useEffect(() => {
     async function load() {
@@ -303,6 +352,52 @@ export default function MarketingPage() {
     };
   }, [kommoLeads, insights]);
 
+  // Distribuição de leads às imobiliárias — funil/estágio = empreendimento, tag = imobiliária
+  const dist = useMemo(() => {
+    const fmtD = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+    const hojeS = fmtD(new Date());
+    const ontemS = fmtD(new Date(Date.now() - 864e5));
+    const corte7 = fmtD(new Date(Date.now() - 6 * 864e5)); // últimos 7 dias incluindo hoje
+    const diaDe = (l: DistLead) => (l.created_at ? fmtD(new Date(l.created_at)) : null);
+
+    // vários funis de distribuição → empreendimento = nome do funil; funil único → estágio
+    const usaFunil = new Set(distLeads.map((l) => l.pipeline_nome).filter(Boolean)).size > 1;
+    const empDe = (l: DistLead) => (usaFunil ? limpaFunil(l.pipeline_nome || "—") : l.status_nome || "—");
+
+    let hoje = 0, ontem = 0, d7 = 0;
+    const agrupa = (chaves: (l: DistLead) => string[]) => {
+      const m = new Map<string, { nome: string; total: number; ontem: number; d7: number }>();
+      for (const l of distLeads) {
+        const dia = diaDe(l);
+        for (const k of chaves(l)) {
+          const o = m.get(k) || { nome: k, total: 0, ontem: 0, d7: 0 };
+          o.total += 1;
+          if (dia === ontemS) o.ontem += 1;
+          if (dia && dia >= corte7) o.d7 += 1;
+          m.set(k, o);
+        }
+      }
+      return [...m.values()].sort((a, b) => b.total - a.total);
+    };
+    for (const l of distLeads) {
+      const dia = diaDe(l);
+      if (dia === hojeS) hoje += 1;
+      if (dia === ontemS) ontem += 1;
+      if (dia && dia >= corte7) d7 += 1;
+    }
+    const imobs = new Set(distLeads.flatMap((l) => l.tags || []));
+    return {
+      total: distLeads.length,
+      hoje,
+      ontem,
+      d7,
+      imobs: imobs.size,
+      porEmp: agrupa((l) => [empDe(l)]),
+      porImob: agrupa((l) => (l.tags && l.tags.length > 0 ? l.tags : ["Sem tag"])),
+      porResp: agrupa((l) => [l.responsavel_nome || "Sem responsável"]),
+    };
+  }, [distLeads]);
+
   const ultimaSync = syncLog[0];
   const semDados = !loading && !erro && insights.length === 0 && seguidores.length === 0;
   const m = t.moeda;
@@ -414,6 +509,67 @@ export default function MarketingPage() {
             </div>
           ))}
       </div>
+
+      {/* DISTRIBUIÇÃO DE LEADS (KOMMO) */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "34px 0 14px", flexWrap: "wrap" }}>
+        <span style={{ width: 3, height: 18, background: BLUE, borderRadius: 2 }} />
+        <h2 style={{ fontFamily: "var(--font-playfair)", fontSize: 19, fontWeight: 500, color: "#fff", margin: 0 }}>
+          Distribuição de leads — imobiliárias
+        </h2>
+        <button onClick={sincronizarDist} disabled={distSyncing} style={{ ...distBtn, opacity: distSyncing ? 0.6 : 1 }}>
+          {distSyncing ? "Sincronizando…" : "Sincronizar"}
+        </button>
+        {distMsg && (
+          <span style={{ fontSize: 11, color: distMsg.erro ? "#d9737a" : "rgba(255,255,255,0.5)" }}>{distMsg.texto}</span>
+        )}
+      </div>
+      {!distLoading && distLeads.length === 0 && (
+        <Aviso tom="info">
+          Sem leads de distribuição ainda. Clique em <b>Sincronizar</b> acima (a primeira carga puxa tudo) ou rode{" "}
+          <code>/api/kommo/distribuicao/sync?backfill=1</code>.
+        </Aviso>
+      )}
+      <div style={grid}>
+        <Card label="Leads distribuídos" sub="acumulado geral" value={int(dist.total)} loading={distLoading} accent />
+        <Card label="Ontem" sub="leads gerados" value={int(dist.ontem)} loading={distLoading} accent />
+        <Card label="Últimos 7 dias" sub="acumulado" value={int(dist.d7)} loading={distLoading} accent />
+        <Card label="Hoje" sub="parcial" value={int(dist.hoje)} loading={distLoading} />
+        <Card label="Imobiliárias" sub="com leads (tags)" value={int(dist.imobs)} loading={distLoading} />
+      </div>
+      <div style={twoCol}>
+        <Panel title="Leads por empreendimento">
+          {dist.porEmp.length === 0 ? (
+            <Vazio loading={distLoading} />
+          ) : (
+            <Tabela
+              head={["Empreendimento", "Total", "Ontem", "7 dias"]}
+              rows={dist.porEmp.map((e) => [e.nome, int(e.total), e.ontem > 0 ? `+${e.ontem}` : "—", e.d7 > 0 ? int(e.d7) : "—"])}
+            />
+          )}
+        </Panel>
+        <Panel title="Leads por imobiliária">
+          {dist.porImob.length === 0 ? (
+            <Vazio loading={distLoading} />
+          ) : (
+            <Tabela
+              head={["Imobiliária", "Total", "Ontem", "7 dias"]}
+              rows={dist.porImob.map((e) => [e.nome, int(e.total), e.ontem > 0 ? `+${e.ontem}` : "—", e.d7 > 0 ? int(e.d7) : "—"])}
+            />
+          )}
+        </Panel>
+        {dist.porResp.length > 1 && (
+          <Panel title="Leads por responsável">
+            <Tabela
+              head={["Responsável", "Total", "Ontem", "7 dias"]}
+              rows={dist.porResp.map((e) => [e.nome, int(e.total), e.ontem > 0 ? `+${e.ontem}` : "—", e.d7 > 0 ? int(e.d7) : "—"])}
+            />
+          </Panel>
+        )}
+      </div>
+      <p style={muted}>
+        Distribuição = funil de distribuição do Kommo (empreendimento pelo funil/estágio; imobiliária pela tag do lead).
+        Números acumulados — não seguem o período selecionado no topo. &quot;Ontem&quot; e &quot;7 dias&quot; usam a data de criação do lead.
+      </p>
 
       {/* VENDAS (KOMMO) */}
       <H>Vendas — funil (Kommo)</H>
@@ -738,6 +894,11 @@ function Funil({ rows }: { rows: Array<{ label: string; valor: number; pct: stri
 }
 
 // ---- Helpers ----
+// "Distribuição Salsa" -> "Salsa"; "Distribuição" -> "Distribuição"
+function limpaFunil(nome: string) {
+  const limpo = nome.replace(/distribui[çc][ãa]o|distribui[çc][õo]es/gi, "").replace(/^[\s\-–—|:·]+|[\s\-–—|:·]+$/g, "");
+  return limpo || nome;
+}
 function brl(n: number, moeda: string) {
   try {
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: moeda }).format(n);
@@ -842,6 +1003,17 @@ const produtoTag: React.CSSProperties = {
   letterSpacing: "0.3px",
 };
 const muted: React.CSSProperties = { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 18, lineHeight: 1.6 };
+const distBtn: React.CSSProperties = {
+  marginLeft: 6,
+  padding: "6px 14px",
+  background: "rgba(0,174,239,0.12)",
+  border: "1px solid rgba(0,174,239,0.3)",
+  borderRadius: 999,
+  color: BLUE,
+  fontSize: 11.5,
+  fontWeight: 600,
+  cursor: "pointer",
+};
 const axis = { stroke: "rgba(255,255,255,0.25)", fontSize: 11, tickLine: false } as const;
 const legend = { fontSize: 12 } as const;
 const ttip = {
