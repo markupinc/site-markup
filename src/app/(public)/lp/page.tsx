@@ -215,20 +215,23 @@ export default async function LpPage() {
         </section>
       )}
 
-      {/* SOBRE */}
-      <section className="border-t border-white/8">
-        <div className="max-w-6xl mx-auto px-6 py-20 md:py-28 grid gap-12 md:grid-cols-2 items-center">
-          <div className="overflow-hidden order-last md:order-first">
-            <Image
-              src={empDe("salsa")?.imagem_destaque_url || "/assets/salsa.png"}
-              alt="Empreendimento Markup"
-              width={640}
-              height={720}
-              quality={82}
-              sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ width: "100%", height: "auto", maxHeight: 560, objectFit: "cover" }}
-            />
-          </div>
+      {/* SOBRE — imagem de fundo cobre a seção inteira, texto por cima (à direita) */}
+      <section className="relative overflow-hidden border-t border-white/8">
+        <Image
+          src={empDe("salsa")?.imagem_destaque_url || "/assets/salsa.png"}
+          alt="Empreendimento Markup na orla de Maceió"
+          fill
+          quality={82}
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{ background: "linear-gradient(90deg, rgba(5,10,16,0.30) 0%, rgba(5,10,16,0.72) 50%, rgba(5,10,16,0.94) 100%)" }}
+        />
+        <div className="absolute inset-0 md:hidden" style={{ background: "rgba(5,10,16,0.55)" }} />
+        <div className="relative z-10 max-w-6xl mx-auto px-6 py-24 md:py-36 grid gap-12 md:grid-cols-2 items-center">
+          <div className="hidden md:block" />
           <div>
             <h2 className="text-3xl md:text-4xl font-light" style={{ fontFamily: "var(--font-playfair)", lineHeight: 1.2 }}>
               Uma incorporadora jovem com a{" "}
