@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   title: "Você investe. O retorno vem! | Markup Incorporações",
   description:
     "Empreendimentos de alto padrão na orla de Maceió — beira-mar, arquitetura contemporânea e rentabilidade comprovada para quem investe com inteligência.",
+  // Servida em / (home) e /lp (campanhas) — canonical única para o Google
+  alternates: { canonical: "/" },
 };
 
 // Copy de campanha por empreendimento (imagem/slug vêm do banco)
