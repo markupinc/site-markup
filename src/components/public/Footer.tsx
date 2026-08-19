@@ -17,6 +17,7 @@ const sitemapLinks = [
 const projectLinks = [
   { label: "Up! Studios", href: "/empreendimentos/up" },
   { label: "Salsa Home Resort", href: "/empreendimentos/salsa" },
+  { label: "Horizon Trade Center", href: "/empreendimentos/horizon-trade-center" },
 ];
 
 const contactLinks = [
