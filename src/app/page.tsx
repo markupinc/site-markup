@@ -1,4 +1,5 @@
 import Navbar from "@/components/public/Navbar";
+import Footer from "@/components/public/Footer";
 import LpContent from "@/components/public/LpContent";
 
 /**
@@ -16,6 +17,7 @@ export default function Home() {
     <>
       <Navbar logoSrc="/assets/logo.png" />
       <LpContent comNavbar />
+      <Footer logoSrc="/assets/logo.png" />
     </>
   );
 }

@@ -274,13 +274,15 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="py-10 flex flex-col items-center gap-4">
-        <Image src="/assets/logo.png" alt="Markup Incorporações" width={100} height={34} style={{ height: 30, width: "auto" }} />
-        <p className="text-[11px] text-white/35">
-          © {new Date().getFullYear()} Markup Incorporações. Todos os direitos reservados.
-        </p>
-      </footer>
+      {/* Footer mínimo só na versão de campanha; a home usa o Footer completo do site */}
+      {!comNavbar && (
+        <footer className="py-10 flex flex-col items-center gap-4">
+          <Image src="/assets/logo.png" alt="Markup Incorporações" width={100} height={34} style={{ height: 30, width: "auto" }} />
+          <p className="text-[11px] text-white/35">
+            © {new Date().getFullYear()} Markup Incorporações. Todos os direitos reservados.
+          </p>
+        </footer>
+      )}
     </main>
   );
 }
