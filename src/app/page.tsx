@@ -1,7 +1,21 @@
-// A home é a LP de campanha ("Você investe. O retorno vem!").
-// Fonte única em (public)/lp — /lp segue no ar para as campanhas que já apontam pra lá.
-// A home institucional antiga ficou preservada em /home-institucional-x7k2 (noindex).
-export { default, metadata } from "./(public)/lp/page";
+import Navbar from "@/components/public/Navbar";
+import LpContent from "@/components/public/LpContent";
 
-// O Next exige o valor literal aqui (não pode ser reexportado) — manter igual ao da LP.
+/**
+ * Home = LP de campanha com o menu do site por cima.
+ * /lp serve o mesmo conteúdo sem menu (campanhas).
+ * A home institucional antiga está preservada em /home-institucional-x7k2 (noindex).
+ */
+
 export const revalidate = 3600;
+
+export { metadata } from "./(public)/lp/page";
+
+export default function Home() {
+  return (
+    <>
+      <Navbar logoSrc="/assets/logo.png" />
+      <LpContent comNavbar />
+    </>
+  );
+}
