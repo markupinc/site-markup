@@ -39,7 +39,18 @@ export async function GET(_request: NextRequest, ctx: { params: Promise<{ path: 
   for (const arquivo of candidatos) {
     const { data, error } = await supabase.storage.from(BUCKET).download(`${slug}/${arquivo}`);
     if (error || !data) continue;
-    const buf = Buffer.from(await data.arrayBuffer());
+    let buf = Buffer.from(await data.arrayBuffer());
+    // A página é servida em /lp/{slug} (sem barra final), então caminhos relativos
+    // como "img/foto.webp" resolveriam para /lp/img/... — o <base> corrige a raiz.
+    if (ehHtml(arquivo)) {
+      let html = buf.toString("utf-8");
+      if (!/<base[\s>]/i.test(html)) {
+        const dir = arquivo.includes("/") ? arquivo.slice(0, arquivo.lastIndexOf("/") + 1) : "";
+        const baseTag = `<base href="/lp/${slug}/${dir}">`;
+        html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (m) => `${m}${baseTag}`) : `${baseTag}${html}`;
+        buf = Buffer.from(html, "utf-8");
+      }
+    }
     return new NextResponse(buf as any, {
       status: 200,
       headers: {
