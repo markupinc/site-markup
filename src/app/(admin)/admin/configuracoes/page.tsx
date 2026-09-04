@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import QrCodesSection from "./QrCodesSection";
 import WebhooksSection from "./WebhooksSection";
+import LandingPagesSection from "./LandingPagesSection";
 
 interface ConfigItem {
   chave: string;
@@ -229,6 +230,8 @@ export default function ConfiguracoesPage() {
             </div>
           </div>
         ))}
+
+        <LandingPagesSection />
 
         <QrCodesSection />
 
