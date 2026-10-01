@@ -1,5 +1,5 @@
 /**
- * Parser do CSV do Trilote (Relatório de Apartamentos).
+ * Parser do CSV do Trilote (Relatório de Apartamentos/Unidades).
  * Separador ';', campos com aspas, BOM, números no formato BR (573.997,19).
  * Detecta colunas pelo NOME do cabeçalho (tolerante a acento/maiúsculas).
  */
@@ -96,8 +96,10 @@ export function parseEspelhoCSV(text: string): ParseResult {
   }
 
   const headers = rows[0];
+  // O Trilote passou a exportar a coluna como "Unidade"; exports antigos usam "Apartamento".
+  const colApartamento = findCol(headers, (h) => h.startsWith("apartamento"));
   const col = {
-    apartamento: findCol(headers, (h) => h.startsWith("apartamento")),
+    apartamento: colApartamento >= 0 ? colApartamento : findCol(headers, (h) => h.startsWith("unidade")),
     torre: findCol(headers, (h) => h === "torre"),
     tipo: findCol(headers, (h) => h === "tipo"),
     matricula: findCol(headers, (h) => h.includes("matricula")),
@@ -115,7 +117,7 @@ export function parseEspelhoCSV(text: string): ParseResult {
       unidades: [],
       empreendimentos: [],
       statusDesconhecidos: [],
-      erro: "Cabeçalho não reconhecido: faltam colunas Empreendimento / Apartamento / Situação.",
+      erro: "Cabeçalho não reconhecido: faltam colunas Empreendimento / Apartamento (ou Unidade) / Situação.",
     };
   }
 
