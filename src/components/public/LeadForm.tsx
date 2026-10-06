@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { trackSignupConversion } from "@/lib/tracking/googleAds";
 
 const leadSchema = z.object({
   nome: z.string().min(2, "Informe seu nome"),
@@ -115,6 +116,7 @@ export default function LeadForm({
         throw new Error(json?.error ?? "Erro ao enviar formulário.");
       }
 
+      trackSignupConversion();
       setStatus("success");
       reset();
     } catch (err: any) {

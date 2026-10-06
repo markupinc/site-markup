@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import type { CampoFormulario } from "@/types/database";
+import { trackSignupConversion } from "@/lib/tracking/googleAds";
 
 const labelStyle: React.CSSProperties = {
   display: "block",
@@ -194,6 +195,7 @@ export default function DynamicLeadForm({
         const json = await res.json().catch(() => null);
         throw new Error(json?.error ?? "Erro ao enviar formulário.");
       }
+      trackSignupConversion();
       setStatus("success");
     } catch (err) {
       setStatus("error");

@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { headers } from "next/headers";
+import { GOOGLE_ADS_ID } from "@/lib/tracking/googleAds";
 
 interface TrackingConfig {
   ga4: string | null;
@@ -65,25 +66,22 @@ export default async function TrackingScripts() {
         }}
       />
 
-      {/* Google Analytics 4 */}
-      {config.ga4 && (
-        <>
-          <script
-            async
-            src={`https://www.googletagmanager.com/gtag/js?id=${config.ga4}`}
-          />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                gtag('config', '${config.ga4}');
-              `,
-            }}
-          />
-        </>
-      )}
+      {/* Google tag (gtag.js) — um único carregamento serve o Google Ads e o GA4 (se configurado) */}
+      <script
+        async
+        src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ADS_ID}`}
+      />
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            ${config.ga4 ? `gtag('config', '${config.ga4}');` : ""}
+            gtag('config', '${GOOGLE_ADS_ID}');
+          `,
+        }}
+      />
 
       {/* Google Tag Manager */}
       {config.gtm && (
