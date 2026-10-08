@@ -92,8 +92,19 @@ export async function POST(request: NextRequest) {
   if (entradas.length === 0) return erroJson("ZIP vazio (nenhum arquivo válido encontrado).");
   if (entradas.length > MAX_ARQUIVOS) return erroJson(`ZIP com arquivos demais (máx. ${MAX_ARQUIVOS}).`);
 
-  // Se tudo estiver dentro de uma única pasta raiz (ex.: minha-lp/...), remove o prefixo
   const nomes = entradas.map((e) => e.entryName.replace(/\\/g, "/"));
+
+  // O site não executa PHP nem outros scripts de servidor: publicados aqui eles virariam
+  // arquivos baixáveis (com tokens e senhas dentro) e o formulário da página não funcionaria.
+  const deServidor = nomes.filter((n) => /\.(php\d?|phtml|phar|aspx?|jsp|cgi|pl|py|rb|sh|env)$/i.test(n));
+  if (deServidor.length > 0) {
+    return erroJson(
+      `Este ZIP contém arquivos de servidor (${deServidor.slice(0, 3).join(", ")}) que o site não executa e que ficariam públicos. ` +
+        "Nada foi publicado. A página precisa ser adaptada antes de subir."
+    );
+  }
+
+  // Se tudo estiver dentro de uma única pasta raiz (ex.: minha-lp/...), remove o prefixo
   const primeiraPasta = nomes[0].includes("/") ? nomes[0].split("/")[0] : null;
   const raizComum = primeiraPasta && nomes.every((n) => n.startsWith(`${primeiraPasta}/`)) ? `${primeiraPasta}/` : "";
 
