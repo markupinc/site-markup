@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<base href="/cadastro/">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://markupincorporacoes.com.br/cadastro/">
+<meta name="theme-color" content="#000000">
+<title>Cadastro de Leads | Markup</title>
+<meta name="description" content="Formulário oficial de cadastro de leads da Markup Incorporações para eventos externos. Uso exclusivo dos promotores.">
+
+<!-- Ícones -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Cadastro Markup">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Pré-visualização no WhatsApp / redes sociais -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Markup Incorporações">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Formulário de cadastro de leads | Markup Incorporações">
+<meta property="og:description" content="Formulário oficial dos promotores para cadastrar visitantes nos eventos externos da Markup Incorporações.">
+<meta property="og:url" content="https://markupincorporacoes.com.br/cadastro/">
+<meta property="og:image" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<meta property="og:image:secure_url" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Markup Incorporações: formulário de cadastro para novos leads">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Formulário de cadastro de leads | Markup Incorporações">
+<meta name="twitter:image" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<link rel="preload" href="montserrat-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="estilo.css?v=1">
+</head>
+<body>
+<main>
+  <header>
+    <img class="logo" src="logo.png" alt="Markup Incorporações" width="180" height="180">
+    <h1>Cadastro de leads · Eventos Markup</h1>
+    <p>Registre cada visitante interessado. Os dados vão direto para o nosso time comercial.</p>
+  </header>
+
+  <form id="leadForm" class="card" novalidate>
+    <div class="field">
+      <label for="nome">Nome <span class="req">*</span></label>
+      <input id="nome" name="nome" autocomplete="name" required>
+      <div class="hint"></div>
+    </div>
+
+    <div class="field">
+      <label for="telefone">WhatsApp / Telefone <span class="req">*</span></label>
+      <input id="telefone" name="telefone" type="tel" inputmode="numeric" placeholder="(11) 91234-5678" required>
+      <div class="hint"></div>
+    </div>
+
+    <div class="field">
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" inputmode="email" autocomplete="email" placeholder="nome@email.com">
+      <div class="hint"></div>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label for="idade">Idade</label>
+        <input id="idade" name="idade" type="number" inputmode="numeric" min="14" max="99">
+        <div class="hint"></div>
+      </div>
+      <div class="field">
+        <label for="profissao">Profissão <span class="req">*</span></label>
+        <input id="profissao" name="profissao" required>
+        <div class="hint"></div>
+      </div>
+    </div>
+
+    <!-- Anti-spam (campo invisível; humanos não preenchem) -->
+    <input class="hp" name="website" tabindex="-1" autocomplete="off">
+
+    <label class="consent">
+      <input type="checkbox" id="consent" checked>
+      <span>O visitante autorizou o contato por WhatsApp, telefone ou e-mail, conforme a LGPD.</span>
+    </label>
+
+    <button type="submit" id="btn">Enviar cadastro</button>
+    <div class="status" id="status"></div>
+  </form>
+</main>
+
+<script src="fila.js?v=1"></script>
+<script>
+(function(){
+  const PROMOTOR = (new URLSearchParams(location.search).get('promotor') || '').trim();
+  const form = document.getElementById('leadForm');
+  const btn = document.getElementById('btn');
+  const statusEl = document.getElementById('status');
+  const tel = document.getElementById('telefone');
+
+  // ---------- Máscara de telefone BR ----------
+  tel.addEventListener('input', () => {
+    let d = tel.value.replace(/\D/g,'').slice(0,11);
+    let out = d;
+    if (d.length > 2) out = '(' + d.slice(0,2) + ') ' + d.slice(2);
+    if (d.length > 7) out = '(' + d.slice(0,2) + ') ' + d.slice(2, d.length-4) + '-' + d.slice(-4);
+    tel.value = out;
+  });
+
+  function renderStatus(){
+    const n = Fila.pendentes();
+    statusEl.innerHTML = n
+      ? 'Sem conexão: <b>' + n + '</b> cadastro(s) guardado(s) neste aparelho. Serão enviados automaticamente.'
+      : (PROMOTOR ? 'Promotor: <b>' + PROMOTOR.replace(/[<>&]/g,'') + '</b>' : '');
+  }
+  Fila.aoAtualizar(renderStatus);
+
+  // ---------- Validação (bloqueia só os campos com *) ----------
+  function setErr(id, msg){
+    const el = document.getElementById(id);
+    el.classList.toggle('invalid', !!msg);
+    el.parentElement.querySelector('.hint').textContent = msg || '';
+    return !msg;
+  }
+  function validate(){
+    const v = id => document.getElementById(id).value.trim();
+    let ok = true;
+    ok = setErr('nome', v('nome').length < 2 ? 'Informe o nome.' : '') && ok;
+    ok = setErr('telefone', v('telefone').replace(/\D/g,'').length < 10 ? 'Telefone com DDD.' : '') && ok;
+    ok = setErr('profissao', v('profissao').length < 2 ? 'Informe a profissão.' : '') && ok;
+    const em = v('email');
+    ok = setErr('email', em && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em) ? 'E-mail inválido.' : '') && ok;
+    const id = v('idade');
+    ok = setErr('idade', id && (id < 14 || id > 99) ? 'Idade inválida.' : '') && ok;
+    if (!ok) { const f = form.querySelector('.invalid'); if (f) f.focus(); }
+    return ok;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+    const data = Object.fromEntries(new FormData(form).entries());
+    data.promotor = PROMOTOR;
+    data.consentimento = document.getElementById('consent').checked;
+    data.enviado_em = new Date().toISOString();
+
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    let situacao = 'enviado';
+    try { await Fila.enviar(data); }
+    catch(err){ Fila.guardar(data); situacao = 'pendente'; }
+    Fila.contarHoje();
+
+    const q = new URLSearchParams({ nome: data.nome.split(' ')[0], s: situacao });
+    if (PROMOTOR) q.set('promotor', PROMOTOR);
+    location.href = 'obrigado.html?' + q.toString();
+  });
+
+  renderStatus(); Fila.reenviar();
+  // No computador, já posiciona o cursor no Nome (no celular não, para o teclado não cobrir a tela)
+  if (window.innerWidth > 600) document.getElementById('nome').focus();
+})();
+</script>
+</body>
+</html>

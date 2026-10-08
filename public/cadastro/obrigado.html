@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<base href="/cadastro/">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cut">
+<meta name="robots" content="noindex, nofollow">
+<link rel="canonical" href="https://markupincorporacoes.com.br/cadastro/">
+<meta name="theme-color" content="#000000">
+<title>Cadastro Confirmado | Markup</title>
+<meta name="description" content="Formulário oficial de cadastro de leads da Markup Incorporações para eventos externos. Uso exclusivo dos promotores.">
+
+<!-- Ícones -->
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Cadastro Markup">
+<meta name="mobile-web-app-capable" content="yes">
+
+<!-- Pré-visualização no WhatsApp / redes sociais -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Markup Incorporações">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="Formulário de cadastro de leads | Markup Incorporações">
+<meta property="og:description" content="Formulário oficial dos promotores para cadastrar visitantes nos eventos externos da Markup Incorporações.">
+<meta property="og:url" content="https://markupincorporacoes.com.br/cadastro/">
+<meta property="og:image" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<meta property="og:image:secure_url" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Markup Incorporações: formulário de cadastro para novos leads">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Formulário de cadastro de leads | Markup Incorporações">
+<meta name="twitter:image" content="https://markupincorporacoes.com.br/cadastro/og-image.jpg">
+<link rel="preload" href="montserrat-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="estilo.css?v=1">
+</head>
+<body>
+<main>
+  <header>
+    <img class="logo" src="logo.png" alt="Markup Incorporações" width="180" height="180">
+  </header>
+
+  <section class="card thanks">
+    <div class="check" id="icone">✓</div>
+    <h1 id="titulo">Cadastro confirmado</h1>
+    <p id="msg">O lead foi enviado ao CRM.</p>
+
+    <div class="stats">
+      <div class="stat"><b id="hoje">0</b><span>cadastros hoje<br>neste aparelho</span></div>
+      <div class="stat"><b id="fila">0</b><span>aguardando<br>conexão</span></div>
+    </div>
+
+    <a class="btn" id="proximo" href="./">Cadastrar próxima pessoa</a>
+  </section>
+</main>
+
+<script src="fila.js?v=1"></script>
+<script>
+(function(){
+  const p = new URLSearchParams(location.search);
+  const nome = (p.get('nome') || '').slice(0, 40);
+  const promotor = p.get('promotor') || '';
+  const pendente = p.get('s') === 'pendente';
+
+  if (pendente) {
+    document.getElementById('icone').className = 'check wait';
+    document.getElementById('icone').textContent = '↻';
+    document.getElementById('titulo').textContent = 'Cadastro salvo no aparelho';
+    document.getElementById('msg').textContent =
+      (nome ? nome + ' foi registrado(a). ' : '') + 'Sem conexão agora: o envio ao CRM acontece sozinho quando a internet voltar.';
+  } else if (nome) {
+    document.getElementById('msg').textContent = nome + ' foi cadastrado(a) e enviado(a) ao CRM.';
+  }
+
+  // Volta ao formulário mantendo o promotor no link
+  if (promotor) document.getElementById('proximo').href = './?promotor=' + encodeURIComponent(promotor);
+
+  function atualizar(){
+    document.getElementById('hoje').textContent = Fila.totalHoje();
+    document.getElementById('fila').textContent = Fila.pendentes();
+  }
+  Fila.aoAtualizar(atualizar);
+  atualizar(); Fila.reenviar();
+})();
+</script>
+</body>
+</html>

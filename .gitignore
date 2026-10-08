@@ -43,3 +43,6 @@ next-env.d.ts
 # claude
 CLAUDE.md
 .agents/
+
+# Pacotes da agência com token do Kommo dentro (config.php) — nunca versionar
+/cadastro*.zip

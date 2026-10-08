@@ -220,3 +220,72 @@ export async function fetchSalesLeads(updatedFrom?: number): Promise<KommoLead[]
   }
   return out;
 }
+
+// ---------- Cadastro em EVENTOS (página /cadastro, usada pelos promotores) ----------
+// Funil "EVENTOS EXTERNOS" → etapa "Lead cadastrado"; campos na aba "Lead - informações".
+const EVENT_PIPELINE_ID = 14585763;
+const EVENT_STATUS_ID = 112689763;
+const EVENT_LEAD_FIELDS = {
+  nome: 1519126,
+  telefone: 1519128, // numérico: só dígitos, sem "+"
+  email: 1519130,
+  profissao: 1519132,
+  idade: 1519134,
+} as const;
+const EVENT_TAGS = ["Evento", "Evento presencial"];
+
+export interface EventLeadInput {
+  nome: string;
+  telefone: string; // com DDI, ex.: +5582999990000
+  email: string; // "" se não informado
+  profissao: string;
+  idade: number; // 0 se não informada
+  promotor: string; // "" se não informado
+}
+
+/** Cria Lead + Contato no Kommo (leads/complex). Lança erro se o Kommo recusar. */
+export async function createEventLead(l: EventLeadInput): Promise<void> {
+  const sub = process.env.KOMMO_SUBDOMAIN;
+  const token = process.env.KOMMO_ACCESS_TOKEN;
+  if (!sub || !token) throw new KommoConfigError("KOMMO_SUBDOMAIN / KOMMO_ACCESS_TOKEN não configurados");
+
+  const contactFields: any[] = [{ field_code: "PHONE", values: [{ value: l.telefone, enum_code: "MOB" }] }];
+  if (l.email) contactFields.push({ field_code: "EMAIL", values: [{ value: l.email, enum_code: "WORK" }] });
+
+  const leadValues: Record<keyof typeof EVENT_LEAD_FIELDS, string> = {
+    nome: l.nome,
+    telefone: l.telefone.replace(/^\+/, ""),
+    email: l.email,
+    profissao: l.profissao,
+    idade: l.idade ? String(l.idade) : "",
+  };
+  const leadFields = (Object.keys(EVENT_LEAD_FIELDS) as (keyof typeof EVENT_LEAD_FIELDS)[])
+    .filter((k) => leadValues[k] !== "")
+    .map((k) => ({ field_id: EVENT_LEAD_FIELDS[k], values: [{ value: leadValues[k] }] }));
+
+  const tags = EVENT_TAGS.map((name) => ({ name }));
+  if (l.promotor) tags.push({ name: `Promotor: ${l.promotor}` });
+
+  const lead = {
+    name: `Evento - ${l.nome}`,
+    pipeline_id: EVENT_PIPELINE_ID,
+    status_id: EVENT_STATUS_ID,
+    custom_fields_values: leadFields,
+    _embedded: {
+      tags,
+      contacts: [{ name: l.nome, custom_fields_values: contactFields }],
+    },
+  };
+
+  const res = await fetch(`https://${sub}.kommo.com/api/v4/leads/complex`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([lead]),
+    cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`Kommo API ${res.status}: ${body.slice(0, 300) || res.statusText}`);
+  }
+}
