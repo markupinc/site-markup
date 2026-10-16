@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import QRCode from "qrcode";
 import { createClient } from "@/lib/supabase/client";
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 
@@ -19,6 +20,8 @@ interface Acesso {
 
 const BASE_URL = "https://markupincorporacoes.com.br";
 const BLUE = "#00aeef";
+// Correção de erro máxima ("H"): o QR continua legível com parte dele suja, rasgada ou com reflexo
+const QR_OPTS = { errorCorrectionLevel: "H" as const, margin: 4, color: { dark: "#000000", light: "#ffffff" } };
 
 const slugify = (value: string) =>
   value
@@ -197,6 +200,7 @@ function QrCodeRow({
   const [destino, setDestino] = useState(code.destino_url);
   const [descricao, setDescricao] = useState(code.descricao || "");
   const [aberto, setAberto] = useState(false);
+  const [qrAberto, setQrAberto] = useState(false);
   const dirty = destino !== code.destino_url || descricao !== (code.descricao || "");
 
   return (
@@ -213,6 +217,9 @@ function QrCodeRow({
         <input type="text" value={destino} onChange={(e) => setDestino(e.target.value)} onBlur={() => dirty && onUpdate({ destino_url: destino })} style={inputStyle} />
         <input type="text" value={descricao} onChange={(e) => setDescricao(e.target.value)} onBlur={() => dirty && onUpdate({ descricao: descricao.trim() || null })} placeholder="descrição" style={inputStyle} />
         <div style={{ display: "flex", gap: 6, alignItems: "center", justifyContent: "flex-end" }}>
+          <button onClick={() => setQrAberto((v) => !v)} style={{ ...miniButtonStyle, color: qrAberto ? BLUE : "#fff" }} title="Ver e baixar o QR Code">
+            QR
+          </button>
           <button onClick={onCopy} style={{ ...miniButtonStyle, color: copied ? "#6b9f6b" : "#fff" }} title="Copiar URL">
             {copied ? "✓" : "Copiar"}
           </button>
@@ -222,7 +229,63 @@ function QrCodeRow({
           </button>
         </div>
       </div>
+      {qrAberto && <QrImagem slug={code.slug} />}
       {aberto && <QrStats acessos={acessos} />}
+    </div>
+  );
+}
+
+// ---- Imagem do QR (gerada no navegador, sem serviço externo) ----
+function QrImagem({ slug }: { slug: string }) {
+  const url = `${BASE_URL}/qr/${slug}`;
+  const [svg, setSvg] = useState("");
+
+  useEffect(() => {
+    let vivo = true;
+    QRCode.toString(url, { ...QR_OPTS, type: "svg" }).then((s) => vivo && setSvg(s));
+    return () => {
+      vivo = false;
+    };
+  }, [url]);
+
+  const baixar = (href: string, ext: string) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = `qr-${slug}.${ext}`;
+    a.click();
+  };
+  const baixarPng = async () => baixar(await QRCode.toDataURL(url, { ...QR_OPTS, width: 2048 }), "png");
+  const baixarSvg = () => {
+    const blobUrl = URL.createObjectURL(new Blob([svg], { type: "image/svg+xml" }));
+    baixar(blobUrl, "svg");
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  };
+
+  return (
+    <div style={statsWrap}>
+      <div style={{ display: "flex", gap: 20, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "#fff", borderRadius: 8, padding: 6, width: 168, height: 168, flexShrink: 0 }}>
+          {svg && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`} alt={`QR Code de ${url}`} width={156} height={156} style={{ display: "block" }} />
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 240 }}>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", marginBottom: 8 }}>
+            Leva para <code style={{ color: "#fff" }}>{url}</code>
+          </p>
+          <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.45)", lineHeight: 1.6, marginBottom: 14 }}>
+            QR permanente: gerado pelo próprio site, não depende de serviço externo e não expira. Para mudar para onde
+            ele leva, edite o destino acima; o QR impresso continua valendo. Se for desativado, quem escanear cai na home.
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button onClick={baixarPng} style={miniButtonStyle}>Baixar PNG (2048 px)</button>
+            <button onClick={baixarSvg} disabled={!svg} style={{ ...miniButtonStyle, opacity: svg ? 1 : 0.5 }}>
+              Baixar SVG (para gráfica)
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
