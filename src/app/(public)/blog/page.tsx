@@ -330,7 +330,7 @@ export default async function BlogPage({
           {allPosts.length === 0 && (
             <div style={{ textAlign: "center", padding: "80px 0" }}>
               <p style={{ fontSize: "16px", color: "#999" }}>
-                Nenhuma publicação encontrada.
+                Em breve, conteúdos sobre o mercado imobiliário de Maceió.
               </p>
             </div>
           )}

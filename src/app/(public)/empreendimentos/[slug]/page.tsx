@@ -90,7 +90,14 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
 
   const specs = [
     { label: "Área", value: formatRange(emp.area_min, emp.area_max, "m²") },
-    { label: "Quartos", value: formatRange(emp.quartos_min, emp.quartos_max) },
+    // Quando todos os quartos são suítes, mostra só "Suítes" (evita repetir a mesma informação)
+    {
+      label: "Quartos",
+      value:
+        emp.quartos_min === emp.suites_min && emp.quartos_max === emp.suites_max
+          ? null
+          : formatRange(emp.quartos_min, emp.quartos_max),
+    },
     { label: "Suítes", value: formatRange(emp.suites_min, emp.suites_max) },
     { label: "Vagas", value: formatRange(emp.vagas_min, emp.vagas_max) },
     { label: "Andares", value: emp.andares != null ? String(emp.andares) : null },
@@ -366,7 +373,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
               fontSize: "10px", fontWeight: 600, letterSpacing: "3px",
               textTransform: "uppercase", color: "#1CB8E8", textAlign: "center", marginBottom: "12px",
             }}>
-              Exclusividade
+              Atendimento exclusivo
             </p>
             <h2 style={{
               fontFamily: "var(--font-playfair), serif", fontSize: "32px",

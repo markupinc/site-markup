@@ -41,7 +41,7 @@ const contactLinks = [
 const socialLinks = [
   { label: "Facebook", href: "https://www.facebook.com/p/Markup-Inc-61571062839626/" },
   { label: "Instagram", href: "https://www.instagram.com/markup_inc/" },
-  { label: "Youtube", href: "https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q" },
+  { label: "YouTube", href: "https://www.youtube.com/channel/UCo9RXBaBrP5CRxZIACEeo2Q" },
   { label: "WhatsApp", href: "https://wa.me/5582982294001" },
 ];
 
@@ -227,7 +227,7 @@ export default function Footer({ logoSrc }: FooterProps) {
               transition: "color 0.3s ease",
             }}
           >
-            +55 82 98229-4001
+            (82) 98229-4001
           </a>
         </div>
 
@@ -313,7 +313,7 @@ export default function Footer({ logoSrc }: FooterProps) {
             margin: 0,
           }}
         >
-          &copy; Markup Incorporações 2025
+          &copy; {new Date().getFullYear()} Markup Incorporações
         </p>
       </div>
     </footer>

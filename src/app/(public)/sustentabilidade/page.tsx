@@ -21,7 +21,7 @@ const praticas = [
   },
   {
     icone: "\u2600\uFE0F",
-    titulo: "Energia Solar",
+    titulo: "Preparação para energia solar",
     descricao:
       "Infraestrutura preparada para energia fotovoltaica, incentivando a geração limpa e a economia na conta de energia dos moradores.",
   },
@@ -250,7 +250,7 @@ export default function SustentabilidadePage() {
                 textAlign: "center",
               }}
             >
-              Nosso compromisso com o amanhã
+              Próximos passos
             </h2>
 
             <div

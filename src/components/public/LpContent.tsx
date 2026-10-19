@@ -18,13 +18,13 @@ const CARDS = [
   {
     match: "salsa",
     nome: "Salsa Home Resort",
-    specs: "148–254m² · 3–4 suítes · Pé na areia · 8.000m² de lazer",
+    specs: "148–418 m² · 3–4 suítes · Pé na areia · 8.000m² de lazer",
     local: "Guaxuma · Maceió, Alagoas",
     fallback: "/assets/salsa.png",
   },
   {
     match: "up",
-    nome: "Up! Studios Smart Living",
+    nome: "Up! Studios: Smart Living",
     specs: "22–83m² · Studios e Coberturas · 200m do mar · Gestão MME Hospitalidade",
     local: "Jatiúca · Maceió, Alagoas",
     fallback: "/assets/up-fachada-01-nova.jpg",
@@ -32,8 +32,8 @@ const CARDS = [
   {
     match: "horizon",
     nome: "Horizon Trade Center",
-    specs: "41m²+ · Salas comerciais · Vista mar em 80% das unidades · Obra a preço de custo",
-    local: "Centro · Praia da Avenida, Maceió, Alagoas",
+    specs: "41–111 m² · Salas comerciais · Vista mar em 80% das salas · Obra a preço de custo",
+    local: "Praia da Avenida · Maceió, Alagoas",
     fallback: "/assets/vista-mar-cobertura-sala08.png",
   },
 ];
@@ -42,7 +42,7 @@ const PILARES = [
   {
     icone: TrendingUp,
     titulo: "Rentabilidade Real",
-    texto: "Sistema de condomínio a preço de custo. Studios com gestão de temporada via MME Hospitalidade.",
+    texto: "Obras a preço de custo no Salsa e no Horizon. Studios com gestão de temporada via MME Hospitalidade.",
   },
   {
     icone: ShieldCheck,
@@ -52,7 +52,7 @@ const PILARES = [
   {
     icone: MapPin,
     titulo: "Localização Estratégica",
-    texto: "Guaxuma, Jatiúca e Praia da Avenida. Beira-mar nos bairros de maior valorização de Maceió.",
+    texto: "Guaxuma, Jatiúca e Praia da Avenida. À beira-mar ou a poucos passos do mar, nas regiões de maior valorização de Maceió.",
   },
 ];
 
@@ -107,8 +107,7 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
             <b className="font-semibold">O retorno vem!</b>
           </h1>
           <p className="mt-5 max-w-md text-sm md:text-base text-white/70">
-            Empreendimentos de alto padrão na orla de Maceió — beira-mar, arquitetura contemporânea e rentabilidade
-            comprovada para quem investe com inteligência.
+            Empreendimentos de alto padrão na orla de Maceió — beira-mar, arquitetura contemporânea e alto potencial de rentabilidade para quem investe com inteligência.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <a href="#empreendimentos" className="px-6 py-3.5 bg-white text-[#0a0a0a] text-xs font-semibold tracking-widest uppercase hover:bg-white/90 transition">
@@ -121,7 +120,7 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
           <div className="mt-16 text-[11px] tracking-[0.2em] uppercase text-white/50">
             Horizon Trade Center
             <br />
-            <span className="text-white/35">Centro, Maceió, AL</span>
+            <span className="text-white/35">Praia da Avenida, Maceió/AL</span>
           </div>
         </div>
       </section>
@@ -168,7 +167,7 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
       {/* POR QUE A MARKUP */}
       <section className="border-t border-white/8">
         <div className="max-w-6xl mx-auto px-6 py-20 md:py-28">
-          <h2 className="text-2xl md:text-4xl font-semibold tracking-wide uppercase">Por que 200 investidores</h2>
+          <h2 className="text-2xl md:text-4xl font-semibold tracking-wide uppercase">Por que mais de 200 investidores</h2>
           <p className="text-2xl md:text-4xl font-light tracking-wide uppercase" style={{ color: BLUE }}>
             escolheram a Markup?
           </p>
@@ -231,7 +230,7 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
               <span style={{ color: BLUE }}>inteligência de quem já construiu muito.</span>
             </h2>
             <p className="mt-6 text-sm md:text-base text-white/60 leading-relaxed">
-              A Markup Incorporações não constrói, ela desenvolve. Cada empreendimento nasce de uma escolha cirúrgica de
+              A Markup Incorporações não constrói: ela desenvolve. Cada empreendimento nasce de uma escolha cirúrgica de
               localização, de um projeto arquitetônico assinado e de uma construtora selecionada pela experiência
               específica naquele tipo de obra.
             </p>
@@ -261,7 +260,7 @@ export default async function LpContent({ comNavbar = false }: { comNavbar?: boo
           <p className="text-2xl md:text-4xl font-light tracking-wide uppercase mt-1">pode ser o seu</p>
           <p className="mt-6 max-w-xl mx-auto text-sm text-white/85">
             Nossa equipe está pronta para apresentar o empreendimento certo para o seu perfil. Sem pressão, sem
-            urgência, só a informação que você precisa para decidir com segurança.
+            urgência, só a informação de que você precisa para decidir com segurança.
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
             <a href="#empreendimentos" className="px-6 py-3.5 bg-white text-[#0a0a0a] text-xs font-semibold tracking-widest uppercase hover:bg-white/90 transition">

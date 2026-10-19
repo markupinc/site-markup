@@ -246,11 +246,9 @@ export default function ContatoPage() {
                       >
                         Empresarial Ocean Tower
                         <br />
-                        Tv. Dr. Ant&ocirc;nio Gouv&ecirc;ia, 61 - Paju&ccedil;ara
+                        Tv. Dr. Ant&ocirc;nio Gouveia, 61, Sala 307 - Paju&ccedil;ara
                         <br />
                         Macei&oacute; - AL, 57030-170
-                        <br />
-                        Sala 307
                       </p>
                     </div>
                   </div>
@@ -331,7 +329,7 @@ export default function ContatoPage() {
                         Hor&aacute;rio
                       </p>
                       <p style={{ fontSize: 14, color: "#5a5a5a", lineHeight: 1.5 }}>
-                        Seg a Sex, 9h &agrave;s 18h
+                        Seg. a sex., das 9h &agrave;s 18h
                       </p>
                     </div>
                   </div>
@@ -363,7 +361,7 @@ export default function ContatoPage() {
                   }}
                 >
                   <WhatsAppIcon />
-                  Falar pelo WhatsApp
+                  Falar no WhatsApp
                 </a>
 
                 {/* Social links */}

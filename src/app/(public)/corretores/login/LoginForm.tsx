@@ -76,7 +76,7 @@ export default function LoginForm() {
             color: "rgba(255,255,255,0.6)",
           }}
         >
-          Acesso aos materiais dos empreendimentos Markup.
+          Materiais de venda dos empreendimentos Markup.
         </p>
       </section>
 

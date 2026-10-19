@@ -69,7 +69,7 @@ export default function PrivacidadePage() {
             color: "rgba(255,255,255,0.5)",
           }}
         >
-          Última atualização: Março 2026
+          Última atualização: março de 2026
         </p>
       </section>
 
@@ -339,7 +339,7 @@ export default function PrivacidadePage() {
           </ul>
           <p style={paragraphStyle}>
             Para exercer qualquer um desses direitos, entre em contato conosco
-            pelo e-mail indicado na seção de contato abaixo.
+            pelo e-mail indicado na seção 7.
           </p>
 
           {/* DPO */}
@@ -372,7 +372,7 @@ export default function PrivacidadePage() {
           </p>
           <p style={paragraphStyle}>
             A continuidade do uso do site após a publicação de alterações nesta
-            política constitui a aceitação das mesmas.
+            política implica a aceitação dessas alterações.
           </p>
 
           {/* Aplicativo */}

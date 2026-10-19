@@ -79,7 +79,7 @@ export default function PlantasSection({ plantas }: PlantasSectionProps) {
                 >
                   {[
                     planta.area ? `${planta.area}m²` : null,
-                    planta.quartos ? `${planta.quartos} quartos` : null,
+                    planta.quartos && planta.quartos !== planta.suites ? `${planta.quartos} quartos` : null,
                     planta.suites ? `${planta.suites} suítes` : null,
                   ]
                     .filter(Boolean)

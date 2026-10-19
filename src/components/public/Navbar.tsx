@@ -8,7 +8,7 @@ interface NavbarProps {
 
 const navLinks = [
   { label: "Empreendimentos", href: "/empreendimentos" },
-  { label: "Empresa", href: "/sobre" },
+  { label: "Sobre a Markup", href: "/sobre" },
   { label: "O Padrão Markup", href: "/padrao-markup" },
   { label: "Sustentabilidade", href: "/sustentabilidade" },
   { label: "Blog", href: "/blog" },

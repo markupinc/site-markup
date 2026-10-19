@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "O Padrão Markup | Markup Incorporações",
   description:
-    "Conheça o padrão de excelência da Markup Incorporações. 15 anos construindo patrimônio com obsessão pelo detalhe, inteligência imobiliária e compromisso inegociável.",
+    "Conheça o padrão de excelência da Markup Incorporações. Uma equipe com 15 anos de experiência, obsessão pelo detalhe, inteligência imobiliária e compromisso inegociável.",
 };
 
 const LOGO_SRC = "/assets/logo.png";
@@ -24,13 +24,13 @@ const pilares = [
     numero: "02",
     titulo: "Inteligência Imobiliária",
     descricao:
-      "15 anos de experiência em desenvolvimento imobiliário nos ensinaram que o melhor investimento combina localização estratégica, projeto arrojado e rentabilidade comprovada.",
+      "Os 15 anos de experiência da nossa equipe em desenvolvimento imobiliário ensinaram que o melhor investimento combina localização estratégica, projeto arrojado e rentabilidade comprovada.",
   },
   {
     numero: "03",
     titulo: "Compromisso Inegociável",
     descricao:
-      "Prazo é prazo. Qualidade é qualidade. Não fazemos concessões no que importa. Cada promessa feita é um compromisso assumido.",
+      "Prazo é prazo. Qualidade é qualidade. Cada promessa feita é um compromisso assumido.",
   },
 ];
 
@@ -45,7 +45,7 @@ const etapas = [
     numero: "02",
     titulo: "Projeto Autoral",
     descricao:
-      "Cada empreendimento tem identidade própria, pensado para se destacar no mercado.",
+      "Cada empreendimento tem identidade própria e é pensado para se destacar no mercado.",
   },
   {
     numero: "03",
@@ -375,8 +375,8 @@ export default function PadraoMarkupPage() {
               border: "none",
             }}
           >
-            &ldquo;Enquanto outros constroem prédios, nós construímos
-            patrimônio. Enquanto outros prometem, nós entregamos. Esse é o
+            &ldquo;Enquanto outros constroem prédios, nós desenvolvemos
+            patrimônio. Cada compromisso assumido é um compromisso cumprido. Esse é o
             padrão que nos define — e do qual nunca abriremos mão.&rdquo;
           </blockquote>
           <p
@@ -433,7 +433,7 @@ export default function PadraoMarkupPage() {
               transition: "background-color 0.3s ease",
             }}
           >
-            Conheça nossos empreendimentos
+            Ver empreendimentos
           </Link>
         </FadeInOnScroll>
       </section>

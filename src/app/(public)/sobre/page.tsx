@@ -7,7 +7,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Sobre a Markup | Markup Incorporações",
   description:
-    "Conheça a Markup Incorporações: fundada em 2024 por Matheus Vilela, com 15 anos de experiência transformando o mercado imobiliário em Alagoas com projetos arrojados e alta rentabilidade.",
+    "Conheça a Markup Incorporações: fundada em 2024 por Matheus Vilela, com uma equipe que soma 15 anos de experiência no mercado imobiliário de Alagoas com projetos arrojados e alta rentabilidade.",
 };
 
 const LOGO_SRC = "/assets/logo.png";
@@ -34,7 +34,7 @@ const valores = [
 const numeros = [
   { valor: "15", label: "Anos de experiência" },
   { valor: "200+", label: "Investidores" },
-  { valor: "2", label: "Empreendimentos" },
+  { valor: "3", label: "Empreendimentos" },
   { valor: "200+", label: "Unidades" },
 ];
 
@@ -116,14 +116,14 @@ export default function SobrePage() {
                 mercado imobiliário em Alagoas. Fundada em 2024 por <strong>Matheus Vilela</strong>, é formada
                 por profissionais apaixonados pelo desenvolvimento urbano e pela
                 criação de empreendimentos que realmente fazem a diferença. A
-                empresa se consolidou como referência em projetos de alto padrão
+                empresa vem se destacando em projetos de alto padrão
                 em Alagoas.
               </p>
 
               <p style={{ marginBottom: "20px" }}>
-                Com mais de 15 anos de experiência no desenvolvimento
-                imobiliário através de parcerias estratégicas, a Markup
-                Incorporações direciona toda a sua expertise para oferecer
+                O fundador e a equipe da Markup Incorporações somam 15 anos de
+                experiência no desenvolvimento imobiliário. Por meio de parcerias
+                estratégicas, a empresa direciona toda a sua expertise para oferecer
                 produtos arrojados, de alto padrão e com alta rentabilidade,
                 transformando projetos em realidade, oferecendo conforto e
                 funcionalidade para quem busca um lugar para morar ou investir.
@@ -143,7 +143,7 @@ export default function SobrePage() {
 
               <p>
                 Acreditamos que o mercado imobiliário é mais do que construir
-                edifícios — é sobre criar oportunidades de investimento sólidas,
+                edifícios — trata-se de criar oportunidades de investimento sólidas,
                 desenvolver espaços que elevem a qualidade de vida e contribuir
                 para o crescimento sustentável de Alagoas. Essa é a essência da
                 Markup Incorporações.

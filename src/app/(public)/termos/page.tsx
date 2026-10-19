@@ -60,7 +60,7 @@ export default function TermosPage() {
             color: "rgba(255,255,255,0.5)",
           }}
         >
-          Última atualização: Março 2026
+          Última atualização: março de 2026
         </p>
       </section>
 
@@ -186,7 +186,7 @@ export default function TermosPage() {
           </p>
           <p style={paragraphStyle}>
             Condições promocionais não se acumulam com outras ofertas e estão
-            sujeitas a disponibilidade. A Markup Incorporações reserva-se o
+            sujeitas à disponibilidade. A Markup Incorporações reserva-se o
             direito de encerrar ou modificar qualquer campanha a qualquer
             momento, sem aviso prévio.
           </p>
