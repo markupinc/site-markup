@@ -35,7 +35,7 @@ const numeros = [
   { valor: "15", label: "Anos de experiência" },
   { valor: "200+", label: "Investidores" },
   { valor: "3", label: "Empreendimentos" },
-  { valor: "200+", label: "Unidades" },
+  { valor: "500+", label: "Unidades" },
 ];
 
 export default function SobrePage() {

@@ -25,7 +25,7 @@ const CARDS = [
   {
     match: "up",
     nome: "Up! Studios: Smart Living",
-    specs: "22–83m² · Studios e Coberturas · 200m do mar · Gestão MME Hospitalidade",
+    specs: "22–53 m² · Studios, quarto e sala e cobertura duplex · 200m do mar · Gestão MME Hospitalidade",
     local: "Jatiúca · Maceió, Alagoas",
     fallback: "/assets/up-fachada-01-nova.jpg",
   },

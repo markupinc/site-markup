@@ -380,10 +380,10 @@ export default function PrivacidadePage() {
             9. Aplicativo Markup Incorporações (iOS e Android)
           </h2>
           <p style={paragraphStyle}>
-            Além do site, a Markup Incorporações disponibiliza um aplicativo
-            móvel para apresentação de seus empreendimentos e materiais
-            institucionais. O aplicativo não exige cadastro nem login para uso e
-            coleta apenas o mínimo necessário para o seu funcionamento:
+            A Markup Incorporações está desenvolvendo um aplicativo móvel para
+            apresentação de seus empreendimentos e materiais institucionais.
+            Quando disponível, o aplicativo não exigirá cadastro nem login para
+            uso e coletará apenas o mínimo necessário para o seu funcionamento:
           </p>
           <ul style={listStyle}>
             <li>
