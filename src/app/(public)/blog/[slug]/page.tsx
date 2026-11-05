@@ -1,6 +1,5 @@
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
@@ -11,21 +10,10 @@ import type { Metadata } from "next";
 const LOGO_SRC = "/assets/logo.png";
 const BASE_URL = "https://markupincorporacoes.com.br";
 
-// Cache blog posts for 1 hour
-export const revalidate = 3600;
-
-// Pre-render all published blog posts at build time
-// Use admin client (no cookies needed at build time)
-export async function generateStaticParams() {
-  const supabase = createAdminClient();
-  const { data: posts } = (await supabase
-    .from("blog_posts")
-    .select("slug")
-    .eq("publicado", true)) as any;
-  return (posts || []).map((post: { slug: string }) => ({
-    slug: post.slug,
-  }));
-}
+// Renderiza a cada request. O layout raiz lê headers() (TrackingScripts) e esta
+// página lê cookies() (createClient) — com ISR/generateStaticParams o Next tenta
+// renderizar como estático em runtime e quebra com DYNAMIC_SERVER_USAGE (500).
+export const dynamic = "force-dynamic";
 
 type BlogPost = {
   id: string;

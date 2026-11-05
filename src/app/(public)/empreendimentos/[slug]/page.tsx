@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
@@ -14,21 +13,10 @@ type Props = {
   params: Promise<{ slug: string }>;
 };
 
-// Cache empreendimento pages for 1 hour
-export const revalidate = 3600;
-
-// Pre-render all active empreendimentos at build time
-// Use admin client (no cookies needed at build time)
-export async function generateStaticParams() {
-  const supabase = createAdminClient();
-  const { data: empreendimentos } = (await supabase
-    .from("empreendimentos")
-    .select("slug")
-    .eq("ativo", true)) as any;
-  return (empreendimentos || []).map((emp: { slug: string }) => ({
-    slug: emp.slug,
-  }));
-}
+// Renderiza a cada request. O layout raiz lê headers() (TrackingScripts) e esta
+// página lê cookies() (createClient) — com ISR/generateStaticParams o Next tenta
+// renderizar como estático em runtime e quebra com DYNAMIC_SERVER_USAGE (500).
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
