@@ -1,6 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { headers } from "next/headers";
-import { GOOGLE_ADS_ID } from "@/lib/tracking/googleAds";
+import { GOOGLE_ADS_ID, GOOGLE_ADS_IDS } from "@/lib/tracking/googleAds";
 
 interface TrackingConfig {
   ga4: string | null;
@@ -78,7 +78,7 @@ export default async function TrackingScripts() {
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
             ${config.ga4 ? `gtag('config', '${config.ga4}');` : ""}
-            gtag('config', '${GOOGLE_ADS_ID}');
+            ${GOOGLE_ADS_IDS.map((id) => `gtag('config', '${id}');`).join("\n            ")}
           `,
         }}
       />
