@@ -3,8 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 const BASE_URL = "https://markupincorporacoes.com.br";
 
-// Cache sitemap for 24 hours
-export const revalidate = 86400;
+// Gerado a cada request, não no build: assim o deploy não depende do Supabase
+// estar no ar (em 05/11/2026 o banco travou e o build morreu aqui por timeout).
+export const dynamic = "force-dynamic";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = createAdminClient();
