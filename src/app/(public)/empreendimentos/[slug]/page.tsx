@@ -376,7 +376,7 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
               Preencha o formulário abaixo para entrar em contato conosco.
             </p>
             {/* Formulário da Karteira: o lead vai direto para o CRM */}
-            <KarteiraForm />
+            <KarteiraForm empreendimentoSlug={slug} />
           </div>
         </FadeInOnScroll>
       </section>
