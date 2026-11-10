@@ -6,7 +6,7 @@
  * bloquear a incorporação (X-Frame-Options: SAMEORIGIN), o iframe aparece como
  * "conexão recusada" e o link é o caminho para o visitante se cadastrar.
  */
-export const KARTEIRA_FORM_URL = "https://markup.karteira.app/embed/f/formulario";
+export const KARTEIRA_FORM_URL = "https://markup.karteira.app/embed/f/formulario?titulo=0";
 
 export default function KarteiraForm() {
   return (
