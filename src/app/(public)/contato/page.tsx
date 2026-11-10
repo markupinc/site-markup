@@ -2,7 +2,7 @@ import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import WhatsAppButton from "@/components/public/WhatsAppButton";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
-import LeadForm from "@/components/public/LeadForm";
+import KarteiraForm from "@/components/public/KarteiraForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -462,7 +462,7 @@ export default function ContatoPage() {
                 >
                   Preencha o formul&aacute;rio e retornaremos em breve.
                 </p>
-                <LeadForm />
+                <KarteiraForm />
               </div>
             </div>
           </FadeInOnScroll>

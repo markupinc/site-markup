@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import FadeInOnScroll from "@/components/public/FadeInOnScroll";
-import KommoForm from "@/components/public/KommoForm";
+import KarteiraForm from "@/components/public/KarteiraForm";
 import GalleryTabs from "@/components/public/GalleryTabs";
 import PlantasSection from "@/components/public/PlantasSection";
 
@@ -375,8 +375,8 @@ export default async function EmpreendimentoDetailPage({ params }: Props) {
             }}>
               Preencha o formulário abaixo para entrar em contato conosco.
             </p>
-            {/* Formulário do Kommo: o lead vai direto para o CRM */}
-            <KommoForm empreendimentoSlug={slug} />
+            {/* Formulário da Karteira: o lead vai direto para o CRM */}
+            <KarteiraForm />
           </div>
         </FadeInOnScroll>
       </section>
